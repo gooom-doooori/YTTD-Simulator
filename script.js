@@ -3077,7 +3077,7 @@ function showFavorabilityDetails(survivorId) {
     
     // 다른 생존자들과의 호감도 정보
     const favorabilityData = gameState.survivors
-        .filter(s => s.id !== survivorId && s.isAlive)
+        .filter(s => s.id !== survivorId)
         .map(other => {
             const fav = survivor.favorability[other.id] || 50;
             const relation = survivor.relationshipTypes?.[other.id];
@@ -3123,7 +3123,10 @@ function showFavorabilityDetails(survivorId) {
                                             </div>`
                                         }
                                         <div style="flex: 1;">
-                                            <div style="font-weight: bold; color: #111827;">${ally.name}</div>
+                                            <div style="font-weight: bold; color: #111827;">
+                                                ${ally.name}
+                                                ${!gameState.survivors.find(s => s.id === ally.id)?.isAlive ? '<span style="color: #dc2626; margin-left: 0.5rem;">💀</span>' : ''}
+                                            </div>
                                             <div style="font-size: 0.875rem; color: #6b7280;">${ally.relationship}</div>
                                         </div>
                                         <div style="text-align: right;">
@@ -3172,7 +3175,10 @@ function showFavorabilityDetails(survivorId) {
                                                 </div>`
                                             }
                                             <div style="flex: 1;">
-                                                <div style="font-weight: 600; color: #111827;">${person.name}</div>
+                                                <div style="font-weight: 600; color: #111827;">
+                                                    ${person.name}
+                                                    ${!gameState.survivors.find(s => s.id === person.id)?.isAlive ? '<span style="color: #dc2626; margin-left: 0.5rem;">💀</span>' : ''}
+                                                </div>
                                                 <div style="font-size: 0.75rem; color: #6b7280;">${person.relationship}</div>
                                             </div>
                                             <div style="text-align: right;">
@@ -4202,7 +4208,7 @@ function drawRelationshipGraph() {
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
-    const survivors = gameState.survivors.filter(s => s.isAlive).map(s => ({
+    const survivors = gameState.survivors.map(s => ({
         id: s.id,
         name: s.name,
         image: s.image,
@@ -4343,6 +4349,18 @@ function drawRelationshipGraph() {
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('👤', person.x, person.y);
+        }
+        // 사망 배지
+        if (!person.isAlive) {
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath();
+            ctx.arc(person.x + nodeRadius - 15, person.y - nodeRadius + 15, 18, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 20px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('💀', person.x + nodeRadius - 15, person.y - nodeRadius + 15);
         }
         
         // 이름 (흰색 아웃라인 추가)
@@ -4513,4 +4531,5 @@ function resetSimulation() {
     
     // 화면 업데이트
     updateDisplay();
+
 }
