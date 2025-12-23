@@ -1390,9 +1390,16 @@ body.light-mode .ending-hint {
         padding: 1rem;
         overflow-x: hidden;
     }
+
+    form{
+        margin: 0 auto 1rem auto;
+        max-width: 100%;
+    }
     
     .form-grid {
         grid-template-columns: 1fr;
+        justify-content: center;
+        margin: 0 auto;
     }
 
     .preview-image {
