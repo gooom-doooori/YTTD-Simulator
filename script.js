@@ -2112,6 +2112,75 @@ function startSubGame() {
     }
 }
 
+// 대화하기 행동 처리
+function processTalkAction(survivor) {
+    const others = gameState.survivors.filter(s => s.isAlive && s.id !== survivor.id);
+    
+    if (others.length === 0) {
+        addLog(`${survivor.name}은(는) 대화할 상대가 없다.`, 'fail');
+        return;
+    }
+    
+    // 랜덤한 상대 선택
+    const target = others[Math.floor(Math.random() * others.length)];
+    
+    // 호감도 변화량: -80 ~ +120
+    const favorabilityChange = Math.floor(Math.random() * 201) - 80;
+    
+    // 성격 타입에 따른 보정
+    const survivorType = getPersonalityType(survivor.personality);
+    const targetType = getPersonalityType(target.personality);
+    
+    let finalChange = favorabilityChange;
+    
+    // 활동가형 + 안정형 조합: 긍정적 변화 증폭
+    if (survivorType === 'activist' && targetType === 'stable' && favorabilityChange > 0) {
+        finalChange = Math.floor(favorabilityChange * 1.3);
+    }
+    
+    // 불안형 + 자기중심형 조합: 부정적 변화 증폭
+    if (survivorType === 'anxious' && targetType === 'egocentric' && favorabilityChange < 0) {
+        finalChange = Math.floor(favorabilityChange * 1.3);
+    }
+    
+    // 호감도 적용
+    const oldFav = survivor.favorability[target.id] || 50;
+    const newFav = Math.max(-200, Math.min(1500, oldFav + finalChange));
+    survivor.favorability[target.id] = newFav;
+    
+    // 상대방도 영향 받음 (절반 정도)
+    const targetOldFav = target.favorability[survivor.id] || 50;
+    const targetChange = Math.floor(finalChange * 0.5);
+    target.favorability[survivor.id] = Math.max(-200, Math.min(1500, targetOldFav + targetChange));
+    
+    // 대화 결과에 따른 메시지
+    let resultMessage = '';
+    if (finalChange >= 80) {
+        resultMessage = '매우 유쾌한 대화를 나눴다!';
+        addDialogue(survivor, 'happiness', 0.7);
+        addDialogue(target, 'happiness', 0.5);
+    } else if (finalChange >= 40) {
+        resultMessage = '좋은 대화를 나눴다.';
+        addDialogue(survivor, 'happiness', 0.4);
+    } else if (finalChange >= 0) {
+        resultMessage = '평범한 대화를 나눴다.';
+    } else if (finalChange >= -40) {
+        resultMessage = '어색한 대화를 나눴다.';
+        addDialogue(survivor, 'sorrow', 0.3);
+    } else {
+        resultMessage = '심하게 언쟁을 벌였다!';
+        addDialogue(survivor, 'anger', 0.7);
+        addDialogue(target, 'anger', 0.5);
+    }
+    
+    addLog(`${survivor.name}이(가) ${target.name}와(과) 대화했다. ${resultMessage} (호감도 ${finalChange > 0 ? '+' : ''}${finalChange})`, 'action');
+    
+    // 바텐더 스킬: 취중 진담
+    const jobSkill = JOB_SKILLS[survivor.job];
+    if (jobSkill && jobSkill.name === '취중 진담' && survivor.currentAction === 'rest') {
+        addLog(`${survivor.name}의 '취중 진담' 발동! 대화 효과 2배`, 'event');
+    }
+}
 
 // 서브게임 처리
 function processSubGame() {
@@ -2162,6 +2231,10 @@ function processSubGame() {
             case 'heal':
                 updated.hp = Math.min(updated.maxHp, updated.hp + 25 + Math.floor(Math.random() * 20));
                 break;
+            case 'talk':
+                // 대화하기 행동 처리
+                processTalkAction(updated);
+                break;
             case 'alliance':
                 const aliveCandidates = gameState.survivors.filter(t => t.isAlive && t.id !== s.id);
                 if (aliveCandidates.length > 0) {
@@ -2169,16 +2242,16 @@ function processSubGame() {
                     
                     // 신뢰도 기반 수락 확률 계산
                     const targetFavorability = target.favorability[s.id] || 50;
-                    const baseAcceptChance = targetFavorability / 200; // 0 ~ 0.75 (호감도 0~150)
-                    const trustBonus = s.trust / 200; // 제의자(s)의 신뢰도 사용
-                    const finalAcceptChance = Math.min(0.95, baseAcceptChance + trustBonus); // 최대 95%
+                    const baseAcceptChance = targetFavorability / 200;
+                    const trustBonus = s.trust / 200;
+                    const finalAcceptChance = Math.min(0.95, baseAcceptChance + trustBonus);
                     
                     // 성격별 보정
                     const targetPersonalityType = getPersonalityType(target.personality);
                     let acceptModifier = 1.0;
-                    if (targetPersonalityType === 'stable') acceptModifier = 1.2; // 안정형은 수락 확률 20% 증가
-                    if (targetPersonalityType === 'egocentric') acceptModifier = 0.7; // 자기중심형은 수락 확률 30% 감소
-                    if (targetPersonalityType === 'anxious' && targetFavorability >= 80) acceptModifier = 1.3; // 불안형은 동료 이상이면 30% 증가
+                    if (targetPersonalityType === 'stable') acceptModifier = 1.2;
+                    if (targetPersonalityType === 'egocentric') acceptModifier = 0.7;
+                    if (targetPersonalityType === 'anxious' && targetFavorability >= 80) acceptModifier = 1.3;
                     
                     const adjustedChance = Math.min(0.98, finalAcceptChance * acceptModifier);
                     
@@ -2727,9 +2800,8 @@ function assignRoles() {
 
 // 메인게임 처리
 function processMainGame() {
-
     const cyclePosition = ((gameState.turn - 3) % 13) + 1;
-    if (cyclePosition === 11) {  // 메인게임 첫 턴에만 역할 배정
+    if (cyclePosition === 11) {
         gameState.gamePhase = 'main';
         assignRoles();
     }
@@ -2747,6 +2819,9 @@ function processMainGame() {
             const diff = updated.trust - oldTrust;
             const changeText = diff !== 0 ? ` (신뢰도 ${diff > 0 ? '+' : ''}${diff})` : '';
             addLog(`${s.name}이(가) 행동했다.${changeText}`, 'action');
+        } else if (s.currentAction === 'talk') {
+            // 메인게임에서도 대화하기 가능
+            processTalkAction(updated);
         }
         
         return updated;
@@ -4081,6 +4156,7 @@ function getActionsPopup() {
                 ${aliveSurvivors.map(s => {
                     const allyCount = Object.values(s.favorability).filter(fav => fav >= 80).length;
                     const isAllianceFull = allyCount > aliveSurvivors.length / 2;
+                    const hasOthers = aliveSurvivors.length > 1;
                     
                     return `
                     <div class="form" style="margin-bottom: 0;">
@@ -4122,12 +4198,14 @@ function getActionsPopup() {
                                 { id: 'active', label: '적극행동', disabled: s.isPanic },
                                 { id: 'rest', label: '휴식', disabled: s.isPanic || gameState.gamePhase === 'main' || s.inCoffin },
                                 { id: 'heal', label: '부상치료', disabled: s.isPanic || gameState.gamePhase === 'main' || s.inCoffin },
+                                { id: 'talk', label: '대화하기', disabled: s.isPanic || !hasOthers },
                                 { id: 'alliance', label: '동맹제의', disabled: s.isPanic || gameState.gamePhase === 'main' || isAllianceFull }
                             ].map(action => `
                                 <button class="action-btn ${s.currentAction === action.id ? 'selected' : ''}"
                                         ${action.disabled ? 'disabled' : ''}
                                         onclick="setAction(${s.id}, '${action.id}')"
-                                        ${action.id === 'alliance' && isAllianceFull ? 'title="동맹이 과반수를 초과했습니다"' : ''}>
+                                        ${action.id === 'alliance' && isAllianceFull ? 'title="동맹이 과반수를 초과했습니다"' : ''}
+                                        ${action.id === 'talk' && !hasOthers ? 'title="대화할 상대가 없습니다"' : ''}>
                                     ${action.label}
                                 </button>
                             `).join('')}
