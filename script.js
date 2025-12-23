@@ -4395,10 +4395,10 @@ function getSettingsPopup() {
                     현재 시뮬레이션 데이터를 JSON 형식으로 저장하거나 불러올 수 있습니다.
                 </p>
                 <div style="display: flex; gap: 0.75rem;">
-                    <button onclick="saveData()" class="btn btn-green" style="flex: 1; color: white; font-size: 1rem; font-weight: 600;">
+                    <button onclick="saveData()" class="btn btn-save" style="flex: 1; color: white; font-size: 1rem; font-weight: 600;">
                         <i data-lucide="download"></i> 데이터 저장
                     </button>
-                    <label class="btn btn-blue" style="flex: 1; cursor: pointer; text-align: center; color: white; font-size: 1rem; font-weight: 600;">
+                    <label class="btn btn-load" style="flex: 1; cursor: pointer; text-align: center; color: white; font-size: 1rem; font-weight: 600;">
                         <i data-lucide="upload"></i> 데이터 불러오기
                         <input type="file" accept=".json" onchange="loadData(event)" style="display: none;">
                     </label>
@@ -4533,4 +4533,5 @@ function resetSimulation() {
     updateDisplay();
 
 }
+
 
