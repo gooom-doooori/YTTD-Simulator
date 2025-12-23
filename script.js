@@ -1031,6 +1031,7 @@ function init() {
     
     lucide.createIcons();
     setupEventListeners();
+    autoLoadData();
     updateDisplay();
 }
 
@@ -1238,6 +1239,8 @@ function processTurn() {
     assignFreeActions();
     
     updateDisplay();
+
+    autoSaveData();
 }
 
 // 팝업 이벤트 체크 및 실행
@@ -4404,6 +4407,16 @@ function getSettingsPopup() {
                     </label>
                 </div>
             </div>
+
+            <div class="form">
+                <h3 style="font-weight: bold; margin-bottom: 0.5rem;">자동 저장</h3>
+                <p style="font-size: 0.875rem; color: var(--text-tertiary); margin-bottom: 1rem;">
+                    플레이 내역이 자동으로 저장되며, 새로고침 시 자동으로 복구됩니다.
+                </p>
+                <button onclick="clearAutoSave()" class="btn btn-red" style="width: 100%; color: white; font-size: 1rem; font-weight: 600;">
+                    <i data-lucide="trash-2"></i> 자동 저장 데이터 삭제
+                </button>
+            </div>
             
             <div class="form">
                 <h3 style="font-weight: bold; margin-bottom: 0.5rem;">게임 규칙</h3>
@@ -4418,6 +4431,57 @@ function getSettingsPopup() {
             </div>
         </div>
     `;
+}
+
+// 자동 저장
+function autoSaveData() {
+    try {
+        const data = {
+            survivors: gameState.survivors,
+            logs: gameState.logs,
+            turn: gameState.turn,
+            actualTurn: gameState.actualTurn,
+            gamePhase: gameState.gamePhase,
+            subGameType: gameState.subGameType,
+            turnDialogues: gameState.turnDialogues
+        };
+        localStorage.setItem('yttd_autosave', JSON.stringify(data));
+    } catch (error) {
+        console.error('Auto save failed:', error);
+    }
+}
+
+// 자동 불러오기
+function autoLoadData() {
+    try {
+        const saved = localStorage.getItem('yttd_autosave');
+        if (saved) {
+            const data = JSON.parse(saved);
+            gameState.survivors = data.survivors || [];
+            gameState.logs = data.logs || [];
+            gameState.turn = data.turn || 1;
+            gameState.actualTurn = data.actualTurn || data.turn || 1;
+            gameState.gamePhase = data.gamePhase || 'initial';
+            gameState.subGameType = data.subGameType || null;
+            gameState.turnDialogues = data.turnDialogues || {};
+            
+            if (gameState.survivors.length > 0) {
+                addLog('이전 플레이 내역을 불러왔다.', 'system');
+            }
+        }
+    } catch (error) {
+        console.error('Auto load failed:', error);
+    }
+}
+
+// 자동 저장 데이터 삭제
+function clearAutoSave() {
+    if (confirm('자동 저장된 데이터를 삭제하시겠습니까?\n(현재 플레이 내역은 유지됩니다)')) {
+        localStorage.removeItem('yttd_autosave');
+        addLog('자동 저장 데이터가 삭제되었다.', 'system');
+        closePopup();
+        updateDisplay();
+    }
 }
 
 // 페이지 로드 시 초기화
@@ -4525,6 +4589,8 @@ function resetSimulation() {
     });
     
     addLog('새로운 시뮬레이션이 시작되었다.', 'system');
+
+    localStorage.removeItem('yttd_autosave');
     
     // 엔딩 화면 닫기
     document.getElementById('popupContainer').innerHTML = '';
@@ -4533,6 +4599,5 @@ function resetSimulation() {
     updateDisplay();
 
 }
-
 
 
