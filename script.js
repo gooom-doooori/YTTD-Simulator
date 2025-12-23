@@ -4398,7 +4398,7 @@ function getSettingsPopup() {
                     <button onclick="saveData()" class="btn btn-save" style="flex: 1; color: white; font-size: 1rem; font-weight: 600;">
                         <i data-lucide="download"></i> 데이터 저장
                     </button>
-                    <label class="btn btn-load" style="flex: 1; cursor: pointer; text-align: center; color: white; font-size: 1rem; font-weight: 600;">
+                    <label class="btn btn-load" style="flex: 1; color: white; font-size: 1rem; font-weight: 600;">
                         <i data-lucide="upload"></i> 데이터 불러오기
                         <input type="file" accept=".json" onchange="loadData(event)" style="display: none;">
                     </label>
@@ -4533,5 +4533,6 @@ function resetSimulation() {
     updateDisplay();
 
 }
+
 
 
