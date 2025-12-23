@@ -3127,15 +3127,44 @@ function updateDisplay() {
 function updateStatus() {
     document.getElementById('turnDisplay').textContent = gameState.actualTurn;
     
+    const aliveCount = gameState.survivors.filter(s => s.isAlive).length;
+    
     let phase = '';
-    if (gameState.turn <= 2) phase = '최초의 시련';
-    else if (gameState.turn <= 12) phase = '서브게임';
-    else if (gameState.turn <= 15) phase = '메인게임';
-    else phase = '종료';
+    
+    // 생존자 2인 이하일 때만 종료 표시
+    if (aliveCount <= 2 && aliveCount > 0) {
+        phase = '종료';
+    } else if (aliveCount === 0) {
+        phase = '전멸';
+    } else {
+        // 게임 페이즈에 따른 표시
+        if (gameState.turn <= 2) {
+            phase = '최초의 시련';
+        } else if (gameState.gamePhase === 'sub') {
+            // 서브게임 타입별 표시
+            const gameNames = {
+                'trust': '신뢰매매게임',
+                'body': '신체보물찾기',
+                'banquet': '연회'
+            };
+            phase = `서브게임 (${gameNames[gameState.subGameType] || '진행중'})`;
+        } else if (gameState.gamePhase === 'main') {
+            phase = '메인게임';
+        } else {
+            // 페이즈가 명확하지 않을 때 턴 수로 판단
+            const cyclePosition = ((gameState.turn - 3) % 13) + 1;
+            if (cyclePosition >= 1 && cyclePosition <= 10) {
+                phase = '서브게임';
+            } else if (cyclePosition >= 11 && cyclePosition <= 13) {
+                phase = '메인게임';
+            } else {
+                phase = '진행중';
+            }
+        }
+    }
     
     document.getElementById('phaseDisplay').textContent = phase;
     
-    const aliveCount = gameState.survivors.filter(s => s.isAlive).length;
     document.getElementById('survivorDisplay').textContent = `${aliveCount}/${gameState.survivors.length}`;
 }
 
