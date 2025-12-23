@@ -184,12 +184,28 @@ body {
     color: white;
 }
 
+.btn-load {
+    background-color: #3a7af0;
+    color: white;
+}
+.btn-load:hover:not(:disabled) {
+    background-color: #285bb9;
+}
+
+.btn-save {
+    background-color: #2db31b;
+    color: white;
+}
+.btn-save:hover:not(:disabled) {
+    background-color: #1f8112;
+}
+
 .btn-purple:hover:not(:disabled) {
-    background-color: var(--accent-Dyellow);;
+    background-color: var(--accent-Dyellow);
 }
 
 .btn-blue:hover:not(:disabled) {
-    background-color: var(--accent-Dyellow);;
+    background-color: var(--accent-Dyellow);
 }
 
 .btn-green:hover:not(:disabled) {
@@ -197,15 +213,15 @@ body {
 }
 
 .btn-indigo:hover:not(:disabled) {
-    background-color: var(--accent-Dyellow);;
+    background-color: var(--accent-Dyellow);
 }
 
 .btn-pink:hover:not(:disabled) {
-    background-color: var(--accent-Dyellow);;
+    background-color: var(--accent-Dyellow);
 }
 
 .btn-gray:hover:not(:disabled) {
-    background-color: var(--accent-Dyellow);;
+    background-color: var(--accent-Dyellow);
 }
 
 .btn-red, .btn-delete, #nextTurnBtn {
@@ -1227,4 +1243,5 @@ body.light-mode .ending-survivor-quote {
 
 body.light-mode .ending-hint {
     color: #9ca3af;
+
 }
