@@ -841,6 +841,7 @@ body {
     max-width: 64rem;
     width: 100%;
     max-height: 90vh;
+    overflow-x: hidden;
     overflow-y: auto;
     border: 1px solid var(--border-color);
 }
@@ -877,7 +878,26 @@ body {
 }
 
 .popup-content {
+    overflow-x: hidden;
     padding: 1.5rem;
+}
+
+.popup::-webkit-scrollbar {
+    width: 8px;
+}
+
+.popup::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 4px;
+}
+
+.popup::-webkit-scrollbar-thumb {
+    background: var(--bg-primary-light);
+    border-radius: 4px;
+}
+
+.popup::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-yellow);
 }
 
 /* 폼 */
@@ -893,6 +913,8 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
+    width: 100%;
+    max-width: 100%;
 }
 
 @media (min-width: 640px) {
@@ -919,6 +941,9 @@ body {
     border: 1px solid var(--bg-primary-light);
     border-radius: 0.25rem;
     color: var(--text-primary);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .form-input:focus,
@@ -1363,10 +1388,16 @@ body.light-mode .ending-hint {
     
     .popup-content {
         padding: 1rem;
+        overflow-x: hidden;
     }
     
     .form-grid {
         grid-template-columns: 1fr;
+    }
+
+    .preview-image {
+        width: 4rem;
+        height: 4rem;
     }
     
     /* 행동 선택 */
