@@ -4079,7 +4079,6 @@ function getActionsPopup() {
         <div class="popup-content">
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
                 ${aliveSurvivors.map(s => {
-                    // 동맹 인원 수 계산 (호감도 80 이상)
                     const allyCount = Object.values(s.favorability).filter(fav => fav >= 80).length;
                     const isAllianceFull = allyCount > aliveSurvivors.length / 2;
                     
@@ -4096,6 +4095,27 @@ function getActionsPopup() {
                                 </button>
                             ` : ''}
                         </div>
+                        
+                        <!-- 캐릭터 정보 추가 -->
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem; line-height: 1.5;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>체력: ${s.hp}/${s.maxHp}</span>
+                                <span>정신력: ${s.mental}/${s.maxMental}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 0.25rem;">
+                                <span>신뢰도: ${s.trust}</span>
+                                ${s.tokens > 0 || (s.bodyPartsDisplay && s.bodyPartsDisplay.length > 0) ? `
+                                    <span>
+                                        ${s.tokens > 0 ? `🪙${s.tokens}` : ''}
+                                        ${s.bodyPartsDisplay && s.bodyPartsDisplay.length > 0 ? `🦾${s.bodyPartsDisplay.length}/6` : ''}
+                                    </span>
+                                ` : '<span>-</span>'}
+                            </div>
+                            <div style="margin-top: 0.25rem;">
+                                <span>동맹: ${allyCount}명</span>
+                            </div>
+                        </div>
+                        
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
                             ${[
                                 { id: 'explore', label: '정보탐색', disabled: s.isPanic },
@@ -4319,9 +4339,6 @@ function drawRelationshipGraph() {
     });
     
     // 노드 그리기
-    const loadedImages = {};
-    let loadedCount = 0;
-    
     positions.forEach(person => {
         // 원 테두리
         ctx.fillStyle = 'white';
@@ -4343,6 +4360,9 @@ function drawRelationshipGraph() {
                 ctx.clip();
                 ctx.drawImage(img, person.x - nodeRadius + 5, person.y - nodeRadius + 5, (nodeRadius - 5) * 2, (nodeRadius - 5) * 2);
                 ctx.restore();
+                
+                // 이미지 로드 후 죽음 배지와 이름 그리기
+                drawDeathBadgeAndName(person);
             };
             img.src = person.image;
         } else {
@@ -4352,9 +4372,18 @@ function drawRelationshipGraph() {
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('👤', person.x, person.y);
+            
+            // 기본 아이콘 후 죽음 배지와 이름 그리기
+            drawDeathBadgeAndName(person);
         }
-        // 사망 배지
-        if (!person.isAlive) {
+    });
+    
+    // 죽음 배지와 이름을 그리는 헬퍼 함수
+    function drawDeathBadgeAndName(person) {
+        const survivor = gameState.survivors.find(s => s.id === person.id);
+        
+        // 사망 배지 (이미지/아이콘 위에 그려짐)
+        if (survivor && !survivor.isAlive) {
             ctx.fillStyle = '#dc2626';
             ctx.beginPath();
             ctx.arc(person.x + nodeRadius - 15, person.y - nodeRadius + 15, 18, 0, Math.PI * 2);
@@ -4379,7 +4408,7 @@ function drawRelationshipGraph() {
         // 텍스트 (검은색)
         ctx.fillStyle = '#111827';
         ctx.fillText(person.name, person.x, person.y + nodeRadius + 20);
-    });
+    }
 }
 
 // 설정 팝업
@@ -4547,7 +4576,7 @@ function showEndingScreen(winners) {
 
 // 시뮬레이션 리셋 (생존자 목록은 유지)
 function resetSimulation() {
-    // 기존 생존자 정보 백업
+    // 기존 생존자 정보 백업 (관계 정보 제외)
     const savedSurvivors = gameState.survivors.map(s => ({
         name: s.name,
         job: s.job,
@@ -4560,9 +4589,10 @@ function resetSimulation() {
         personality: s.personality,
         status: s.status,
         image: s.image
+        // favorability, relationshipTypes 등은 제외
     }));
     
-    // 게임 상태 초기화
+    // 게임 상태 완전 초기화
     gameState = {
         survivors: [],
         logs: [],
@@ -4572,14 +4602,15 @@ function resetSimulation() {
         subGameType: null,
         isRunning: false,
         timer: null,
-        pendingAlliances: []
+        pendingAlliances: [],
+        turnDialogues: {}
     };
     
     // 생존자 재등록
     savedSurvivors.forEach(survivorData => {
         const survivor = initializeSurvivor(survivorData);
         
-        // 호감도 초기화
+        // 호감도 초기화 (새로 시작)
         gameState.survivors.forEach(s => {
             survivor.favorability[s.id] = 50;
             s.favorability[survivor.id] = 50;
@@ -4597,7 +4628,6 @@ function resetSimulation() {
     
     // 화면 업데이트
     updateDisplay();
-
 }
 
 
