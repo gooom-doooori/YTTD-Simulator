@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>㈜아스나로 : 데스게임 인공지능 테스트</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" title="테마 변경">
+        <i data-lucide="sun" id="themeIcon" style="color: var(--text-secondary)"></i>
+    </button>
+    <div id="app" class="min-h-screen">
+        <div class="max-w-7xl mx-auto">
+            <!-- 헤더 -->
+            <div class="header">
+                <h1 class="title">인공지능 테스트</h1>
+
+                
+            <!-- 컨트롤 버튼 -->
+            <div class="controls">
+                <button id="toggleBtn" class="btn btn-purple">
+                    <i data-lucide="play"></i>
+                    <span>시작</span>
+                </button>
+                <button id="nextTurnBtn" class="btn btn-blue">다음 턴</button>
+                <button id="actionsBtn" class="btn btn-indigo">
+                    <i data-lucide="heart"></i>
+                    행동 준비
+                </button>
+                <button id="relationshipsBtn" class="btn btn-pink">
+                    <i data-lucide="network"></i>
+                    인물 관계도
+                </button>
+                <button id="settingsBtn" class="btn btn-gray">
+                    <i data-lucide="settings"></i>
+                    설정
+                </button>
+            </div>
+
+                <div class="status-bar">
+                    <div class="status-item">
+                        <span class="status-label">턴:</span>
+                        <span class="status-value turn-value" id="turnDisplay">1</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">단계:</span>
+                        <span class="status-value phase-value" id="phaseDisplay">최초의 시련</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">생존자:</span>
+                        <span class="status-value survivor-value" id="survivorDisplay">0/0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 메인 그리드 -->
+            <div class="main-grid">
+                <!-- 생존자 목록 -->
+                <div class="panel">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h2 class="panel-title" style="margin-bottom: 0;">생존자 목록</h2>
+                        <button id="addSurvivorBtn" class="btn btn-green" style="padding: 0.5rem 1rem;">
+                            <i data-lucide="plus"></i>
+                            생존자 추가
+                        </button>
+                    </div>
+                    <div id="survivorList" class="survivor-list">
+                        <div class="empty-message">생존자를 추가해주세요</div>
+                    </div>
+                </div>
+                
+                <!-- 로그 -->
+                <div class="panel">
+                    <h2 class="panel-title">로그</h2>
+                    <div id="logList" class="log-list">
+                        <div class="empty-message">아직 기록이 없습니다</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 팝업 컨테이너 -->
+    <div id="popupContainer"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
