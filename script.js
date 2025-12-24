@@ -2452,6 +2452,8 @@ function processInitialTrial() {
 
     if (gameState.isRunning) stopSimulation();
 
+    const shuffledSurvivors = [...remainingSurvivors].sort(() => Math.random() - 0.5);
+
     // --- [최우선 단계] 특별 관계(가족 등) 2인 매칭 ---
     // 아직 시련을 안 본 사람 중 서로 호감도가 250 이상인 후보가 있는지 확인
     let specialPair = null;
