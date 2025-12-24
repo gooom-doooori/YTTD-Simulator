@@ -33,7 +33,7 @@
             <div class="controls">
                 <button id="toggleBtn" class="btn btn-purple">
                     <i data-lucide="play"></i>
-                    <span>시작</span>
+                    <span>자동진행</span>
                 </button>
                 <button id="nextTurnBtn" class="btn btn-blue">다음 턴</button>
                 <button id="actionsBtn" class="btn btn-indigo">
@@ -67,9 +67,9 @@
             </div>
 
             <!-- 메인 그리드 -->
-            <div class="main-grid">
+            <div class="main-grid" >
                 <!-- 생존자 목록 -->
-                <div class="panel">
+                <div class="panel" id="suv">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <h2 class="panel-title" style="margin-bottom: 0;">생존자 목록</h2>
                         <button id="addSurvivorBtn" class="btn btn-green" style="padding: 0.5rem 1rem;">
@@ -83,7 +83,7 @@
                 </div>
                 
                 <!-- 로그 -->
-                <div class="panel">
+                <div class="panel" id="log">
                     <h2 class="panel-title">로그</h2>
                     <div id="logList" class="log-list">
                         <div class="empty-message">아직 기록이 없습니다</div>
