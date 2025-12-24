@@ -13,10 +13,10 @@
     <meta property="og:url" content="https://gooom-doooori.github.io/YTTD-Simulator/">
     <meta property="og:title" content="YTTD Simulator">
     <meta property="og:description" content="キミガシネ 데스게임 시뮬레이터">
-    <meta property="og:image" content="thumbnail.png"> <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:image" content="\thumbnail.png"> <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="YTTD Simulator">
     <meta name="twitter:description" content="キミガシネ 데스게임 시뮬레이터">
-    <meta name="twitter:image" content="thumbnail.png">
+    <meta name="twitter:image" content="\thumbnail.png">
 </head>
 <body>
     <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" title="테마 변경">
@@ -96,6 +96,11 @@
     <!-- 팝업 컨테이너 -->
     <div id="popupContainer"></div>
 
+    <button id="helpBtn" class="help-btn" onclick="showPopup('help')" title="게임 규칙">
+        <i data-lucide="help-circle" size="20"></i>
+    </button>
+
     <script src="script.js"></script>
+    
 </body>
 </html>
