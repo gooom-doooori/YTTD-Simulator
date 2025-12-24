@@ -1260,7 +1260,7 @@ const POPUP_EVENTS = {
             );
             return candidates.length > 0 ? candidates : null;
         },
-        probability: 0.9,
+        probability: 0.01,
         getMessage: (character) => `
             <div style="text-align: center; margin-bottom: 10px;">
                 <strong>${character.name}은(는) 탈출구를 발견했다.</strong>
@@ -5795,3 +5795,4 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
         }, 100);
     });
 }
+
