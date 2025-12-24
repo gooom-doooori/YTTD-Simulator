@@ -1153,11 +1153,11 @@ const POPUP_EVENTS = {
             const candidates = gameState.survivors.filter(s => 
                 s.isAlive && 
                 s.status === '인간' && 
-                (s.hp / s.maxHp) <= 0.1
+                (s.hp / s.maxHp) <= 0.8
             );
             return candidates.length > 0 ? candidates : null;
         },
-        probability: 0.05,
+        probability: 0.1,
         getMessage: (character) => `
             <div style="text-align: center; margin-bottom: 10px;">
                 <strong>${character.name}은(는) 자신의 생명이 얼마 남지 않았음을 직감했다.</strong>
@@ -2762,7 +2762,7 @@ function startSubGame() {
 
     if (selectedGame === 'banquet') {
         gameState.survivors = gameState.survivors.map(s => {
-            if (s.status === '더미즈') {
+            if (s.isAlive && s.status === '더미즈') {
                 if (!s.skills.includes('생존본능')) {
                     s.skills.push('생존본능');
                 }
@@ -3027,7 +3027,11 @@ function processSubGame() {
                 
                 let totalTrust = 0;
                 humans.forEach(h => {
-                    totalTrust += h.favorability[s.id] || 50;
+                    if (h.favorability && h.favorability[s.id] !== undefined) {
+                        totalTrust += h.favorability[s.id];
+                    } else {
+                        totalTrust += 0; // 기본값
+                    }
                 });
                 const avgTrust = totalTrust / humans.length;
                 
@@ -3629,22 +3633,57 @@ function processRoleEffect(sacrificed) {
             gameState.survivors = gameState.survivors.map(s => ({ ...s, isAlive: false }));
         }
     } else if (sacrificed.role === '대역') {
-        addLog(`대역 ${sacrificed.name}이(가) 절명했다.`, 'death');
+        // 대역이 투표로 선택된 경우
+        addLog(`대역 ${sacrificed.name}이(가) 선택되었다.`, 'death');
         
-        const chosen = alive.find(s => s.id !== sacrificed.id);
-        if (chosen) {
-            addLog(`${chosen.name}이(가) 함께 사망한다.`, 'death');
+        // 대역을 제외한 생존자 중에서 호감도 기반으로 한 명 선택
+        const others = alive.filter(s => s.id !== sacrificed.id);
+        
+        if (others.length > 0) {
+            // 각 생존자의 전체 호감도 합계 계산
+            const favorabilityScores = others.map(survivor => {
+                let totalFav = 0;
+                alive.forEach(other => {
+                    if (other.id !== survivor.id) {
+                        totalFav += (other.favorability[survivor.id] || 0);
+                    }
+                });
+                return {
+                    survivor: survivor,
+                    score: Math.max(0, totalFav) // 음수는 0으로 처리
+                };
+            });
+            
+            // 가중치 기반 랜덤 선택
+            const totalWeight = favorabilityScores.reduce((sum, item) => sum + item.score + 100, 0); // +100은 최소 확률 보장
+            let random = Math.random() * totalWeight;
+            
+            let chosen = null;
+            for (const item of favorabilityScores) {
+                random -= (item.score + 100);
+                if (random <= 0) {
+                    chosen = item.survivor;
+                    break;
+                }
+            }
+            
+            if (!chosen) chosen = favorabilityScores[0].survivor; // 안전장치
+            
+            addLog(`${chosen.name}이(가) 대역과 함께 살아남는다.`, 'survive');
+            addLog(`${sacrificed.name}, ${chosen.name} 이외의 전원이 처형당한다.`, 'death');
             
             gameState.survivors = gameState.survivors.map(s => {
                 if (s.id === sacrificed.id || s.id === chosen.id) {
-                    return { ...s, isAlive: false };
+                    return s;
                 }
-                return s;
+                return { ...s, isAlive: false };
             });
         } else {
+            // 대역만 남은 경우
+            addLog(`대역 ${sacrificed.name}만 살아남았다.`, 'survive');
             gameState.survivors = gameState.survivors.map(s => {
-                if (s.id === sacrificed.id) return { ...s, isAlive: false };
-                return s;
+                if (s.id === sacrificed.id) return s;
+                return { ...s, isAlive: false };
             });
         }
     } else if (sacrificed.role === '현자') {
@@ -3685,7 +3724,6 @@ function processRoleEffect(sacrificed) {
         }
     }
     
-
     gameState.isRunning = false;
 
     gameState.survivors = gameState.survivors.map(s => ({
@@ -3695,7 +3733,6 @@ function processRoleEffect(sacrificed) {
     
     // 메인게임 종료 후 생존자 체크
     const remainingSurvivors = gameState.survivors.filter(s => s.isAlive);
-    
     
     // 2명 이하만 남았을 때 승리
     if (remainingSurvivors.length <= 2 && remainingSurvivors.length > 0) {
@@ -4676,9 +4713,39 @@ function previewImage(event) {
     
     const reader = new FileReader();
     reader.onload = (e) => {
-        const preview = document.getElementById('imagePreview');
-        preview.src = e.target.result;
-        preview.style.display = 'block';
+        const img = new Image();
+        img.onload = () => {
+            // 이미지 리사이즈 (최대 200x200)
+            const canvas = document.createElement('canvas');
+            const maxSize = 200;
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > height) {
+                if (width > maxSize) {
+                    height *= maxSize / width;
+                    width = maxSize;
+                }
+            } else {
+                if (height > maxSize) {
+                    width *= maxSize / height;
+                    height = maxSize;
+                }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // 압축된 이미지 데이터
+            const compressedData = canvas.toDataURL('image/jpeg', 0.7);
+            
+            const preview = document.getElementById('imagePreview');
+            preview.src = compressedData;
+            preview.style.display = 'block';
+        };
+        img.src = e.target.result;
     };
     reader.readAsDataURL(file);
 }
@@ -5306,29 +5373,69 @@ function getSettingsPopup() {
 // 자동 저장
 function autoSaveData() {
     try {
+        const limitedLogs = gameState.logs.slice(0, 80);
+        
         const data = {
             survivors: gameState.survivors,
-            logs: gameState.logs,
+            logs: limitedLogs,  // 제한된 로그만 저장
             turn: gameState.turn,
             gamePhase: gameState.gamePhase,
             subGameType: gameState.subGameType,
             turnDialogues: gameState.turnDialogues,
             hasStarted: gameState.hasStarted,
             initialTrialPopupsShown: gameState.initialTrialPopupsShown,
-            mainGameTurn: gameState.mainGameTurn
+            mainGameTurn: gameState.mainGameTurn,
+            savedAt: new Date().toISOString()
         };
-        localStorage.setItem('yttd_autosave', JSON.stringify(data));
+        
+        // 기존 자동 저장 목록 가져오기
+        const savedList = JSON.parse(localStorage.getItem('yttd_autosave_list') || '[]');
+        
+        // 새 저장 데이터 추가
+        savedList.push({
+            turn: gameState.turn,
+            savedAt: data.savedAt,
+            data: data
+        });
+        
+        // 최신 5개만 유지 (오래된 것부터 삭제)
+        const recentSaves = savedList.slice(-5);
+        
+        // 로컬 스토리지에 저장
+        localStorage.setItem('yttd_autosave_list', JSON.stringify(recentSaves));
+        
+        // 기본 슬롯은 제거 (중복 저장 방지)
+        localStorage.removeItem('yttd_autosave');
+        
     } catch (error) {
-        console.error('Auto save failed:', error);
+        if (error.name === 'QuotaExceededError') {
+            console.error('로컬 스토리지 용량 초과. 오래된 데이터를 삭제합니다.');
+            // 용량 초과 시 강제로 3개만 유지
+            try {
+                const savedList = JSON.parse(localStorage.getItem('yttd_autosave_list') || '[]');
+                const recentSaves = savedList.slice(-3);
+                localStorage.setItem('yttd_autosave_list', JSON.stringify(recentSaves));
+            } catch (e) {
+                // 그래도 안되면 전체 삭제
+                localStorage.removeItem('yttd_autosave_list');
+                localStorage.removeItem('yttd_autosave');
+            }
+        } else {
+            console.error('Auto save failed:', error);
+        }
     }
 }
 
 // 자동 불러오기
 function autoLoadData() {
     try {
-        const saved = localStorage.getItem('yttd_autosave');
-        if (saved) {
-            const data = JSON.parse(saved);
+        const savedList = JSON.parse(localStorage.getItem('yttd_autosave_list') || '[]');
+        
+        if (savedList.length > 0) {
+            // 가장 최신 저장 데이터 불러오기
+            const latestSave = savedList[savedList.length - 1];
+            const data = latestSave.data;
+            
             gameState.survivors = data.survivors || [];
             gameState.logs = data.logs || [];
             gameState.turn = data.turn || 0;
@@ -5337,14 +5444,18 @@ function autoLoadData() {
             gameState.turnDialogues = data.turnDialogues || {};
             gameState.hasStarted = data.hasStarted || false;
             gameState.initialTrialPopupsShown = data.initialTrialPopupsShown || {};
-            gameState.mainGameTurn = data.mainGameTurn || 0; 
+            gameState.mainGameTurn = data.mainGameTurn || 0;
             
             if (gameState.survivors.length > 0) {
-                addLog('이전 플레이 내역을 불러왔다.', 'system');
+                const saveDate = new Date(data.savedAt).toLocaleString('ko-KR');
+                addLog(`이전 플레이 내역을 불러왔다. (저장: ${saveDate})`, 'system');
             }
         }
     } catch (error) {
         console.error('Auto load failed:', error);
+        // 불러오기 실패 시 저장 데이터 삭제
+        localStorage.removeItem('yttd_autosave_list');
+        localStorage.removeItem('yttd_autosave');
     }
 }
 
@@ -5352,6 +5463,7 @@ function autoLoadData() {
 function clearAutoSave() {
     if (confirm('자동 저장된 데이터를 삭제하시겠습니까?\n(현재 플레이 내역은 유지됩니다)')) {
         localStorage.removeItem('yttd_autosave');
+        localStorage.removeItem('yttd_autosave_list');
         addLog('자동 저장 데이터가 삭제되었다.', 'system');
         closePopup();
         updateDisplay();
