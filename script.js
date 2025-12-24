@@ -774,7 +774,7 @@ const INITIAL_TRIAL_EVENTS = {
                 getMessage: (character) => `눈을 떠보니 ${character.name}의 앞에는 네모난 상자 하나와 여러장의 카드가 있었다.\n'이 방을 나가서 이 카드들을 곳곳에 숨겨두세요. 다른 사람에게 들키게 되면 죽습니다.'\n 라는 메모가 상자의 위에 적혀있었다.\n어떻게 할까요?`,
                 choices: [
                     {
-                        text: '시키는 대로 몰래 숨겨둔다.',
+                        text: '시키는 대로 몰래 숨겨둔다. (민첩 판정)',
                         effect: async (character) => {
                             const bonus = character.agility * 2;
                             const target = 50;
@@ -782,7 +782,7 @@ const INITIAL_TRIAL_EVENTS = {
                             const total = result.roll + bonus;
                             const isSuccess = total >= target;
                             
-                            addLog(`${character.name}의 민첩판정: ${total} : ${target} (민첩 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                            addLog(`${character.name}의 민첩 판정: ${total} : ${target} (민첩 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
                             
                             if (isSuccess) {
                                 addLog(`${character.name}은(는) 성공적으로 카드를 숨겼다.`, 'event');
@@ -793,7 +793,7 @@ const INITIAL_TRIAL_EVENTS = {
                         }
                     },
                     {
-                        text: '다른 사람이 나타나길 기다렸다가 사실대로 말한다.',
+                        text: '다른 사람이 나타나길 기다렸다가 사실대로 말한다. (매력 판정)',
                         effect: async (character) => {
                             const bonus = character.charm * 2;
                             const target = 90;
@@ -801,7 +801,7 @@ const INITIAL_TRIAL_EVENTS = {
                             const total = result.roll + bonus;
                             const isSuccess = total >= target;
                             
-                            addLog(`${character.name}의 매력판정: ${total} : ${target} (매력 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                            addLog(`${character.name}의 매력 판정: ${total} : ${target} (매력 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
                             
                             if (isSuccess) {
                                 character.trust = Math.min(100, character.trust + 1);
@@ -820,7 +820,7 @@ const INITIAL_TRIAL_EVENTS = {
                 getMessage: (character) => `눈을 떠보니 ${character.name}은(는) 좁은 방 안에 있었다.\n잠시 후 올바른 스위치를 누르기 전까지 벽이 좁아진다는 안내 방송이 흘러나온다.\n어떻게 할까요?`,
                 choices: [
                     {
-                        text: '방 안의 스위치를 빠르게 전부 누른다.',
+                        text: '방 안의 스위치를 빠르게 전부 누른다. (민첩 판정)',
                         effect: async (character) => {
                             const bonus = character.agility * 2;
                             const target = Math.floor(Math.random() * 11) + 70; // 70~80
@@ -828,29 +828,10 @@ const INITIAL_TRIAL_EVENTS = {
                             const total = result.roll + bonus;
                             const isSuccess = total >= target;
                             
-                            addLog(`${character.name}의 민첩판정: ${total} : ${target} (민첩 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                            addLog(`${character.name}의 민첩 판정: ${total} : ${target} (민첩 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
                             
                             if (isSuccess) {
-                                const personalityType = getPersonalityType(character.personality);
-                                if (personalityType !== 'activist') {
-                                    character.hp = Math.max(0, character.hp - 10);
-                                    addLog(`${character.name}은(는) 아슬아슬하게 올바른 스위치를 눌렀다. - HP -10`, 'event');
-                                } else {
-                                    addLog(`${character.name}은(는) 아슬아슬하게 올바른 스위치를 눌렀다.`, 'event');
-                                }
-                            } else {
-                                gameState.survivors = gameState.survivors.map(s => 
-                                    s.id === character.id 
-                                        ? { ...s, status: '더미즈' }
-                                        : s
-                                );
-                                addLog(`${character.name}은(는) 다가오는 벽에 압사했다.`, 'death');
-                                addLog(`${character.name}은(는) 더미즈가 되었다.`, 'event');
-                            }
-                        }
-                    },
-                    {
-                        text: '방 안을 자세히 관찰하여 진짜 스위치를 누른다.',
+                                c능 판정)',
                         effect: async (character) => {
                             const bonus = character.intelligence * 2;
                             const target = Math.floor(Math.random() * 11) + 70; // 70~80
@@ -858,7 +839,7 @@ const INITIAL_TRIAL_EVENTS = {
                             const total = result.roll + bonus;
                             const isSuccess = total >= target;
                             
-                            addLog(`${character.name}의 지능판정: ${total} : ${target} (지능 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                            addLog(`${character.name}의 지능 판정: ${total} : ${target} (지능 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
                             
                             if (isSuccess) {
                                 const personalityType = getPersonalityType(character.personality);
@@ -887,13 +868,13 @@ const INITIAL_TRIAL_EVENTS = {
                 getMessage: (character) => `눈을 떠보니 ${character.name}은(는) 어두운 방 안에 있었다.\n방의 중심에 있는 테이블에는 두 개의 권총이 놓여있었다.\n안내방송에서는 둘 중 하나의 권총에만 총알이 들어있으며,\n 권총을 머리에 겨눈 채 사용해야 문이 열린다고 한다.\n어떻게 해야할까요?`,
                 choices: [
                     {
-                        text: '오른쪽 권총을 사용한다.',
+                        text: '오른쪽 권총을 사용한다. (행운 판정)',
                         effect: async (character) => {
                             const target = 50;
                             const result = await rollDiceWithAnimation(target, "행운", 0);
                             const isSuccess = result.roll >= target;
                             
-                            addLog(`${character.name}의 행운판정: ${result.roll} : ${target}`, isSuccess ? 'success' : 'error');
+                            addLog(`${character.name}의 행운 판정: ${result.roll} : ${target}`, isSuccess ? 'success' : 'error');
                             
                             if (isSuccess) {
                                 character.mental = Math.max(0, character.mental - 15);
@@ -910,13 +891,13 @@ const INITIAL_TRIAL_EVENTS = {
                         }
                     },
                     {
-                        text: '왼쪽 권총을 사용한다.',
+                        text: '왼쪽 권총을 사용한다. (행운 판정)',
                         effect: async (character) => {
                             const target = 50;
                             const result = await rollDiceWithAnimation(target, "행운", 0);
                             const isSuccess = result.roll >= target;
                             
-                            addLog(`${character.name}의 행운판정: ${result.roll} : ${target}`, isSuccess ? 'success' : 'error');
+                            addLog(`${character.name}의 행운 판정: ${result.roll} : ${target}`, isSuccess ? 'success' : 'error');
                             
                             if (isSuccess) {
                                 character.mental = Math.max(0, character.mental - 15);
@@ -940,7 +921,7 @@ const INITIAL_TRIAL_EVENTS = {
                 getMessage: (character) => `눈을 떠보니 ${character.name}은(는) 발목이 구속된 채로 방 한 가운데에 놓여있었다.\n제한시간이 종료되면 천장에 설치된 가시 트랩이 발동할 것이라는 안내 방송이 흘러나온다.\n어떻게 할까요?`,
                 choices: [
                     {
-                        text: '두려움에 떨며 구속구를 푸는 법을 찾는다.',
+                        text: '두려움에 떨며 구속구를 푸는 법을 찾는다. (정신력 판정)',
                         condition: (character) => {
                             const personalityType = getPersonalityType(character.personality);
                             return personalityType !== 'anxious';
@@ -953,7 +934,7 @@ const INITIAL_TRIAL_EVENTS = {
                             const total = result.roll + bonus;
                             const isSuccess = total >= target;
                             
-                            addLog(`${character.name}의 정신력판정: ${total} : ${target} (보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                            addLog(`${character.name}의 정신력 판정: ${total} : ${target} (보너스: ${bonus})`, isSuccess ? 'success' : 'error');
                             
                             if (isSuccess) {
                                 character.mental = Math.max(0, character.mental - 10);
@@ -970,15 +951,14 @@ const INITIAL_TRIAL_EVENTS = {
                         }
                     },
                     {
-                        text: '침착하게 구속구를 푸는 법을 찾는다.',
+                        text: '침착하게 구속구를 푸는 법을 찾는다. (지능 판정)',
                         effect: async (character) => {
                             const bonus = character.intelligence * 2;
                             const target = Math.floor(Math.random() * 11) + 60; // 60~70
                             const result = await rollDiceWithAnimation(target, "지능", bonus);
                             const total = result.roll + bonus;
-                            const isSuccess = total >= target;
-                            
-                            addLog(`${character.name}의 지능판정: ${total} : ${target} (지능 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                            const isSuccess = total >= target;  
+                            addLog(`${character.name}의 지능 판정: ${total} : ${target} (지능 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
                             
                             if (isSuccess) {
                                 character.mental = Math.max(0, character.mental - 10);
@@ -1024,7 +1004,7 @@ const INITIAL_TRIAL_EVENTS = {
                         const total = result.roll + bonus;
                         const isSuccess = total >= target;
 
-                        addLog(`${selected.name}의 민첩판정: ${total} : ${target} (민첩 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                        addLog(`${selected.name}의 민첩 판정: ${total} : ${target} (민첩 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
                         
                         if (isSuccess) {
                             char1.favorability[char2.id] = Math.min(1500, (char1.favorability[char2.id] || 50) + 20);
@@ -1056,7 +1036,7 @@ const INITIAL_TRIAL_EVENTS = {
                         const total = result.roll + bonus;
                         const isSuccess = total >= target;
 
-                        addLog(`${selected.name}의 민첩판정: ${total} : ${target} (민첩 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                        addLog(`${selected.name}의 민첩 판정: ${total} : ${target} (민첩 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
                         
                         if (isSuccess) {
                             char1.favorability[char2.id] = Math.min(1500, (char1.favorability[char2.id] || 50) + 20);
@@ -1085,7 +1065,7 @@ const INITIAL_TRIAL_EVENTS = {
                 `깨어났을 때 눈앞에 있던 무전기에서는 안내 음성이 흘러나옵니다.\n 들어보니 두 사람이 협력하여 이 최초의 시련을 통과해야한다는 내용이었습니다.\n 어떻게 해야할까요?`,
             choices: [
                 {
-                    getText: (char1, char2) => `${char1.name}이(가) 의심스러우니 경계한다.`,
+                    getText: (char1, char2) => `${char1.name}이(가) 의심스러우니 경계한다. (지능 판정)`,
                     effect: async (char1, char2) => {
                         const suspected = char1;
                         const suspector = char2;
@@ -1098,7 +1078,7 @@ const INITIAL_TRIAL_EVENTS = {
                         const total = result.roll + bonus;
                         const isSuccess = total >= target;
 
-                        addLog(`${suspector.name}의 지능판정: ${total} : ${target} (지능 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                        addLog(`${suspector.name}의 지능 판정: ${total} : ${target} (지능 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
                         
                         if (isSuccess) {
                             suspected.trust = Math.min(100, (suspected.trust || 50) + 10);
@@ -1119,7 +1099,7 @@ const INITIAL_TRIAL_EVENTS = {
                     }
                 },
                 {
-                    getText: (char1, char2) => `${char2.name}이(가) 의심스러우니 경계한다.`,
+                    getText: (char1, char2) => `${char2.name}이(가) 의심스러우니 경계한다. (지능 판정)`,
                     effect: async (char1, char2) => {
                         const suspected = char2;
                         const suspector = char1;
@@ -1132,7 +1112,7 @@ const INITIAL_TRIAL_EVENTS = {
                         const total = result.roll + bonus;
                         const isSuccess = total >= target;
 
-                        addLog(`${suspector.name}의 지능판정: ${total} : ${target} (지능 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                        addLog(`${suspector.name}의 지능 판정: ${total} : ${target} (지능 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
                         
                         if (isSuccess) {
                             suspector.trust = Math.min(100, (suspector.trust || 50) + 10);
@@ -1498,7 +1478,7 @@ function toggleSimulation() {
         btn.innerHTML = '<i data-lucide="pause"></i><span>일시정지</span>';
         runSimulation();
     } else {
-        btn.innerHTML = '<i data-lucide="play"></i><span>시작</span>';
+        btn.innerHTML = '<i data-lucide="play"></i><span>자동진행</span>';
         if (gameState.timer) {
             clearTimeout(gameState.timer);
             gameState.timer = null;
@@ -1689,7 +1669,7 @@ function checkPopupEvents() {
         if (gameState.isRunning) {
             gameState.isRunning = false;
             const btn = document.getElementById('toggleBtn');
-            btn.innerHTML = '<i data-lucide="play"></i><span>시작</span>';
+            btn.innerHTML = '<i data-lucide="play"></i><span>자동진행</span>';
             if (gameState.timer) {
                 clearTimeout(gameState.timer);
                 gameState.timer = null;
@@ -5635,4 +5615,5 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
         }, 100);
     });
 }
+
 
