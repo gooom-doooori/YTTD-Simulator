@@ -1397,7 +1397,6 @@ body.light-mode .ending-hint {
     }
     
     .form-grid {
-        grid-template-columns: 1fr;
         justify-content: center;
         margin: 0 auto;
     }
