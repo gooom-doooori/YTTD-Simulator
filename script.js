@@ -1153,11 +1153,11 @@ const POPUP_EVENTS = {
             const candidates = gameState.survivors.filter(s => 
                 s.isAlive && 
                 s.status === '인간' && 
-                (s.hp / s.maxHp) <= 0.8
+                (s.hp / s.maxHp) <= 0.3
             );
             return candidates.length > 0 ? candidates : null;
         },
-        probability: 0.1,
+        probability: 0.01,
         getMessage: (character) => `
             <div style="text-align: center; margin-bottom: 10px;">
                 <strong>${character.name}은(는) 자신의 생명이 얼마 남지 않았음을 직감했다.</strong>
@@ -5604,3 +5604,4 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
         }, 100);
     });
 }
+
