@@ -1441,7 +1441,6 @@ function init() {
     }
     
     setupEventListeners();
-    autoLoadData();
     updateDisplay();
 }
 
@@ -1654,7 +1653,6 @@ function processTurn() {
 
     assignFreeActions();
     updateDisplay();
-    autoSaveData();
 }
 
 // 팝업 이벤트 체크 및 실행
@@ -5346,16 +5344,6 @@ function getSettingsPopup() {
             </div>
 
             <div class="form">
-                <h3 style="font-weight: bold; margin-bottom: 0.5rem;">자동 저장</h3>
-                <p style="font-size: 0.875rem; color: var(--text-tertiary); margin-bottom: 1rem;">
-                    플레이 내역이 자동으로 저장되며, 새로고침 시 자동으로 복구됩니다.
-                </p>
-                <button onclick="clearAutoSave()" class="btn btn-red" style="width: 100%; color: white; font-size: 1rem; font-weight: 600;">
-                    <i data-lucide="trash-2"></i> 자동 저장 데이터 삭제
-                </button>
-            </div>
-            
-            <div class="form">
                 <h3 style="font-weight: bold; margin-bottom: 0.5rem;">게임 규칙</h3>
                 <ul class="rule-list">
                     <li>첫 두 턴은 최초의 시련을 진행하며 랜덤 대미지를 통해 랜덤한 확률로 탈락자가 나타납니다.</li>
@@ -5368,106 +5356,6 @@ function getSettingsPopup() {
             </div>
         </div>
     `;
-}
-
-// 자동 저장
-function autoSaveData() {
-    try {
-        const limitedLogs = gameState.logs.slice(0, 80);
-        
-        const data = {
-            survivors: gameState.survivors,
-            logs: limitedLogs,  // 제한된 로그만 저장
-            turn: gameState.turn,
-            gamePhase: gameState.gamePhase,
-            subGameType: gameState.subGameType,
-            turnDialogues: gameState.turnDialogues,
-            hasStarted: gameState.hasStarted,
-            initialTrialPopupsShown: gameState.initialTrialPopupsShown,
-            mainGameTurn: gameState.mainGameTurn,
-            savedAt: new Date().toISOString()
-        };
-        
-        // 기존 자동 저장 목록 가져오기
-        const savedList = JSON.parse(localStorage.getItem('yttd_autosave_list') || '[]');
-        
-        // 새 저장 데이터 추가
-        savedList.push({
-            turn: gameState.turn,
-            savedAt: data.savedAt,
-            data: data
-        });
-        
-        // 최신 5개만 유지 (오래된 것부터 삭제)
-        const recentSaves = savedList.slice(-5);
-        
-        // 로컬 스토리지에 저장
-        localStorage.setItem('yttd_autosave_list', JSON.stringify(recentSaves));
-        
-        // 기본 슬롯은 제거 (중복 저장 방지)
-        localStorage.removeItem('yttd_autosave');
-        
-    } catch (error) {
-        if (error.name === 'QuotaExceededError') {
-            console.error('로컬 스토리지 용량 초과. 오래된 데이터를 삭제합니다.');
-            // 용량 초과 시 강제로 3개만 유지
-            try {
-                const savedList = JSON.parse(localStorage.getItem('yttd_autosave_list') || '[]');
-                const recentSaves = savedList.slice(-3);
-                localStorage.setItem('yttd_autosave_list', JSON.stringify(recentSaves));
-            } catch (e) {
-                // 그래도 안되면 전체 삭제
-                localStorage.removeItem('yttd_autosave_list');
-                localStorage.removeItem('yttd_autosave');
-            }
-        } else {
-            console.error('Auto save failed:', error);
-        }
-    }
-}
-
-// 자동 불러오기
-function autoLoadData() {
-    try {
-        const savedList = JSON.parse(localStorage.getItem('yttd_autosave_list') || '[]');
-        
-        if (savedList.length > 0) {
-            // 가장 최신 저장 데이터 불러오기
-            const latestSave = savedList[savedList.length - 1];
-            const data = latestSave.data;
-            
-            gameState.survivors = data.survivors || [];
-            gameState.logs = data.logs || [];
-            gameState.turn = data.turn || 0;
-            gameState.gamePhase = data.gamePhase || 'initial';
-            gameState.subGameType = data.subGameType || null;
-            gameState.turnDialogues = data.turnDialogues || {};
-            gameState.hasStarted = data.hasStarted || false;
-            gameState.initialTrialPopupsShown = data.initialTrialPopupsShown || {};
-            gameState.mainGameTurn = data.mainGameTurn || 0;
-            
-            if (gameState.survivors.length > 0) {
-                const saveDate = new Date(data.savedAt).toLocaleString('ko-KR');
-                addLog(`이전 플레이 내역을 불러왔다. (저장: ${saveDate})`, 'system');
-            }
-        }
-    } catch (error) {
-        console.error('Auto load failed:', error);
-        // 불러오기 실패 시 저장 데이터 삭제
-        localStorage.removeItem('yttd_autosave_list');
-        localStorage.removeItem('yttd_autosave');
-    }
-}
-
-// 자동 저장 데이터 삭제
-function clearAutoSave() {
-    if (confirm('자동 저장된 데이터를 삭제하시겠습니까?\n(현재 플레이 내역은 유지됩니다)')) {
-        localStorage.removeItem('yttd_autosave');
-        localStorage.removeItem('yttd_autosave_list');
-        addLog('자동 저장 데이터가 삭제되었다.', 'system');
-        closePopup();
-        updateDisplay();
-    }
 }
 
 // 페이지 로드 시 초기화
@@ -5577,8 +5465,6 @@ function resetSimulation() {
     });
     
     addLog('새로운 시뮬레이션이 시작되었다.', 'system');
-
-    localStorage.removeItem('yttd_autosave');
     
     // 엔딩 화면 닫기
     document.getElementById('popupContainer').innerHTML = '';
