@@ -1295,7 +1295,7 @@ const POPUP_EVENTS = {
                 disabledText: '(자기중심형/불안형 성격만 선택 가능)',
                 effect: async (character) => {
                     const target = 95;
-                    const result = await rollDiceWithAnimation(target, 0);
+                    const result = await rollDiceWithAnimation(95, "탈출", 0);
                     const total = result.roll;
                     
                     addLog(`${character.name}이(가) 탈출을 시도한다...`, 'event');
@@ -1334,6 +1334,7 @@ const POPUP_EVENTS = {
                         
                         addLog(`${character.name}의 신뢰도가 하락했다. -정신력 -10`, 'penalty');
                         addLog(`모든 캐릭터의 ${character.name}에 대한 호감도가 크게 하락했다. -전 생존자의 호감도 -50`, 'favorability');
+                        updateDisplay();
                     }
                 }
             },
@@ -1342,7 +1343,7 @@ const POPUP_EVENTS = {
                 condition: () => true,
                 effect: async (character) => {
                     const threshold = Math.floor(Math.random() * 11) + 60;
-                    const result1 = await rollDiceWithAnimation(threshold, 0);
+                    const result1 = await rollDiceWithAnimation(threshold, "결심", 0);
                     const total1 = result1.roll;
                     
                     addLog(`${character.name}이(가) 탈출을 고민한다...`, 'event');
@@ -1355,7 +1356,7 @@ const POPUP_EVENTS = {
                     
                     addLog(`${character.name}은(는) 탈출구로 들어가기로 결정했다!(${total1}/${threshold})`, 'event');
                     
-                    const result2 = await rollDiceWithAnimation(95, 0);
+                    const result2 = await rollDiceWithAnimation(95, "탈출", 0);
                     const escapeTotal = result2.roll;
                     
                     addLog(`탈출 다이스: ${escapeTotal} : 95`, escapeTotal >= 95 ? 'success' : 'error');
@@ -1393,6 +1394,7 @@ const POPUP_EVENTS = {
                         
                         addLog(`${character.name}의 신뢰도가 하락했다. -정신력 -10`, 'penalty');
                         addLog(`모든 캐릭터의 ${character.name}에 대한 호감도가 크게 하락했다. -전 생존자의 호감도 -50`, 'favorability');
+                        updateDisplay();
                     }
                 }
             }
