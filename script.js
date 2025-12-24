@@ -1100,7 +1100,7 @@ const INITIAL_TRIAL_EVENTS = {
                                 );
                             suspector.trust = Math.max(0, (suspector.trust || 50) - 10);
                             addLog(`${suspector.name}은(는) ${suspected.name}이(가) 의심스러워 열려있는 문을 열고 도망쳤다.`, 'event');
-                            addLog(`${suspected.name}은(는) 사망했다. (${suspector.name} - 신뢰도 -10)`, 'death');
+                            addLog(`${suspected.name}은(는) 사망했다. \n${suspector.name} 신뢰도 -10`, 'death');
                             processDeathRelationships(suspected);
                         }
                         updateDisplay();
@@ -1134,7 +1134,7 @@ const INITIAL_TRIAL_EVENTS = {
                                 );
                             suspector.trust = Math.max(0, (suspector.trust || 50) - 10);
                             addLog(`${suspector.name}은(는) ${suspected.name}이(가) 의심스러워 열려있는 문을 열고 도망쳤다.`, 'event');
-                            addLog(`${suspected.name}은(는) 사망했다. (${suspector.name} 신뢰도 -10)`, 'death');
+                            addLog(`${suspected.name}은(는) 사망했다. \n${suspector.name} 신뢰도 -10`, 'death');
                             processDeathRelationships(suspected);
                         }
                         updateDisplay();
