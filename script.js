@@ -1017,7 +1017,7 @@ const INITIAL_TRIAL_EVENTS = {
                         if (isSuccess) {
                             char1.favorability[char2.id] = Math.min(1500, (char1.favorability[char2.id] || 50) + 20);
                             char2.favorability[char1.id] = Math.min(1500, (char2.favorability[char1.id] || 50) + 20);
-                            addLog(`${selected.name}은(는) 트릭을 풀어내 ${other.name}을(를) 무사히 구해냈습니다. - 호감도 +20`, 'heal');
+                            addLog(`${selected.name}은(는) 트릭을 풀어내 ${other.name}을(를) 무사히 구해냈다. - 호감도 +20`, 'heal');
                         } else {
                             gameState.survivors = gameState.survivors.map(s => 
                                     s.id === other.id 
@@ -1025,7 +1025,7 @@ const INITIAL_TRIAL_EVENTS = {
                                         : s
                                 );
                             selected.mental = Math.max(0, (selected.mental || 100) - 30);
-                            addLog(`${selected.name}은(는) 트릭을 풀어내지 못했고, ${other.name}은(는) 사망했습니다. - 정신력 -30`, 'death');
+                            addLog(`${selected.name}은(는) 트릭을 풀어내지 못했고, ${other.name}은(는) 사망했다. - 정신력 -30`, 'death');
                             processDeathRelationships(other);
                         }
                         updateDisplay();
@@ -1049,7 +1049,7 @@ const INITIAL_TRIAL_EVENTS = {
                         if (isSuccess) {
                             char1.favorability[char2.id] = Math.min(1500, (char1.favorability[char2.id] || 50) + 20);
                             char2.favorability[char1.id] = Math.min(1500, (char2.favorability[char1.id] || 50) + 20);
-                            addLog(`${selected.name}은(는) 트릭을 풀어내 ${other.name}을(를) 무사히 구해냈습니다. - 호감도 +20`, 'heal');
+                            addLog(`${selected.name}은(는) 트릭을 풀어내 ${other.name}을(를) 무사히 구해냈다. - 호감도 +20`, 'heal');
                         } else {
                             gameState.survivors = gameState.survivors.map(s => 
                                     s.id === other.id 
@@ -1057,7 +1057,7 @@ const INITIAL_TRIAL_EVENTS = {
                                         : s
                                 );
                             selected.mental = Math.max(0, (selected.mental || 100) - 30);
-                            addLog(`${selected.name}은(는) 트릭을 풀어내지 못했고, ${other.name}은(는) 사망했습니다. - 정신력 -30`, 'death');
+                            addLog(`${selected.name}은(는) 트릭을 풀어내지 못했고, ${other.name}은(는) 사망했다. - 정신력 -30`, 'death');
                             processDeathRelationships(other);
                         }
                         updateDisplay();
@@ -1091,7 +1091,7 @@ const INITIAL_TRIAL_EVENTS = {
                         if (isSuccess) {
                             suspected.trust = Math.min(100, (suspected.trust || 50) + 10);
                             suspector.trust = Math.min(100, (suspector.trust || 50) + 10);
-                            addLog(`${suspector.name}은(는) ${suspected.name}이(가) 의심스러웠지만, 협력하여 시련을 클리어했습니다. - 신뢰도 +10`, 'heal');
+                            addLog(`${suspector.name}은(는) ${suspected.name}이(가) 의심스러웠지만, 협력하여 시련을 클리어했다. - 신뢰도 +10`, 'heal');
                         } else {
                             gameState.survivors = gameState.survivors.map(s => 
                                     s.id === suspected.id 
@@ -1099,8 +1099,8 @@ const INITIAL_TRIAL_EVENTS = {
                                         : s
                                 );
                             suspector.trust = Math.max(0, (suspector.trust || 50) - 10);
-                            addLog(`${suspector.name}은(는) ${suspected.name}이(가) 의심스러워 열려있는 문을 열고 도망쳤습니다.`, 'event');
-                            addLog(`${suspected.name}은(는) 사망했습니다. (${suspector.name} - 신뢰도 -10)`, 'death');
+                            addLog(`${suspector.name}은(는) ${suspected.name}이(가) 의심스러워 열려있는 문을 열고 도망쳤다.`, 'event');
+                            addLog(`${suspected.name}은(는) 사망했다. (${suspector.name} - 신뢰도 -10)`, 'death');
                             processDeathRelationships(suspected);
                         }
                         updateDisplay();
@@ -1125,7 +1125,7 @@ const INITIAL_TRIAL_EVENTS = {
                         if (isSuccess) {
                             suspector.trust = Math.min(100, (suspector.trust || 50) + 10);
                             suspected.trust = Math.min(100, (suspected.trust || 50) + 10);
-                            addLog(`${suspector.name}은(는) ${suspected.name}이(가) 의심스러웠지만, 협력하여 시련을 클리어했습니다. - 신뢰도 +10`, 'heal');
+                            addLog(`${suspector.name}은(는) ${suspected.name}이(가) 의심스러웠지만, 협력하여 시련을 클리어했다. - 신뢰도 +10`, 'heal');
                         } else {
                             gameState.survivors = gameState.survivors.map(s => 
                                     s.id === suspected.id 
@@ -1133,8 +1133,8 @@ const INITIAL_TRIAL_EVENTS = {
                                         : s
                                 );
                             suspector.trust = Math.max(0, (suspector.trust || 50) - 10);
-                            addLog(`${suspector.name}은(는) ${suspected.name}이(가) 의심스러워 열려있는 문을 열고 도망쳤습니다.`, 'event');
-                            addLog(`${suspected.name}은(는) 사망했습니다. (${suspector.name} 신뢰도 -10)`, 'death');
+                            addLog(`${suspector.name}은(는) ${suspected.name}이(가) 의심스러워 열려있는 문을 열고 도망쳤다.`, 'event');
+                            addLog(`${suspected.name}은(는) 사망했다. (${suspector.name} 신뢰도 -10)`, 'death');
                             processDeathRelationships(suspected);
                         }
                         updateDisplay();
@@ -5049,8 +5049,8 @@ function getActionsPopup() {
                                 <button class="action-btn ${s.currentAction === action.id ? 'selected' : ''}"
                                         ${action.disabled ? 'disabled' : ''}
                                         onclick="setAction(${s.id}, '${action.id}')"
-                                        ${action.id === 'alliance' && isAllianceFull ? 'title="동맹이 과반수를 초과했습니다"' : ''}
-                                        ${action.id === 'talk' && !hasOthers ? 'title="대화할 상대가 없습니다"' : ''}>
+                                        ${action.id === 'alliance' && isAllianceFull ? 'title="동맹을 맺은 생존자가 너무 많아 의심을 받을 것 같다"' : ''}
+                                        ${action.id === 'talk' && !hasOthers ? 'title="대화할 상대가 없다"' : ''}>
                                     ${action.label}
                                 </button>
                             `).join('')}
@@ -5363,7 +5363,7 @@ function getSettingsPopup() {
             <div class="form">
                 <h3 style="font-weight: bold; margin-bottom: 0.5rem;">게임 규칙</h3>
                 <ul class="rule-list">
-                    <li>첫 두 턴은 최초의 시련을 진행하며 랜덤 대미지를 통해 랜덤한 확률로 탈락자가 나타납니다.</li>
+                    <li>첫 턴은 최초의 시련을 진행하며 확률로 탈락자가 나타나거나, 더미즈가 됩니다.</li>
                     <li>10턴 동안은 서브게임을 진행합니다. (신뢰매매/신체보물찾기/연회)</li>
                     <li>서브게임 이후 3턴동안은 메인게임을 진행합니다.</li>
                     <li>극소확률로 탈출구를 발견하여 나가는 것이 가능합니다.</li>
