@@ -26,10 +26,10 @@
 }
 
 @font-face {
-    font-family: 'DungGeunMo';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff');
+    font-family: 'DosGothic';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_eight@1.0/DOSGothic.woff') format('woff');
     font-weight: normal;
-    font-style: normal;
+    font-display: swap;
 }
 
 body.light-mode {
@@ -50,7 +50,7 @@ body.light-mode {
 }
 
 body {
-    font-family: 'DungGeunMo', monospace;
+    font-family: 'DosGothic', monospace;
     background-color: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.6;
@@ -1624,3 +1624,4 @@ body.light-mode .ending-hint {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
