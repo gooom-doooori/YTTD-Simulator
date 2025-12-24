@@ -2,14 +2,15 @@
 let gameState = {
     survivors: [],
     logs: [],
-    turn: 1,
-    actualTurn: 1,
+    turn: 0,
     gamePhase: 'initial',
     subGameType: null,
     isRunning: false,
     timer: null,
     pendingAlliances: [],
-    turnDialogues: {}
+    turnDialogues: {},
+    hasStarted: false,
+    initialTrialPopupsShown: {}
 };
 // 상수
 const GENDERS = ['남성', '여성', '기타'];
@@ -154,7 +155,7 @@ const JOB_SKILLS = {
     },
     '군인': {
         name: '강철 정신',
-        description: '패닉 상태(정신력 30 이하) 돌입 시 3턴간 체력 감소 면제'
+        description: '패닉 상태 돌입 시 3턴간 체력 감소 면제'
     },
     '경호원': {
         name: '전담 방어',
@@ -166,7 +167,7 @@ const JOB_SKILLS = {
     },
     '용병': {
         name: '생존 약탈',
-        description: '[신체찾기] 행동 시 낮은 확률로 타인의 신체를 강탈 (신뢰도 -10)'
+        description: '[신체찾기] 행동 시 낮은 확률로 타인의 신체를 강탈 - 신뢰도 -10'
     },
     '경비원': {
         name: '구역 감시',
@@ -262,7 +263,7 @@ const JOB_SKILLS = {
     },
     '광대': {
         name: '시선 분산',
-        description: '[신뢰매매] 토큰 꼴찌일 때 페널티를 무작위 타인에게 전가 (신뢰도 -20)'
+        description: '[신뢰매매] 토큰 꼴찌일 때 페널티를 무작위 타인에게 전가 - 신뢰도 -20'
     },
     '가수': {
         name: '위로의 노래',
@@ -302,7 +303,7 @@ const JOB_SKILLS = {
     },
     '거지': {
         name: '적선 구걸',
-        description: '매 턴 종료 시 무작위 생존자로부터 토큰 1개 획득 (호감도 낮은 순)'
+        description: '매 턴 종료 시 무작위 생존자로부터 토큰 1개 획득'
     },
     '무직': {
         name: '기적의 요행',
@@ -749,13 +750,405 @@ const CHARACTER_DIALOGUES = {
     ]
 };
 
+// 최초의 시련 전용 팝업 이벤트 (완전히 교체)
+const INITIAL_TRIAL_EVENTS = {
+    // 1인 시련들
+    solo: [
+            // 카드 설치
+            {
+                id: 'soloTrial1',
+                getMessage: (character) => `눈을 떠보니 ${character.name}의 앞에는 네모난 상자 하나와 여러장의 카드가 있었다.\n상자 위에는 '이 방을 나가서 이 카드들을 곳곳에 숨겨두세요. 다른 사람에게 들키게 되면 죽습니다.'라는 메모가 적혀있었다.\n어떻게 할까요?`,
+                choices: [
+                    {
+                        text: '시키는 대로 몰래 숨겨둔다.',
+                        effect: async (character) => {
+                            const bonus = character.agility * 2;
+                            const target = 50;
+                            const result = await rollDiceWithAnimation(target, "민첩", bonus);
+                            const total = result.roll + bonus;
+                            const isSuccess = total >= target;
+                            
+                            addLog(`${character.name}의 민첩판정: ${total} : ${target} (민첩 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                            
+                            if (isSuccess) {
+                                addLog(`${character.name}은(는) 성공적으로 카드를 숨겼다.`, 'event');
+                            } else {
+                                character.trust = Math.max(0, character.trust - 3);
+                                addLog(`${character.name}은(는) 카드를 숨기는 것을 들켰다. - 신뢰도 -3`, 'penalty');
+                            }
+                        }
+                    },
+                    {
+                        text: '다른 사람이 나타나길 기다렸다가 사실대로 말한다.',
+                        effect: async (character) => {
+                            const bonus = character.charm * 2;
+                            const target = 90;
+                            const result = await rollDiceWithAnimation(target, "매력", bonus);
+                            const total = result.roll + bonus;
+                            const isSuccess = total >= target;
+                            
+                            addLog(`${character.name}의 매력판정: ${total} : ${target} (매력 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                            
+                            if (isSuccess) {
+                                character.trust = Math.min(100, character.trust + 1);
+                                addLog(`${character.name}의 말을 듣고 사람들은 카드를 한 장씩 나눠가졌다. - 신뢰도 +1`, 'heal');
+                            } else {
+                                character.trust = Math.max(0, character.trust - 8);
+                                addLog(`${character.name}의 말을 아무도 믿어주지 않았다. - 신뢰도 -8`, 'penalty');
+                            }
+                        }
+                    }
+                ]
+            },
+            // 벽 너머의 스위치
+            {
+                id: 'soloTrial2',
+                getMessage: (character) => `눈을 떠보니 ${character.name}은(는) 좁은 방 안에 있었다.\n잠시 후 올바른 스위치를 누르기 전까지 벽이 좁아진다는 안내 방송이 흘러나온다.\n어떻게 할까요?`,
+                choices: [
+                    {
+                        text: '방 안의 스위치를 빠르게 전부 누른다.',
+                        effect: async (character) => {
+                            const bonus = character.agility * 2;
+                            const target = Math.floor(Math.random() * 11) + 70; // 70~80
+                            const result = await rollDiceWithAnimation(target, "민첩", bonus);
+                            const total = result.roll + bonus;
+                            const isSuccess = total >= target;
+                            
+                            addLog(`${character.name}의 민첩판정: ${total} : ${target} (민첩 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                            
+                            if (isSuccess) {
+                                const personalityType = getPersonalityType(character.personality);
+                                if (personalityType !== 'activist') {
+                                    character.hp = Math.max(0, character.hp - 10);
+                                    addLog(`${character.name}은(는) 아슬아슬하게 올바른 스위치를 눌렀다. - HP -10`, 'event');
+                                } else {
+                                    addLog(`${character.name}은(는) 아슬아슬하게 올바른 스위치를 눌렀다.`, 'event');
+                                }
+                            } else {
+                                gameState.survivors = gameState.survivors.map(s => 
+                                    s.id === character.id 
+                                        ? { ...s, hp: 0, status: '더미즈' }
+                                        : s
+                                );
+                                addLog(`${character.name}은(는) 다가오는 벽에 압사했다.`, 'death');
+                                addLog(`${character.name}은(는) 더미즈가 되었다.`, 'event');
+                            }
+                        }
+                    },
+                    {
+                        text: '방 안을 자세히 관찰하여 진짜 스위치를 누른다.',
+                        effect: async (character) => {
+                            const bonus = character.intelligence * 2;
+                            const target = Math.floor(Math.random() * 11) + 70; // 70~80
+                            const result = await rollDiceWithAnimation(target, "지능", bonus);
+                            const total = result.roll + bonus;
+                            const isSuccess = total >= target;
+                            
+                            addLog(`${character.name}의 지능판정: ${total} : ${target} (지능 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                            
+                            if (isSuccess) {
+                                const personalityType = getPersonalityType(character.personality);
+                                if (personalityType !== 'egocentric') {
+                                    character.mental = Math.max(0, character.mental - 10);
+                                    addLog(`${character.name}은(는) 아슬아슬하게 올바른 스위치를 눌렀다. - 정신력 -10`, 'event');
+                                } else {
+                                    addLog(`${character.name}은(는) 아슬아슬하게 올바른 스위치를 눌렀다.`, 'event');
+                                }
+                            } else {
+                                gameState.survivors = gameState.survivors.map(s => 
+                                    s.id === character.id 
+                                        ? { ...s, hp: 0, status: '더미즈' }
+                                        : s
+                                );
+                                addLog(`${character.name}은(는) 다가오는 벽에 압사했다.`, 'death');
+                                addLog(`${character.name}은(는) 더미즈가 되었다.`, 'event');
+                            }
+                        }
+                    }
+                ]
+            },
+            // 러시안 룰렛
+            {
+                id: 'soloTrial3',
+                getMessage: (character) => `눈을 떠보니 ${character.name}은(는) 어두운 방 안에 있었다.\n방의 중심에 있는 테이블에는 두 개의 권총이 놓여있었다.\n안내방송에서는 둘 중 하나의 권총에만 총알이 들어있으며,\n 권총을 머리에 겨눈 채 사용해야 문이 열린다고 한다.\n어떻게 해야할까요?`,
+                choices: [
+                    {
+                        text: '오른쪽 권총을 사용한다.',
+                        effect: async (character) => {
+                            const target = 50;
+                            const result = await rollDiceWithAnimation(target, "행운", 0);
+                            const isSuccess = result.roll >= target;
+                            
+                            addLog(`${character.name}의 행운판정: ${result.roll} : ${target}`, isSuccess ? 'success' : 'error');
+                            
+                            if (isSuccess) {
+                                character.mental = Math.max(0, character.mental - 15);
+                                addLog(`${character.name}은(는) 자신이 살아있음에 안도했다. - 정신력 -15`, 'event');
+                            } else {
+                                gameState.survivors = gameState.survivors.map(s => 
+                                    s.id === character.id 
+                                        ? { ...s, hp: 0, status: '더미즈' }
+                                        : s
+                                );
+                                addLog(`${character.name}은(는) 잘못된 선택을 했다.`, 'death');
+                                addLog(`${character.name}은(는) 더미즈가 되었다.`, 'event');
+                            }
+                        }
+                    },
+                    {
+                        text: '왼쪽 권총을 사용한다.',
+                        effect: async (character) => {
+                            const target = 50;
+                            const result = await rollDiceWithAnimation(target, "행운", 0);
+                            const isSuccess = result.roll >= target;
+                            
+                            addLog(`${character.name}의 행운판정: ${result.roll} : ${target}`, isSuccess ? 'success' : 'error');
+                            
+                            if (isSuccess) {
+                                character.mental = Math.max(0, character.mental - 15);
+                                addLog(`${character.name}은(는) 자신이 살아있음에 안도했다. - 정신력 -15`, 'event');
+                            } else {
+                                gameState.survivors = gameState.survivors.map(s => 
+                                    s.id === character.id 
+                                        ? { ...s, hp: 0, status: '더미즈' }
+                                        : s
+                                );
+                                addLog(`${character.name}은(는) 잘못된 선택을 했다.`, 'death');
+                                addLog(`${character.name}은(는) 더미즈가 되었다.`, 'event');
+                            }
+                        }
+                    }
+                ]
+            },
+            // 가시밭 길
+            {
+                id: 'soloTrial4',
+                getMessage: (character) => `눈을 떠보니 ${character.name}은(는) 발목이 구속된 채로 방 한 가운데에 놓여있었다.\n제한시간이 종료되면 천장에 설치된 가시 트랩이 발동할 것이라는 안내 방송이 흘러나온다.\n어떻게 할까요?`,
+                choices: [
+                    {
+                        text: '두려움에 떨며 구속구를 푸는 법을 찾는다.',
+                        condition: (character) => {
+                            const personalityType = getPersonalityType(character.personality);
+                            return personalityType !== 'anxious';
+                        },
+                        disabledText: '(불안형 성격은 선택 불가)',
+                        effect: async (character) => {
+                            const bonus = character.mental >= 95 ? 50 : 0;
+                            const target = Math.floor(Math.random() * 11) + 60; // 60~70
+                            const result = await rollDiceWithAnimation(target, "정신력", bonus);
+                            const total = result.roll + bonus;
+                            const isSuccess = total >= target;
+                            
+                            addLog(`${character.name}의 정신력판정: ${total} : ${target} (보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                            
+                            if (isSuccess) {
+                                character.mental = Math.max(0, character.mental - 10);
+                                addLog(`${character.name}은(는) 가까스로 구속을 풀어냈다. - 정신력 -10`, 'event');
+                            } else {
+                                gameState.survivors = gameState.survivors.map(s => 
+                                    s.id === character.id 
+                                        ? { ...s, hp: 0, status: '더미즈' }
+                                        : s
+                                );
+                                addLog(`${character.name}은(는) 두려움을 이겨내지 못했다.`, 'death');
+                                addLog(`${character.name}은(는) 더미즈가 되었다.`, 'event');
+                            }
+                        }
+                    },
+                    {
+                        text: '침착하게 구속구를 푸는 법을 찾는다.',
+                        effect: async (character) => {
+                            const bonus = character.intelligence * 2;
+                            const target = Math.floor(Math.random() * 11) + 60; // 60~70
+                            const result = await rollDiceWithAnimation(target, "지능", bonus);
+                            const total = result.roll + bonus;
+                            const isSuccess = total >= target;
+                            
+                            addLog(`${character.name}의 지능판정: ${total} : ${target} (지능 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                            
+                            if (isSuccess) {
+                                character.mental = Math.max(0, character.mental - 10);
+                                addLog(`${character.name}은(는) 무사히 구속을 풀어냈다. - 정신력 -10`, 'event');
+                            } else {
+                                gameState.survivors = gameState.survivors.map(s => 
+                                    s.id === character.id 
+                                        ? { ...s, hp: 0, status: '더미즈' }
+                                        : s
+                                );
+                                addLog(`${character.name}은(는) 결국 구속을 풀지 못했다.`, 'death');
+                                addLog(`${character.name}은(는) 더미즈가 되었다.`, 'event');
+                            }
+                        }
+                    }
+                ]
+            }
+        ],
+    
+    // 2인 시련들
+    duo: [
+        {
+            id: 'oneKey',
+            condition: (char1, char2) => {
+                const fav1 = char1.favorability[char2.id] || 0;
+                const fav2 = char2.favorability[char1.id] || 0;
+                return fav1 >= 250 || fav2 >= 250; // 친구 이상
+            },
+            getMessage: (char1, char2) => 
+                `${char1.name}와(과) ${char2.name}은(는) 낯선 방의 침대 위에서 깨어났습니다.\n` +
+                `안내에 따르면 제한시간 이내에 자신이 고정되어있는 침대의 잠금장치를 풀어야 합니다.\n 그러나 사용할 수 있는 열쇠는 단 하나 뿐입니다. 누가 사용할까요?`,
+            choices: [
+                {
+                    getText: (char1, char2) => `${char1.name}이(가) 열쇠를 사용하게 한다. (민첩 판정)`,
+                    effect: async (char1, char2, selectedIndex) => {
+                        const selected = selectedIndex === 0 ? char1 : char2;
+                        const other = selectedIndex === 0 ? char2 : char1;
+                        
+                        const bonus = selected.agility * 2;
+                        const target = 50;
+                        const result = await rollDiceWithAnimation(target, "민첩", bonus);
+                        
+                        const total = result.roll + bonus;
+                        const isSuccess = total >= target;
+
+                        addLog(`${selected.name}의 민첩판정: ${total} : ${target} (민첩 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                        
+                        if (isSuccess) {
+                            char1.favorability[char2.id] = Math.min(1500, (char1.favorability[char2.id] || 50) + 20);
+                            char2.favorability[char1.id] = Math.min(1500, (char2.favorability[char1.id] || 50) + 20);
+                            addLog(`${selected.name}은(는) 트릭을 풀어내 ${other.name}을(를) 무사히 구해냈습니다. - 호감도 +20`, 'heal');
+                        } else {
+                            gameState.survivors = gameState.survivors.map(s => 
+                                    s.id === other.id 
+                                        ? { ...s, hp: 0, isAlive: false }
+                                        : s
+                                );
+                            selected.mental = Math.max(0, (selected.mental || 100) - 30);
+                            addLog(`${selected.name}은(는) 트릭을 풀어내지 못했고, ${other.name}은(는) 사망했습니다. - 정신력 -30`, 'death');
+                            processDeathRelationships(other);
+                        }
+                        updateDisplay();
+                    }
+                },
+                {
+                    getText: (char1, char2) => `${char2.name}이(가) 열쇠를 사용하게 한다. (민첩 판정)`,
+                    effect: async (char1, char2, selectedIndex) => {
+                        const selected = selectedIndex === 0 ? char1 : char2;
+                        const other = selectedIndex === 0 ? char2 : char1;
+                        
+                        const bonus = selected.agility * 2;
+                        const target = 50;
+                        const result = await rollDiceWithAnimation(target, "민첩", bonus);
+                        
+                        const total = result.roll + bonus;
+                        const isSuccess = total >= target;
+
+                        addLog(`${selected.name}의 민첩판정: ${total} : ${target} (민첩 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                        
+                        if (isSuccess) {
+                            char1.favorability[char2.id] = Math.min(1500, (char1.favorability[char2.id] || 50) + 20);
+                            char2.favorability[char1.id] = Math.min(1500, (char2.favorability[char1.id] || 50) + 20);
+                            addLog(`${selected.name}은(는) 트릭을 풀어내 ${other.name}을(를) 무사히 구해냈습니다. - 호감도 +20`, 'heal');
+                        } else {
+                            gameState.survivors = gameState.survivors.map(s => 
+                                    s.id === other.id 
+                                        ? { ...s, hp: 0, isAlive: false }
+                                        : s
+                                );
+                            selected.mental = Math.max(0, (selected.mental || 100) - 30);
+                            addLog(`${selected.name}은(는) 트릭을 풀어내지 못했고, ${other.name}은(는) 사망했습니다. - 정신력 -30`, 'death');
+                            processDeathRelationships(other);
+                        }
+                        updateDisplay();
+                    }
+                }
+            ]
+        },
+        {
+            id: 'twoLegs',
+            condition: () => true, // 조건 없음
+            getMessage: (char1, char2) => 
+                `${char1.name}와(과) ${char2.name}은(는) 홀로 방 안에서 깨어났습니다.\n` +
+                `깨어났을 때 눈앞에 있던 무전기에서는 안내 음성이 흘러나옵니다.\n 들어보니 두 사람이 협력하여 이 최초의 시련을 통과해야한다는 내용이었습니다.\n 어떻게 해야할까요?`,
+            choices: [
+                {
+                    getText: (char1, char2) => `${char1.name}이(가) 의심스러우니 경계한다.`,
+                    effect: async (char1, char2) => {
+                        const suspected = char1;
+                        const suspector = char2;
+                        
+                        const bonus = suspector.intelligence * 2;
+                        const target = 50;
+                        
+                        // 주사위 애니메이션 실행
+                        const result = await rollDiceWithAnimation(target, "지능", bonus);
+                        const total = result.roll + bonus;
+                        const isSuccess = total >= target;
+
+                        addLog(`${suspector.name}의 지능판정: ${total} : ${target} (지능 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                        
+                        if (isSuccess) {
+                            suspected.trust = Math.min(100, (suspected.trust || 50) + 10);
+                            suspector.trust = Math.min(100, (suspector.trust || 50) + 10);
+                            addLog(`${suspector.name}은(는) ${suspected.name}이(가) 의심스러웠지만, 협력하여 시련을 클리어했습니다. - 신뢰도 +10`, 'heal');
+                        } else {
+                            gameState.survivors = gameState.survivors.map(s => 
+                                    s.id === suspected.id 
+                                        ? { ...s, hp: 0, isAlive: false }
+                                        : s
+                                );
+                            suspector.trust = Math.max(0, (suspector.trust || 50) - 10);
+                            addLog(`${suspector.name}은(는) ${suspected.name}이(가) 의심스러워 열려있는 문을 열고 도망쳤습니다.`, 'event');
+                            addLog(`${suspected.name}은(는) 사망했습니다. (${suspector.name} - 신뢰도 -10)`, 'death');
+                            processDeathRelationships(suspected);
+                        }
+                        updateDisplay();
+                    }
+                },
+                {
+                    getText: (char1, char2) => `${char2.name}이(가) 의심스러우니 경계한다.`,
+                    effect: async (char1, char2) => {
+                        const suspected = char2;
+                        const suspector = char1;
+                        
+                        const bonus = suspector.intelligence * 2;
+                        const target = 50;
+                        
+                        // 주사위 애니메이션 실행
+                        const result = await rollDiceWithAnimation(target, "지능", bonus);
+                        const total = result.roll + bonus;
+                        const isSuccess = total >= target;
+
+                        addLog(`${suspector.name}의 지능판정: ${total} : ${target} (지능 보너스: ${bonus})`, isSuccess ? 'success' : 'error');
+                        
+                        if (isSuccess) {
+                            suspector.trust = Math.min(100, (suspector.trust || 50) + 10);
+                            suspected.trust = Math.min(100, (suspected.trust || 50) + 10);
+                            addLog(`${suspector.name}은(는) ${suspected.name}이(가) 의심스러웠지만, 협력하여 시련을 클리어했습니다. - 신뢰도 +10`, 'heal');
+                        } else {
+                            gameState.survivors = gameState.survivors.map(s => 
+                                    s.id === suspected.id 
+                                        ? { ...s, hp: 0, isAlive: false }
+                                        : s
+                                );
+                            suspector.trust = Math.max(0, (suspector.trust || 50) - 10);
+                            addLog(`${suspector.name}은(는) ${suspected.name}이(가) 의심스러워 열려있는 문을 열고 도망쳤습니다.`, 'event');
+                            addLog(`${suspected.name}은(는) 사망했습니다. (${suspector.name} 신뢰도 -10)`, 'death');
+                            processDeathRelationships(suspected);
+                        }
+                        updateDisplay();
+                    }
+                }
+            ]
+        }
+    ]
+};
+
 // 팝업 이벤트 정의
 const POPUP_EVENTS = {
     humanChoice: {
         id: 'humanChoice',
         name: '마지막 선택',
         checkCondition: () => {
-            // 체력 비율 10% 이하인 인간 캐릭터 찾기
             const candidates = gameState.survivors.filter(s => 
                 s.isAlive && 
                 s.status === '인간' && 
@@ -763,12 +1156,12 @@ const POPUP_EVENTS = {
             );
             return candidates.length > 0 ? candidates : null;
         },
-        probability: 0.05, // 5% 확률
+        probability: 0.05,
         getMessage: (character) => `
             <div style="text-align: center; margin-bottom: 10px;">
                 <strong>${character.name}은(는) 자신의 생명이 얼마 남지 않았음을 직감했다.</strong>
                 <br>
-                동료의 도움을 받아 자신의 인형에 ai콜링을 하여 자신의 죽음을 숨기고 모두를 도울지, 죽음을 받아들일 지 고민한다...
+                동료의 도움을 받아 자신의 인형에 ai콜링을 하여 자신의 죽음을 숨기고 모두를 도울지, 죽음을 받아들일지 고민한다...
                 <br>
             </div>
         `,
@@ -796,7 +1189,6 @@ const POPUP_EVENTS = {
                     const bestAlly = allies.reduce((max, s) => 
                         (character.favorability[s.id] || 0) > (character.favorability[max.id] || 0) ? s : max
                     );
-                    
 
                     gameState.survivors = gameState.survivors.map(s => {
                         if (s.id === bestAlly.id) {
@@ -843,7 +1235,7 @@ const POPUP_EVENTS = {
             }
         ]
     },
-        escapeRoute: {
+    escapeRoute: {
         id: 'escapeRoute',
         name: '탈출구 발견',
         checkCondition: () => {
@@ -888,7 +1280,7 @@ const POPUP_EVENTS = {
                     });
                     
                     addLog(`${character.name}이(가) 탈출구 정보를 모두와 공유했다!`, 'event');
-                    addLog(`${character.name}의 신뢰도가 상승했다. (+10)`, 'event');
+                    addLog(`${character.name}의 신뢰도가 상승했다. - 신뢰도 +10`, 'event');
                     addLog(`모든 캐릭터의 ${character.name}에 대한 호감도가 크게 상승했다. - 호감도 +150`, 'event');
                     addLog(`모든 캐릭터들이 탈출구를 알게되었지만, 모두 마음을 모아 탈출구를 통한 탈출을 포기했다.`, 'event');
                 }
@@ -900,16 +1292,16 @@ const POPUP_EVENTS = {
                     return personalityType === 'egocentric' || personalityType === 'anxious';
                 },
                 disabledText: '(자기중심형/불안형 성격만 선택 가능)',
-                effect: (character) => {
-                    const dice1 = Math.floor(Math.random() * 10);
-                    const dice2 = Math.floor(Math.random() * 10);
-                    const total = dice1 * 10 + dice2;
+                effect: async (character) => {
+                    const target = 95;
+                    const result = await rollDiceWithAnimation(target, 0);
+                    const total = result.roll;
                     
                     addLog(`${character.name}이(가) 탈출을 시도한다...`, 'event');
-                    addLog(`🎲 다이스 굴림: [${dice1}][${dice2}] = ${total}`, 'event');
+                    addLog(`탈출 다이스: ${total} : ${target}`, total >= target ? 'success' : 'error');
                     
-                    if (total >= 95) {
-                        addLog(`${character.name}이(가) 성공적으로 탈출했다! (${total}/95)`, 'escape');
+                    if (total >= target) {
+                        addLog(`${character.name}이(가) 성공적으로 탈출했다. (${total}/95)`, 'escape');
                         
                         gameState.survivors = gameState.survivors.map(s => 
                             s.id === character.id ? { ...s, isAlive: false } : s
@@ -921,7 +1313,7 @@ const POPUP_EVENTS = {
                             showEndingScreen([character]);
                         }, 500);
                     } else {
-                        addLog(`탈출구의 끝이 막혀있었다! 탈출 실패 (${total}/95)`, 'event');
+                        addLog(`탈출구의 끝이 막혀있었다. 탈출 실패 (${total}/95)`, 'event');
                         
                         gameState.survivors = gameState.survivors.map(s => {
                             if (s.id === character.id) {
@@ -939,39 +1331,36 @@ const POPUP_EVENTS = {
                             }
                         });
                         
-                        addLog(`${character.name}의 신뢰도가 하락했다. (-10)`, 'penalty');
-                        addLog(`모든 캐릭터의 ${character.name}에 대한 호감도가 크게 하락했다. (-50)`, 'favorability');
+                        addLog(`${character.name}의 신뢰도가 하락했다. -정신력 -10`, 'penalty');
+                        addLog(`모든 캐릭터의 ${character.name}에 대한 호감도가 크게 하락했다. -전 생존자의 호감도 -50`, 'favorability');
                     }
                 }
             },
             {
                 text: '탈출을 고민한다.',
                 condition: () => true,
-                effect: (character) => {
-                    const threshold = Math.floor(Math.random() * 11) + 60; // 60~70
-                    const dice1 = Math.floor(Math.random() * 10);
-                    const dice2 = Math.floor(Math.random() * 10);
-                    const total = dice1 * 10 + dice2;
+                effect: async (character) => {
+                    const threshold = Math.floor(Math.random() * 11) + 60;
+                    const result1 = await rollDiceWithAnimation(threshold, 0);
+                    const total1 = result1.roll;
                     
                     addLog(`${character.name}이(가) 탈출을 고민한다...`, 'event');
-                    addLog(`🎲 결심 다이스: [${dice1}][${dice2}] = ${total}`, 'event');
+                    addLog(`결심 다이스: ${total1} : ${threshold}`, total1 >= threshold ? 'success' : 'error');
                     
-                    if (total < threshold) {
-                        addLog(`${character.name}은(는) 탈출구로 들어가기를 포기했다. (${total}/${threshold})`, 'event');
+                    if (total1 < threshold) {
+                        addLog(`${character.name}은(는) 탈출구로 들어가기를 포기했다. (${total1}/${threshold})`, 'event');
                         return;
                     }
                     
-                    addLog(`${character.name}은(는) 탈출구로 들어가기로 결정했다!(${total}/${threshold})`, 'event');
+                    addLog(`${character.name}은(는) 탈출구로 들어가기로 결정했다!(${total1}/${threshold})`, 'event');
                     
-                    // 실제 탈출 시도
-                    const escapeDice1 = Math.floor(Math.random() * 10);
-                    const escapeDice2 = Math.floor(Math.random() * 10);
-                    const escapeTotal = escapeDice1 * 10 + escapeDice2;
+                    const result2 = await rollDiceWithAnimation(95, 0);
+                    const escapeTotal = result2.roll;
                     
-                    addLog(`🎲 탈출 다이스: [${escapeDice1}][${escapeDice2}] = ${escapeTotal}`, 'event');
+                    addLog(`탈출 다이스: ${escapeTotal} : 95`, escapeTotal >= 95 ? 'success' : 'error');
                     
                     if (escapeTotal >= 95) {
-                        addLog(`${character.name}이(가) 성공적으로 탈출했다! (${escapeTotal}/95)`, 'escape');
+                        addLog(`${character.name}이(가) 성공적으로 탈출했다. (${escapeTotal}/95)`, 'escape');
                         
                         gameState.survivors = gameState.survivors.map(s => 
                             s.id === character.id ? { ...s, isAlive: false } : s
@@ -1001,8 +1390,8 @@ const POPUP_EVENTS = {
                             }
                         });
                         
-                        addLog(`${character.name}의 신뢰도가 하락했다. (-10)`, 'penalty');
-                        addLog(`모든 캐릭터의 ${character.name}에 대한 호감도가 크게 하락했다. (-50)`, 'favorability');
+                        addLog(`${character.name}의 신뢰도가 하락했다. -정신력 -10`, 'penalty');
+                        addLog(`모든 캐릭터의 ${character.name}에 대한 호감도가 크게 하락했다. -전 생존자의 호감도 -50`, 'favorability');
                     }
                 }
             }
@@ -1024,12 +1413,30 @@ function toggleTheme() {
 
 // 초기화
 function init() {
+    // DOM 요소 존재 확인
+    const themeIcon = document.getElementById('themeIcon');
+    const toggleBtn = document.getElementById('toggleBtn');
+    const nextTurnBtn = document.getElementById('nextTurnBtn');
+    const addSurvivorBtn = document.getElementById('addSurvivorBtn');
+    const actionsBtn = document.getElementById('actionsBtn');
+    const relationshipsBtn = document.getElementById('relationshipsBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
+    
+    // 필수 요소가 없으면 조기 종료
+    if (!toggleBtn || !nextTurnBtn || !addSurvivorBtn) {
+        console.error('필수 DOM 요소를 찾을 수 없습니다.');
+        return;
+    }
+    
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light') {
         document.body.classList.add('light-mode');
     }
     
-    lucide.createIcons();
+    if (themeIcon) {
+        lucide.createIcons();
+    }
+    
     setupEventListeners();
     autoLoadData();
     updateDisplay();
@@ -1037,12 +1444,34 @@ function init() {
 
 // 이벤트 리스너 설정
 function setupEventListeners() {
-    document.getElementById('toggleBtn').addEventListener('click', toggleSimulation);
-    document.getElementById('nextTurnBtn').addEventListener('click', () => !gameState.isRunning && processTurn());
-    document.getElementById('addSurvivorBtn').addEventListener('click', () => showAddSurvivorPopup());
-    document.getElementById('actionsBtn').addEventListener('click', () => showPopup('actions'));
-    document.getElementById('relationshipsBtn').addEventListener('click', () => showPopup('relationships'));
-    document.getElementById('settingsBtn').addEventListener('click', () => showPopup('settings'));
+    const elements = {
+        toggleBtn: document.getElementById('toggleBtn'),
+        nextTurnBtn: document.getElementById('nextTurnBtn'),
+        addSurvivorBtn: document.getElementById('addSurvivorBtn'),
+        actionsBtn: document.getElementById('actionsBtn'),
+        relationshipsBtn: document.getElementById('relationshipsBtn'),
+        settingsBtn: document.getElementById('settingsBtn')
+    };
+    
+    // 각 요소가 존재할 때만 이벤트 리스너 추가
+    if (elements.toggleBtn) {
+        elements.toggleBtn.addEventListener('click', toggleSimulation);
+    }
+    if (elements.nextTurnBtn) {
+        elements.nextTurnBtn.addEventListener('click', () => !gameState.isRunning && processTurn());
+    }
+    if (elements.addSurvivorBtn) {
+        elements.addSurvivorBtn.addEventListener('click', () => showAddSurvivorPopup());
+    }
+    if (elements.actionsBtn) {
+        elements.actionsBtn.addEventListener('click', () => showPopup('actions'));
+    }
+    if (elements.relationshipsBtn) {
+        elements.relationshipsBtn.addEventListener('click', () => showPopup('relationships'));
+    }
+    if (elements.settingsBtn) {
+        elements.settingsBtn.addEventListener('click', () => showPopup('settings'));
+    }
 }
 
 // 시뮬레이션 토글
@@ -1077,10 +1506,31 @@ function runSimulation() {
 
 // 턴 처리
 function processTurn() {
+    // 0턴
+    if (gameState.turn === 0) {
+        gameState.hasStarted = true;
+        addLog('=== 시뮬레이션 시작 ===', 'phase');
+        addLog('=== 턴 1: 최초의 시련 시작 ===', 'phase');
+        
+        gameState.turn = 1;
+        updateDisplay();
+        
+        const aliveSurvivors = gameState.survivors.filter(s => s.isAlive);
+        const remainingSurvivors = aliveSurvivors.filter(s => !gameState.initialTrialPopupsShown[s.id]);
+        
+        if (remainingSurvivors.length > 0) {
+            setTimeout(() => {
+                processInitialTrial();
+            }, 300);
+        } else {
+            addLog(`=== 턴 ${gameState.turn}: 최초의 시련 완료 ===`, 'phase');
+        }
+        
+        return;
+    }
     
     initializeTurnDialogues();
 
-    // 생존자 2명 이하 체크 - 즉시 승리
     const aliveSurvivors = gameState.survivors.filter(s => s.isAlive);
     if (aliveSurvivors.length <= 2 && aliveSurvivors.length > 0) {
         addLog('생존자가 2명 이하가 되었다!', 'game-end');
@@ -1097,34 +1547,12 @@ function processTurn() {
         return;
     }
 
-    checkPopupEvents();
-
-    // actualTurn이 3일 때 체력 100% 회복
-    if (gameState.actualTurn === 3) {
-        gameState.survivors = gameState.survivors.map(s => {
-            if (!s.isAlive) return s;
-            
-            const oldHp = s.hp;
-            const newHp = s.maxHp;
-            
-            if (oldHp < newHp) {
-                addLog(`${s.name}의 체력이 완전히 회복되었다. (HP +${newHp - oldHp})`, 'heal');
-            }
-            
-            return { ...s, hp: newHp };
-        });
+    if (gameState.turn !== 0) {
+        checkPopupEvents();
     }
-
-    // 패닉 상태 체크 (턴 시작 시)
-    checkPanicState();
     
-    // 패닉 효과 처리
-    processPanicEffects();
-    
-    // === 자유 행동 처리 ===
     gameState.survivors.forEach(s => {
         if (s.isAlive && !s.isPanic) {
-            // currentAction이 없거나 'free'인 경우만 자유 행동
             if (!s.currentAction || s.currentAction === 'free') {
                 processSingleFreeAction(s);
             }
@@ -1132,36 +1560,29 @@ function processTurn() {
     });
     
     processFavorabilityChanges();
-    
-    // 패닉 상태 재체크 (행동 후)
     checkPanicState();
 
-    // === 게임 페이즈별 처리 ===
-    if (gameState.turn <= 2) {
-        processInitialTrial();
+    // === 게임 페이즈별 처리 수정 ===
+   const cyclePosition = ((gameState.turn - 1) % 13) + 1;
+
+    if (cyclePosition === 1) {
+        // 1턴, 14턴, 27턴... : 서브게임 시작
+        startSubGame();
     } 
-    else {
-        const cyclePosition = ((gameState.turn - 3) % 13) + 1;
-        
-        if (cyclePosition === 1) {
-            startSubGame();
-        } 
-        else if (cyclePosition >= 2 && cyclePosition <= 10) {
-            processSubGame();
-        } 
-        else if (cyclePosition >= 11 && cyclePosition <= 13) {
-            processMainGame();
-        }
+    else if (cyclePosition >= 2 && cyclePosition <= 10) {
+        // 2~10턴, 15~23턴... : 서브게임 진행
+        processSubGame();
+    } 
+    else if (cyclePosition >= 11 && cyclePosition <= 13) {
+        // 11~13턴, 24~26턴... : 메인게임 진행
+        processMainGame();
     }
 
-
-    // === 턴 종료 처리 ===
+    // 턴 종료 처리
     gameState.survivors.forEach(s => {
         if (!s.isAlive) return;
-        
         const jobSkill = JOB_SKILLS[s.job];
         
-        // 거지: [적선 구걸]
         if (jobSkill && jobSkill.name === '적선 구걸') {
             const others = gameState.survivors
                 .filter(other => other.isAlive && other.id !== s.id)
@@ -1177,16 +1598,14 @@ function processTurn() {
             }
         }
         
-        // 미용사: [이미지 메이킹]
         if (jobSkill && jobSkill.name === '이미지 메이킹') {
             const trustBonus = Math.floor(s.charm * 0.5);
             s.trust = Math.min(100, s.trust + trustBonus);
             if (trustBonus > 0) {
-                addLog(`${s.name}의 '이미지 메이킹' 발동! (신뢰도 +${trustBonus})`, 'event');
+                addLog(`${s.name}의 '이미지 메이킹' 발동! - 신뢰도 +${trustBonus}`, 'event');
             }
         }
         
-        // 조향사: [심신 안정]
         if (jobSkill && jobSkill.name === '심신 안정') {
             gameState.survivors.forEach(target => {
                 if (target.isAlive && target.isPanic && target.id !== s.id) {
@@ -1196,7 +1615,6 @@ function processTurn() {
             });
         }
         
-        // 비서: [일정 관리]
         if (jobSkill && jobSkill.name === '일정 관리') {
             let maxFav = -Infinity;
             let topTarget = null;
@@ -1214,7 +1632,6 @@ function processTurn() {
             }
         }
         
-        // 가수: [위로의 노래]
         if (jobSkill && jobSkill.name === '위로의 노래' && gameState.subGameType === 'banquet') {
             gameState.survivors.forEach(target => {
                 if (target.isAlive && target.skills.includes('생존본능') && target.id !== s.id) {
@@ -1224,22 +1641,16 @@ function processTurn() {
             });
         }
         
-        // 스님: [살상 유탁]
-        if (jobSkill && jobSkill.name === '살상 유탁') {
+        if (jobSkill && jobSkill.name === '살상 유택') {
             s.mental = Math.min(s.maxMental, s.mental + 5);
-            addLog(`${s.name}의 '살상 유탁' 발동! (정신력 +5)`, 'event');
+            addLog(`${s.name}의 '살상 유택' 발동! - 정신력 +5`, 'event');
         }
     });
 
-    // 턴 증가
     gameState.turn++;
-    gameState.actualTurn++;
 
-    // 다음 턴을 위해 행동 초기화 및 자유 행동 재할당
     assignFreeActions();
-    
     updateDisplay();
-
     autoSaveData();
 }
 
@@ -1477,7 +1888,7 @@ function processSingleFreeAction(s) {
     const jobSkill = JOB_SKILLS[s.job];
     if (jobSkill && jobSkill.name === '알뜰살뜰' && script.trust > 0) {
         if (Math.random() < 0.3) {
-            addLog(`${s.name}의 '알뜰살뜰' 발동! (신뢰도 추가 상승)`, 'event');
+            addLog(`${s.name}의 '알뜰살뜰' 발동! - 신뢰도 추가 상승`, 'event');
             trustChange += 5;
         }
     }
@@ -1601,7 +2012,7 @@ function processPanicEffects() {
         if (hpDamage > 0) {
             addLog(`${s.name}은(는) 패닉 상태로 체력이 감소하고 정신력이 회복되었다. (HP -${hpDamage}, 정신력 +1)`, 'panic');
         } else {
-            addLog(`${s.name}은(는) 패닉 상태지만 체력 피해를 받지 않았다. (정신력 +1)`, 'panic');
+            addLog(`${s.name}은(는) 패닉 상태지만 체력 피해를 받지 않았다. - 정신력 +1`, 'panic');
         }
         
         // 체력이 0이 되면 즉시 사망 처리 및 로그 추가
@@ -1672,7 +2083,7 @@ function processFreeActions() {
         // 주부: [알뜰살뜰]
         if (jobSkill && jobSkill.name === '알뜰살뜰' && script.trust > 0) {
             if (Math.random() < 0.3) {
-                addLog(`${s.name}의 '알뜰살뜰' 발동! (신뢰도 추가 상승)`, 'event');
+                addLog(`${s.name}의 '알뜰살뜰' 발동! - 신뢰도 추가 상승`, 'event');
                 trustChange += 5;
             }
         }
@@ -1765,11 +2176,11 @@ function addDialogue(survivor, emotionType, probability) {
     if (Math.random() > probability) return;
     
     // 턴별 대사 초기화
-    if (!gameState.turnDialogues[gameState.actualTurn]) {
-        gameState.turnDialogues[gameState.actualTurn] = {};
+    if (!gameState.turnDialogues[gameState.turn]) {
+        gameState.turnDialogues[gameState.turn] = {};
     }
     
-    const turnData = gameState.turnDialogues[gameState.actualTurn];
+    const turnData = gameState.turnDialogues[gameState.turn];
     
     // 해당 캐릭터가 이번 턴에 이미 2회 대사를 했는지 체크
     if (!turnData[survivor.id]) {
@@ -1807,8 +2218,8 @@ function initializeTurnDialogues() {
     }
     
     // 현재 턴의 대사 기록 초기화
-    if (!gameState.turnDialogues[gameState.actualTurn]) {
-        gameState.turnDialogues[gameState.actualTurn] = {};
+    if (!gameState.turnDialogues[gameState.turn]) {
+        gameState.turnDialogues[gameState.turn] = {};
     }
 }
 
@@ -1844,7 +2255,7 @@ function processDeathRelationships(deadSurvivor) {
         if (relation && familyRelations.includes(relation)) {
             const mentalLoss = Math.floor(s.maxMental * 0.1);
             s.mental = Math.max(0, s.mental - mentalLoss);
-            addLog(`${s.name}은(는) ${deadSurvivor.name}의 죽음에 큰 충격을 받았다. (정신력 -${mentalLoss})`, 'damage');
+            addLog(`${s.name}은(는) ${deadSurvivor.name}의 죽음에 큰 충격을 받았다. - 정신력 -${mentalLoss}`, 'damage');
         }
     });
 }
@@ -1947,7 +2358,7 @@ function processFavorabilityChanges() {
                 return s;
             });
             
-            addLog(`${person1.name}와(과) ${person2.name}은(는) ${script} (호감도 ${change}) [어색함 2턴]`, 'favorability');
+            addLog(`${person1.name}와(과) ${person2.name}은(는) ${script} - 호감도 ${change} [어색함 2턴]`, 'favorability');
             
             // 큰 싸움 발생 시 분노 대사
             addDialogue(person1, 'anger', 0.8);
@@ -1984,7 +2395,7 @@ function processFavorabilityChanges() {
                 addDialogue(person1, 'sorrow', 0.3);
             }
             
-            addLog(`${person1.name}와(과) ${person2.name}은(는) ${script} (호감도 ${change > 0 ? '+' : ''}${change})`, 'favorability');
+            addLog(`${person1.name}와(과) ${person2.name}은(는) ${script} - 호감도 ${change > 0 ? '+' : ''}${change}`, 'favorability');
         }
         
         gameState.survivors = gameState.survivors.map(s => {
@@ -2028,42 +2439,310 @@ function assignFreeActions() {
     });
 }
 
-// 최초의 시련
+// 최초의 시련 처리 함수
 function processInitialTrial() {
-    gameState.survivors = gameState.survivors.map(s => {
-        if (!s.isAlive) return s;
-        
-        let damage = Math.floor(s.maxHp * (0.1 + Math.random() * 0.4));
-        
-        // 민첩 8 이상: 체력 감소 시 5포인트 방어
-        if (s.agility >= 8) {
-            damage = Math.max(0, damage - 5);
-            addLog(`${s.name}의 높은 민첩으로 피해 5 감소!`, 'event');
-        }
-        
-        const newHp = Math.max(0, s.hp - damage);
-        
-        if (newHp === 0) {
-            addLog(`${s.name}이(가) 사망했다... (${damage} 데미지)`, 'death');
-            return { ...s, hp: 0, isAlive: false };
-        } else {
-            addLog(`${s.name}이(가) ${damage}의 데미지를 입었다. (HP: ${newHp}/${s.maxHp})`, 'damage');
-            return { ...s, hp: newHp };
-        }
-    });
+    const aliveSurvivors = gameState.survivors.filter(s => s.isAlive);
+    const remainingSurvivors = aliveSurvivors.filter(s => !gameState.initialTrialPopupsShown[s.id]);
     
-    addLog(`=== 턴 ${gameState.actualTurn}: 최초의 시련 ===`, 'phase');
+    if (remainingSurvivors.length === 0) {
+        addLog(`=== 턴 ${gameState.turn}: 모든 최초의 시련 완료 ===`, 'phase');
+        return;
+    }
+
+    if (gameState.isRunning) stopSimulation();
+
+    // --- [최우선 단계] 특별 관계(가족 등) 2인 매칭 ---
+    // 아직 시련을 안 본 사람 중 서로 호감도가 250 이상인 후보가 있는지 확인
+    let specialPair = null;
+    for (let i = 0; i < remainingSurvivors.length; i++) {
+        for (let j = i + 1; j < remainingSurvivors.length; j++) {
+            const s1 = remainingSurvivors[i];
+            const s2 = remainingSurvivors[j];
+            
+            // 80이 아니라 250으로 수정하여 '친구' 관계인 쌍만 먼저 찾음
+            const f1 = s1.favorability[s2.id] || 0;
+            const f2 = s2.favorability[s1.id] || 0;
+            
+            if (f1 >= 250 || f2 >= 250) { 
+                specialPair = [s1, s2];
+                break; 
+            }
+        }
+        if (specialPair) break;
+    }
+
+    // 만약 특별 관계가 발견되면 과반수 여부와 상관없이 즉시 2인 시련 실행
+    if (specialPair) {
+        const char1 = specialPair[0];
+        const char2 = specialPair[1];
+        const trial = INITIAL_TRIAL_EVENTS.duo.find(e => e.condition(char1, char2));
+        startDuoTrial(trial, char1, char2);
+        return;
+    }
+
+    // --- [일반 단계] 특별 관계가 없을 때 기존 로직 수행 ---
+    const totalCount = aliveSurvivors.length;
+    const completedCount = Object.keys(gameState.initialTrialPopupsShown).length;
+    const isOverHalf = completedCount >= Math.ceil(totalCount / 2);
+
+    // 과반수 미만: 1인 시련
+    if (!isOverHalf) {
+        const soloCandidate = remainingSurvivors.find(survivor => {
+            return !aliveSurvivors.some(other => 
+                other.id !== survivor.id && (survivor.favorability[other.id] || 0) >= 80
+            );
+        });
+
+        if (soloCandidate) {
+            startSoloTrial(soloCandidate);
+            return;
+        }
+    }
+
+    // 과반수 이상 또는 1인 대상 없음: 일반 2인 매칭
+    if (remainingSurvivors.length >= 2) {
+    const shuffled = [...remainingSurvivors].sort(() => Math.random() - 0.5);
+    const char1 = shuffled[0];
+    const char2 = shuffled[1];
+
+    // 1. 조건(호감도 250 등)에 맞는 이벤트가 있는지 찾음
+    let trial = INITIAL_TRIAL_EVENTS.duo.find(e => e.condition && e.condition(char1, char2));
+
+    // 2. 만약 조건에 맞는 게 없다면 (친구가 아니라면) 기본 이벤트(twoLegs) 실행
+    if (!trial) {
+        trial = INITIAL_TRIAL_EVENTS.duo.find(e => e.id === 'twoLegs');
+    }
+
+    startDuoTrial(trial, char1, char2);
+}
+}
+
+// 가독성을 위한 헬퍼 함수들
+function startSoloTrial(survivor) {
+    const trial = INITIAL_TRIAL_EVENTS.solo[Math.floor(Math.random() * INITIAL_TRIAL_EVENTS.solo.length)];
+    showSoloTrialPopup(trial, survivor);
+    gameState.initialTrialPopupsShown[survivor.id] = true;
+}
+
+function startDuoTrial(trial, c1, c2) {
+    showDuoTrialPopup(trial, c1, c2);
+    gameState.initialTrialPopupsShown[c1.id] = true;
+    gameState.initialTrialPopupsShown[c2.id] = true;
+}
+
+function stopSimulation() {
+    gameState.isRunning = false;
+    const btn = document.getElementById('toggleBtn');
+    if (btn) {
+        btn.innerHTML = '<i data-lucide="play"></i><span>시작</span>';
+        lucide.createIcons();
+    }
+    if (gameState.timer) {
+        clearTimeout(gameState.timer);
+        gameState.timer = null;
+    }
+}
+
+// 1인 시련 팝업
+function showSoloTrialPopup(event, character) {
+    const container = document.getElementById('popupContainer');
     
-    // 최초의 시련 후 생존자 수 체크
+    // 이벤트 제목 매핑
+    const eventTitles = {
+        'soloTrial1': '최초의 시련 - 카드 숨기기',
+        'soloTrial2': '최초의 시련 - 벽 너머의 스위치',
+        'soloTrial3': '최초의 시련 - 러시안 룰렛',
+        'soloTrial3': '최초의 시련 - 가시밭길'
+    };
+    
+    const choicesHTML = event.choices.map((choice, index) => `
+        <button 
+            class="btn btn-green" 
+            style="width: 100%; margin-bottom: 0.5rem; color: var(--text-primary);"
+            onclick="selectSoloTrialChoice(${index}, ${character.id}, '${event.id}')">
+            ${choice.text}
+        </button>
+    `).join('');
+    
+    container.innerHTML = `
+        <div class="popup-overlay">
+            <div class="popup" onclick="event.stopPropagation()">
+                <div class="popup-header">
+                    <h2 class="popup-title">${eventTitles[event.id] || '최초의 시련'}</h2>
+                </div>
+                <div class="popup-content">
+                    <div class="form">
+                        ${character.image && character.image !== 'data:,' && character.image !== '' 
+                            ? `<img src="${character.image}" alt="${character.name}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 1rem;">`
+                            : `<div style="width: 100px; height: 100px; border-radius: 50%; background-color: ${getRandomColor(character.id)}; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                                <i data-lucide="user" size="48" color="white"></i>
+                            </div>`
+                        }
+                        <p style="text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem; line-height: 1.6; white-space: pre-line;">
+                            ${event.getMessage(character)}
+                        </p>
+                        ${choicesHTML}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    lucide.createIcons();
+}
+
+// 2인 시련 팝업
+function showDuoTrialPopup(event, char1, char2) {
+    const container = document.getElementById('popupContainer');
+    
+    // 이벤트 제목 매핑
+    const eventTitles = {
+        'oneKey': '최초의 시련 - 하나의 열쇠',
+        'twoLegs': '최초의 시련 - 2인 1각'
+    };
+    
+    const choicesHTML = event.choices.map((choice, index) => `
+        <button 
+            class="btn btn-green" 
+            style="width: 100%; margin-bottom: 0.5rem; color: var(--text-primary);"
+            onclick="selectDuoTrialChoice(${index}, ${char1.id}, ${char2.id}, '${event.id}')">
+            ${choice.getText(char1, char2)}
+        </button>
+    `).join('');
+    
+    container.innerHTML = `
+        <div class="popup-overlay">
+            <div class="popup" onclick="event.stopPropagation()">
+                <div class="popup-header">
+                    <h2 class="popup-title">${eventTitles[event.id] || '최초의 시련'}</h2>
+                </div>
+                <div class="popup-content">
+                    <div class="form">
+                        <div style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 1rem;">
+                            <div style="text-align: center;">
+                                ${char1.image && char1.image !== 'data:,' && char1.image !== '' 
+                                    ? `<img src="${char1.image}" alt="${char1.name}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">`
+                                    : `<div style="width: 80px; height: 80px; border-radius: 50%; background-color: ${getRandomColor(char1.id)}; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                        <i data-lucide="user" size="40" color="white"></i>
+                                    </div>`
+                                }
+                                <div style="margin-top: 0.5rem; font-weight: bold;">${char1.name}</div>
+                            </div>
+                            <div style="text-align: center;">
+                                ${char2.image && char2.image !== 'data:,' && char2.image !== '' 
+                                    ? `<img src="${char2.image}" alt="${char2.name}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">`
+                                    : `<div style="width: 80px; height: 80px; border-radius: 50%; background-color: ${getRandomColor(char2.id)}; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                        <i data-lucide="user" size="40" color="white"></i>
+                                    </div>`
+                                }
+                                <div style="margin-top: 0.5rem; font-weight: bold;">${char2.name}</div>
+                            </div>
+                        </div>
+                        <p style="text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem; line-height: 1.6; white-space: pre-line;">
+                            ${event.getMessage(char1, char2)}
+                        </p>
+                        ${choicesHTML}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    lucide.createIcons();
+}
+
+// 1인 시련 선택 처리
+function selectSoloTrialChoice(choiceIndex, characterId, eventId) {
+    const event = INITIAL_TRIAL_EVENTS.solo.find(e => e.id === eventId);
+    const character = gameState.survivors.find(s => s.id === characterId);
+    
+    if (!event || !character) return;
+    
+    const choice = event.choices[choiceIndex];
+    
+    gameState.survivors = gameState.survivors.map(s => 
+        s.id === characterId ? character : s
+    );
+    
+    choice.effect(character);
+    
+    document.getElementById('popupContainer').innerHTML = '';
+    updateDisplay();
+    
+    // 생존자 체크
     const aliveSurvivors = gameState.survivors.filter(s => s.isAlive);
     if (aliveSurvivors.length <= 2 && aliveSurvivors.length > 0) {
         gameState.isRunning = false;
         setTimeout(() => {
-            addLog('생존자가 2명 이하가 되었다!', 'game-end');
+            addLog('생존자가 2명 이하가 되었다.', 'game-end');
             showEndingScreen(aliveSurvivors);
         }, 500);
+        return;
     }
+    
+    // 다음 생존자 시련 진행
+    setTimeout(() => {
+        const stillRemaining = gameState.survivors.filter(s => 
+            s.isAlive && !gameState.initialTrialPopupsShown[s.id]
+        );
+        
+        if (stillRemaining.length === 0) {
+            // 모든 판정이 끝났을 때 로그 출력
+            addLog(`=== 턴 ${gameState.turn}: 모든 최초의 시련 완료 ===`, 'phase');
+        } else {
+            processInitialTrial();
+        }
+    }, 500);
 }
+
+// 2인 시련 선택 처리
+function selectDuoTrialChoice(choiceIndex, char1Id, char2Id, eventId) {
+    const event = INITIAL_TRIAL_EVENTS.duo.find(e => e.id === eventId);
+    const char1 = gameState.survivors.find(s => s.id === char1Id);
+    const char2 = gameState.survivors.find(s => s.id === char2Id);
+    
+    if (!event || !char1 || !char2) return;
+    
+    const choice = event.choices[choiceIndex];
+    
+    gameState.survivors = gameState.survivors.map(s => {
+        if (s.id === char1Id) return char1;
+        if (s.id === char2Id) return char2;
+        return s;
+    });
+    
+    choice.effect(char1, char2, choiceIndex);
+    
+    document.getElementById('popupContainer').innerHTML = '';
+    updateDisplay();
+    
+    // 생존자 체크
+    const aliveSurvivors = gameState.survivors.filter(s => s.isAlive);
+    if (aliveSurvivors.length <= 2 && aliveSurvivors.length > 0) {
+        gameState.isRunning = false;
+        setTimeout(() => {
+            addLog('생존자가 2명 이하가 되었다.', 'game-end');
+            showEndingScreen(aliveSurvivors);
+        }, 500);
+        return;
+    }
+    
+    // 다음 생존자 시련 진행
+    setTimeout(() => {
+        const stillRemaining = gameState.survivors.filter(s => 
+            s.isAlive && !gameState.initialTrialPopupsShown[s.id]
+        );
+        
+        if (stillRemaining.length === 0) {
+            // 모든 판정이 끝났을 때 로그 출력
+            addLog(`=== 턴 ${gameState.turn}: 모든 최초의 시련 완료 ===`, 'phase');
+        } else {
+            processInitialTrial();
+        }
+    }, 500);
+}
+
+
 
 // 서브게임 시작
 function startSubGame() {
@@ -2100,7 +2779,7 @@ function startSubGame() {
         });
     }
     
-    addLog(`=== 턴 ${gameState.actualTurn}: ${gameNames[selectedGame]} 시작 ===`, 'phase');
+    addLog(`=== 턴 ${gameState.turn}: ${gameNames[selectedGame]} 시작 ===`, 'phase');
     
     // 게임 설명 추가
     if (selectedGame === 'trust') {
@@ -2173,7 +2852,7 @@ function processTalkAction(survivor) {
         addDialogue(target, 'anger', 0.5);
     }
     
-    addLog(`${survivor.name}이(가) ${target.name}와(과) 대화했다. ${resultMessage} (호감도 ${finalChange > 0 ? '+' : ''}${finalChange})`, 'action');
+    addLog(`${survivor.name}이(가) ${target.name}와(과) 대화했다. ${resultMessage} - 호감도 ${finalChange > 0 ? '+' : ''}${finalChange}`, 'action');
     
     // 바텐더 스킬: 취중 진담
     const jobSkill = JOB_SKILLS[survivor.job];
@@ -2274,7 +2953,7 @@ function processSubGame() {
                         updated.trust += 8;
                         target.trust = Math.min(100, target.trust + 5);
                         
-                        addLog(`${s.name}의 동맹 제의를 ${target.name}이(가) 수락했다. (호감도 +25, 신뢰도 상승)`, 'alliance');
+                        addLog(`${s.name}의 동맹 제의를 ${target.name}이(가) 수락했다. - 호감도 +25, 신뢰도 상승`, 'alliance');
                     } else {
                         // 거절
                         updated.favorability[target.id] = Math.max(-200, (updated.favorability[target.id] || 50) - 10);
@@ -2283,7 +2962,7 @@ function processSubGame() {
                         updated.trust = Math.max(0, updated.trust - 5);
                         updated.mental = Math.max(0, updated.mental - 10);
                         
-                        addLog(`${s.name}의 동맹 제의를 ${target.name}이(가) 거절했다. (호감도 -10, 신뢰도/정신력 감소)`, 'alliance');
+                        addLog(`${s.name}의 동맹 제의를 ${target.name}이(가) 거절했다. - 호감도 -10, 신뢰도/정신력 감소`, 'alliance');
                     }
                 } else {
                     addLog(`${s.name}은(는) 이미 모두와 동맹상태다.`, 'fail');
@@ -2293,7 +2972,7 @@ function processSubGame() {
         const jobSkill = JOB_SKILLS[s.job];
         if (jobSkill && jobSkill.name === '초과 근무' && updated.mental >= 10) {
             updated.mental -= 10;
-            addLog(`${s.name}의 '초과 근무' 발동! (정신력 -10, 추가 행동)`, 'event');
+            addLog(`${s.name}의 '초과 근무' 발동! - 정신력 -10, 추가 행동`, 'event');
         }
 
         updated.trust = Math.max(0, Math.min(100, updated.trust));
@@ -2377,7 +3056,7 @@ function processSubGame() {
         endSubGame();
     }
     
-    addLog(`=== 턴 ${gameState.actualTurn}: 서브게임 진행 중 ===`, 'phase');
+    addLog(`=== 턴 ${gameState.turn}: 서브게임 진행 중 ===`, 'phase');
 }
 
 // 서브게임 액션 처리
@@ -2558,7 +3237,7 @@ function endSubGame() {
         
         lowest.hp = Math.max(0, lowest.hp - hpDamage);
         lowest.mental = Math.max(0, lowest.mental - mentalDamage);
-        addLog(`${lowest.name}이(가) 최하위로 체력 ${hpDamage}, 정신력 ${mentalDamage}의 피해를 입었다!`, 'penalty');
+        addLog(`${lowest.name}이(가) 최하위로 체력 ${hpDamage}, 정신력 ${mentalDamage}의 피해를 입었다.`, 'penalty');
 
         // 최상위 보상
         const rewardType = Math.random();
@@ -2572,7 +3251,7 @@ function endSubGame() {
             if (highest[stat] < 10) {
                 highest[stat]++;
                 statGained = true;
-                addLog(`${highest.name}이(가) ${stat} 스탯을 획득했다!`, 'reward');
+                addLog(`${highest.name}이(가) ${stat} 스탯을 획득했다.`, 'reward');
             }
         } else if (rewardType < 0.8) {
             // 스킬만
@@ -2580,7 +3259,7 @@ function endSubGame() {
             if (!highest.skills.includes(tempSkill)) {
                 highest.skills.push(tempSkill);
                 skillGained = true;
-                addLog(`${highest.name}이(가) 임시 스킬을 획득했다!`, 'reward');
+                addLog(`${highest.name}이(가) 임시 스킬을 획득했다.`, 'reward');
             }
         } else {
             // 둘 다
@@ -2596,7 +3275,7 @@ function endSubGame() {
                 skillGained = true;
             }
             if (statGained || skillGained) {
-                addLog(`${highest.name}이(가) 스탯과 스킬을 모두 획득했다!`, 'reward');
+                addLog(`${highest.name}이(가) 스탯과 스킬을 모두 획득했다.`, 'reward');
             }
         }
         
@@ -2626,7 +3305,7 @@ function endSubGame() {
             if (!highest.skills.includes(bonusSkill)) {
                 highest.skills.push(bonusSkill);
                 highest.mental = Math.min(highest.maxMental, highest.mental + 2);
-                addLog(`${highest.name}의 높은 지능으로 추가 스킬 획득! (정신력 +2)`, 'reward');
+                addLog(`${highest.name}의 높은 지능으로 추가 스킬 획득! - 정신력 +2`, 'reward');
             }
         }
         
@@ -2657,14 +3336,14 @@ function endSubGame() {
                     if (completedSurvivor[stat] < 10) {
                         completedSurvivor[stat]++;
                         statGained = true;
-                        addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 ${stat} 스탯을 획득했다!`, 'reward');
+                        addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 ${stat} 스탯을 획득했다.`, 'reward');
                     }
                 } else if (rewardType < 0.8) {
                     const tempSkill = '인형의축복(임시)';
                     if (!completedSurvivor.skills.includes(tempSkill)) {
                         completedSurvivor.skills.push(tempSkill);
                         skillGained = true;
-                        addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 임시 스킬을 획득했다!`, 'reward');
+                        addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 임시 스킬을 획득했다.`, 'reward');
                     }
                 } else {
                     const stats = ['strength', 'agility', 'intelligence', 'charisma', 'charm'];
@@ -2679,7 +3358,7 @@ function endSubGame() {
                         skillGained = true;
                     }
                     if (statGained || skillGained) {
-                        addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 스탯과 스킬을 모두 획득했다!`, 'reward');
+                        addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 스탯과 스킬을 모두 획득했다.`, 'reward');
                     }
                 }
                 
@@ -2729,7 +3408,7 @@ function endSubGame() {
                     if (!completedSurvivor.skills.includes(bonusSkill)) {
                         completedSurvivor.skills.push(bonusSkill);
                         completedSurvivor.mental = Math.min(completedSurvivor.maxMental, completedSurvivor.mental + 2);
-                        addLog(`${completedSurvivor.name}의 높은 지능으로 추가 스킬 획득! (정신력 +2)`, 'reward');
+                        addLog(`${completedSurvivor.name}의 높은 지능으로 추가 스킬 획득! - 정신력 +2`, 'reward');
                     }
                 }
             } else {
@@ -2743,7 +3422,7 @@ function endSubGame() {
                 }
                 
                 completedSurvivor.hp = Math.max(0, completedSurvivor.hp - hpDamage);
-                addLog(`${completedSurvivor.name}이(가) 인형을 완성했지만 ${hpDamage}의 체력 피해를 입었다!`, 'penalty');
+                addLog(`${completedSurvivor.name}이(가) 인형을 완성했지만 ${hpDamage}의 체력 피해를 입었다.`, 'penalty');
             }
         }
         
@@ -2800,10 +3479,12 @@ function assignRoles() {
 
 // 메인게임 처리
 function processMainGame() {
-    const cyclePosition = ((gameState.turn - 3) % 13) + 1;
-    if (cyclePosition === 11) {
-        gameState.gamePhase = 'main';
+    const cyclePosition = ((gameState.turn - 2) % 13) + 1;
+    if (cyclePosition === 10) {
+         gameState.gamePhase = 'main';
         assignRoles();
+    } else {
+        gameState.gamePhase = 'main';
     }
 
     gameState.survivors = gameState.survivors.map(s => {
@@ -2820,7 +3501,6 @@ function processMainGame() {
             const changeText = diff !== 0 ? ` (신뢰도 ${diff > 0 ? '+' : ''}${diff})` : '';
             addLog(`${s.name}이(가) 행동했다.${changeText}`, 'action');
         } else if (s.currentAction === 'talk') {
-            // 메인게임에서도 대화하기 가능
             processTalkAction(updated);
         }
         
@@ -2833,7 +3513,7 @@ function processMainGame() {
         executeVoting();
     }
 
-    addLog(`=== 턴 ${gameState.actualTurn}: 메인게임 진행 중 ===`, 'phase');
+    addLog(`=== 턴 ${gameState.turn}: 메인게임 진행 중 ===`, 'phase');
 }
 
 // 투표 실행
@@ -2874,7 +3554,7 @@ function executeVoting() {
             if (targetJobSkill && targetJobSkill.name === '팬덤 형성') {
                 const voterFav = voter.favorability[target.id] || 50;
                 if (voterFav >= 50) {
-                    addLog(`${voter.name}은(는) ${target.name}의 '팬덤 형성'으로 투표할 수 없다!`, 'event');
+                    addLog(`${voter.name}은(는) ${target.name}의 '팬덤 형성'으로 투표할 수 없다.`, 'event');
                     return;
                 }
             }
@@ -3010,7 +3690,7 @@ function processRoleEffect(sacrificed) {
     
     // 2명 이하만 남았을 때 승리
     if (remainingSurvivors.length <= 2 && remainingSurvivors.length > 0) {
-        addLog('메인게임이 종료되었다!', 'game-end');
+        addLog('메인게임이 종료되었다.', 'game-end');
         setTimeout(() => showEndingScreen(remainingSurvivors), 1000);
     } else if (remainingSurvivors.length === 0) {
         addLog('모든 생존자가 사망했다.', 'game-end');
@@ -3075,7 +3755,7 @@ function initializeSurvivor(survivor) {
 // 로그 추가
 function addLog(message, type = 'info') {
     const newLog = {
-        turn: gameState.actualTurn,
+        turn: gameState.turn,
         message,
         type,
         timestamp: new Date().toLocaleTimeString()
@@ -3088,13 +3768,13 @@ function addLog(message, type = 'info') {
     // dialogue 로그인 경우 첫 번째 phase 로그 바로 다음에 추가
     else if (type === 'dialogue') {
         const currentPhaseIndex = gameState.logs.findIndex(log => 
-            log.type === 'phase' && log.turn === gameState.actualTurn
+            log.type === 'phase' && log.turn === gameState.turn
         );
         if (currentPhaseIndex !== -1) {
             let insertIndex = currentPhaseIndex + 1;
             while (insertIndex < gameState.logs.length && 
                 gameState.logs[insertIndex].type === 'dialogue' &&
-                gameState.logs[insertIndex].turn === gameState.actualTurn) {
+                gameState.logs[insertIndex].turn === gameState.turn) {
                 insertIndex++;
             }
             gameState.logs.splice(insertIndex, 0, newLog);
@@ -3125,23 +3805,21 @@ function updateDisplay() {
 
 // 상태 표시 업데이트
 function updateStatus() {
-    document.getElementById('turnDisplay').textContent = gameState.actualTurn;
+    const displayTurn = gameState.turn > 0 ? gameState.turn : 0; 
+document.getElementById('turnDisplay').textContent = displayTurn;
     
     const aliveCount = gameState.survivors.filter(s => s.isAlive).length;
     
     let phase = '';
     
-    // 생존자 2인 이하일 때만 종료 표시
     if (aliveCount <= 2 && aliveCount > 0) {
         phase = '종료';
-    } else if (aliveCount === 0) {
-        phase = '전멸';
     } else {
-        // 게임 페이즈에 따른 표시
-        if (gameState.turn <= 2) {
+        if (gameState.turn === 0) {
+            phase = '대기 중';
+        } else if (gameState.turn === 1) {
             phase = '최초의 시련';
         } else if (gameState.gamePhase === 'sub') {
-            // 서브게임 타입별 표시
             const gameNames = {
                 'trust': '신뢰매매게임',
                 'body': '신체보물찾기',
@@ -3151,8 +3829,7 @@ function updateStatus() {
         } else if (gameState.gamePhase === 'main') {
             phase = '메인게임';
         } else {
-            // 페이즈가 명확하지 않을 때 턴 수로 판단
-            const cyclePosition = ((gameState.turn - 3) % 13) + 1;
+            const cyclePosition = ((gameState.turn - 2) % 13) + 1;
             if (cyclePosition >= 1 && cyclePosition <= 10) {
                 phase = '서브게임';
             } else if (cyclePosition >= 11 && cyclePosition <= 13) {
@@ -3164,7 +3841,6 @@ function updateStatus() {
     }
     
     document.getElementById('phaseDisplay').textContent = phase;
-    
     document.getElementById('survivorDisplay').textContent = `${aliveCount}/${gameState.survivors.length}`;
 }
 
@@ -3186,7 +3862,7 @@ function showFavorabilityDetails(survivorId) {
     const favorabilityData = gameState.survivors
         .filter(s => s.id !== survivorId)
         .map(other => {
-            const fav = survivor.favorability[other.id] || 50;
+            const fav = survivor.favorability[other.id] || 0;
             const relation = survivor.relationshipTypes?.[other.id];
             const status = getRelationshipStatus(fav, relation);
             
@@ -3200,8 +3876,10 @@ function showFavorabilityDetails(survivorId) {
         })
         .sort((a, b) => b.favorability - a.favorability);
     
-    // 동맹 (호감도 80 이상)
-    const allies = favorabilityData.filter(f => f.favorability >= 80);
+    // 동맹
+    const allies = favorabilityData.filter(f => 
+        survivor.allianceWith && survivor.allianceWith.includes(f.id)
+    );
     
     container.innerHTML = `
         <div class="popup-overlay" onclick="closePopup(event)">
@@ -3217,12 +3895,12 @@ function showFavorabilityDetails(survivorId) {
                     <div class="form" style="margin-bottom: 1rem;">
                         <h3 style="font-weight: bold; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
                             <i data-lucide="heart" size="20" style="color: #ec4899;"></i>
-                            동맹 현황 (호감도 80 이상)
+                            동맹 현황
                         </h3>
                         ${allies.length > 0 ? `
                             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                                 ${allies.map(ally => `
-                                    <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: #f0fdf4; border: 2px solid #22c55e; border-radius: 0.5rem;">
+                                    <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(); border: 2px solid #22c55e; border-radius: 0.5rem;">
                                         ${ally.image && ally.image !== 'data:,' && ally.image !== '' 
                                             ? `<img src="${ally.image}" alt="${ally.name}" style="width: 3rem; height: 3rem; border-radius: 50%; object-fit: cover;">`
                                             : `<div style="width: 3rem; height: 3rem; border-radius: 50%; background-color: ${getRandomColor(ally.id)}; display: flex; align-items: center; justify-content: center;">
@@ -3237,7 +3915,7 @@ function showFavorabilityDetails(survivorId) {
                                             <div style="font-size: 0.875rem; color: #6b7280;">${ally.relationship}</div>
                                         </div>
                                         <div style="text-align: right;">
-                                            <div style="font-size: 1.25rem; font-weight: bold; color: #22c55e;">${ally.favorability}</div>
+                                            <div style="font-size: 1.25rem; color: #22c55e;">${ally.favorability}</div>
                                             <div style="font-size: 0.75rem; color: #6b7280;">호감도</div>
                                         </div>
                                     </div>
@@ -3289,7 +3967,7 @@ function showFavorabilityDetails(survivorId) {
                                                 <div style="font-size: 0.75rem; color: #6b7280;">${person.relationship}</div>
                                             </div>
                                             <div style="text-align: right;">
-                                                <div style="font-size: 1.125rem; font-weight: bold; color: ${favColor};">${person.favorability}</div>
+                                                <div style="font-size: 1.125rem; color: ${favColor};">${person.favorability}</div>
                                                 <div style="width: 100px; height: 6px; background: #e5e7eb; border-radius: 3px; margin-top: 0.25rem;">
                                                     <div style="width: ${Math.min(100, Math.max(0, (person.favorability + 200) / 17))}%; height: 100%; background: ${favColor}; border-radius: 3px; transition: width 0.3s;"></div>
                                                 </div>
@@ -3524,7 +4202,7 @@ function updateLogList() {
     const container = document.getElementById('logList');
     
     if (gameState.logs.length === 0) {
-        container.innerHTML = '<div class="empty-message">아직 기록이 없다.</div>';
+        container.innerHTML = '<div class="empty-message">아직 기록이 없습니다</div>';
         return;
     }
     
@@ -3537,7 +4215,17 @@ function updateLogList() {
 
 // 버튼 업데이트
 function updateButtons() {
-    document.getElementById('nextTurnBtn').disabled = gameState.isRunning;
+    const nextTurnBtn = document.getElementById('nextTurnBtn');
+    if (nextTurnBtn) {
+        nextTurnBtn.disabled = gameState.isRunning;
+        
+        // 0턴일 때 버튼 텍스트 변경
+        if (gameState.turn === 0) {
+            nextTurnBtn.textContent = '시뮬레이션 시작';
+        } else {
+            nextTurnBtn.textContent = '다음 턴';
+        }
+    }
 }
 
 // 생존자 편집
@@ -3590,7 +4278,6 @@ function saveData() {
         survivors: gameState.survivors,
         logs: gameState.logs,
         turn: gameState.turn,
-        actualTurn: gameState.actualTurn,
         gamePhase: gameState.gamePhase,
         subGameType: gameState.subGameType
     };
@@ -3615,10 +4302,11 @@ function loadData(event) {
             const data = JSON.parse(e.target.result);
             gameState.survivors = data.survivors || [];
             gameState.logs = data.logs || [];
-            gameState.turn = data.turn || 1;
-            gameState.actualTurn = data.actualTurn || data.turn || 1;
+            gameState.turn = data.turn || 0;
             gameState.gamePhase = data.gamePhase || 'initial';
             gameState.subGameType = data.subGameType || null;
+            gameState.hasStarted = data.hasStarted || false;
+            gameState.initialTrialPopupsShown = data.initialTrialPopupsShown || {};
             addLog('데이터를 불러왔다.', 'system');
             updateDisplay();
             
@@ -3752,7 +4440,7 @@ function updateRelationshipsList() {
     list.innerHTML = window.tempRelationships.map((rel, idx) => {
         const target = gameState.survivors.find(s => s.id === rel.targetId);
         return target ? `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: #f3f4f6; border-radius: 0.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: var(--bg-primary-tran); border-radius: 0.5rem;">
                 <span style="font-size: 0.875rem;">${target.name} - ${rel.type}</span>
                 <button onclick="removeRelationship(${idx})" class="icon-btn delete" style="padding: 0.25rem;">
                     <i data-lucide="x" size="10"></i>
@@ -3907,11 +4595,6 @@ function getSurvivorForm(survivor = null) {
                     `).join('')}
                 </select>
                 
-                <select id="survivorStatus" class="form-select">
-                    <option ${s.status === '인간' ? 'selected' : ''}>인간</option>
-                    <option ${s.status === '더미즈' ? 'selected' : ''}>더미즈</option>
-                </select>
-                
                 <div class="col-span-2" style="display: flex; flex-direction: column; align-items: center;">
                     <label class="form-label">스탯에 따른 능력치 미리보기</label>
                     <div id="statPreview" style="font-size: 0.875rem;text-align: center;color: var(--text-tertiary);padding: 0.5rem;background: var(--bg-primary-tran);border-radius: 0.25rem;width: 100%;">
@@ -3934,7 +4617,6 @@ function getSurvivorForm(survivor = null) {
                                 ${otherSurvivors.map(other => `<option value="${other.id}">${other.name}</option>`).join('')}
                             </select>
                             <select id="relationshipType" class="form-select" style="flex: 1;">
-                                <option value="">관계 선택</option>
                                 <option value="낯선 사람">낯선 사람</option>
                                 <option value="서먹함">서먹함</option>
                                 <option value="친구">친구</option>
@@ -4004,7 +4686,6 @@ function addSurvivor() {
         charm: parseInt(document.getElementById('survivorCharm').value),
         gender: document.getElementById('survivorGender').value,
         personality: document.getElementById('survivorPersonality').value,
-        status: document.getElementById('survivorStatus').value,
         image: (document.getElementById('imagePreview').src && 
         document.getElementById('imagePreview').src !== window.location.href) 
         ? document.getElementById('imagePreview').src : null
@@ -4013,8 +4694,8 @@ function addSurvivor() {
     const survivor = initializeSurvivor(newSurvivor);
     
     gameState.survivors.forEach(s => {
-        survivor.favorability[s.id] = 50;
-        s.favorability[survivor.id] = 50;
+        survivor.favorability[s.id] = 0;
+        s.favorability[survivor.id] = 0;
     });
     
     if (window.tempRelationships && window.tempRelationships.length > 0) {
@@ -4042,7 +4723,17 @@ function addSurvivor() {
     }
     
     gameState.survivors.push(survivor);
-    addLog(`${name}이(가) 참가했다.`, 'join');
+    if (gameState.hasStarted) {
+        const joinMessages = [
+            `숨어있던 ${name}을(를) 발견했다.`,
+            `${name}이(가) 합류했다.`,
+            `정신을 잃고 쓰러져있던 ${name}을(를) 발견했다.`
+        ];
+        const randomMessage = joinMessages[Math.floor(Math.random() * joinMessages.length)];
+        addLog(randomMessage, 'join');
+    } else {
+        addLog(`${name}이(가) 참가했다.`, 'join');
+    }
     
     closePopup();
     updateDisplay();
@@ -4071,6 +4762,12 @@ function updateSurvivor(id) {
         return;
     }
     
+    const survivor = gameState.survivors.find(s => s.id === id);
+    if (!survivor) {
+        alert('생존자를 찾을 수 없습니다.');
+        return;
+    }
+    
     const strength = parseInt(document.getElementById('survivorStrength').value);
     const agility = parseInt(document.getElementById('survivorAgility').value);
     const intelligence = parseInt(document.getElementById('survivorIntelligence').value);
@@ -4079,45 +4776,56 @@ function updateSurvivor(id) {
     const personality = document.getElementById('survivorPersonality').value;
     const personalityType = getPersonalityType(personality);
     
-    // 새로운 최대 능력치 계산
-    let calculatedHp = 100 + ((survivor.strength - 5) * 15);
-    let maxHp = Math.min(150, Math.max(75, calculatedHp));
+    let calculatedHp = 100 + ((strength - 5) * 15);
+    let newMaxHp = Math.min(150, Math.max(75, calculatedHp));
     
-    const mentalAvg = (survivor.intelligence + survivor.agility) / 2;
-    let maxMental;
-    maxMental = 100 + ((mentalAvg - 5) * 10);
-
+    const mentalAvg = (intelligence + agility) / 2;
+    let newMaxMental = 100 + ((mentalAvg - 5) * 10);
     if (personalityType === 'egocentric') {
-        maxMental += 20;
+        newMaxMental += 20;
     }
-    maxMental = Math.max(50, Math.min(200, maxMental));
+    newMaxMental = Math.max(50, Math.min(200, newMaxMental));
     
-    const trustAvg = (survivor.charisma + survivor.charm) / 2;
+    const trustAvg = (charisma + charm) / 2;
+    let newBaseTrust;
     if (trustAvg > 5) {
-        baseTrust = 50 + ((trustAvg - 5) * 10);
+        newBaseTrust = 50 + ((trustAvg - 5) * 10);
     } else if (trustAvg < 5) {
-        baseTrust = 50 - ((5 - trustAvg) * 10);
+        newBaseTrust = 50 - ((5 - trustAvg) * 10);
     } else {
-        baseTrust = 50;
+        newBaseTrust = 50;
     }
 
-    // 관계 업데이트
+    // 관계 업데이트 - 기존 관계 초기화하고 새로 설정
     if (window.tempRelationships && window.tempRelationships.length > 0) {
-        const currentSurvivor = gameState.survivors.find(s => s.id === id);
+        // 기존 관계 타입 초기화
+        survivor.relationshipTypes = {};
         
-        // 기존 관계 초기화
-        currentSurvivor.relationshipTypes = {};
+        // 설정되지 않은 관계는 0(낯선 사람)으로 초기화
+        gameState.survivors.forEach(s => {
+            if (s.id !== id) {
+                const hasRelation = window.tempRelationships.some(rel => rel.targetId === s.id);
+                if (!hasRelation) {
+                    survivor.favorability[s.id] = 0;
+                    // 상대방도 관계가 없으면 0으로
+                    if (!s.relationshipTypes || !s.relationshipTypes[id]) {
+                        s.favorability[id] = 0;
+                    }
+                }
+            }
+        });
         
+        // 새로 설정된 관계 적용
         window.tempRelationships.forEach(rel => {
             const favorabilityValue = INITIAL_RELATIONSHIP_VALUES[rel.type];
             
-            // 현재 호감도가 최소값보다 낮으면 최소값으로 설정
-            if ((currentSurvivor.favorability[rel.targetId] || 0) < favorabilityValue) {
-                currentSurvivor.favorability[rel.targetId] = favorabilityValue;
+            // 현재 호감도가 설정 값보다 낮으면 업데이트
+            if ((survivor.favorability[rel.targetId] || 0) < favorabilityValue) {
+                survivor.favorability[rel.targetId] = favorabilityValue;
             }
-            currentSurvivor.relationshipTypes[rel.targetId] = rel.type;
+            survivor.relationshipTypes[rel.targetId] = rel.type;
             
-            // 짝사랑이 아닌 경우 양방향 설정
+            // 짝사랑이 아니면 양방향 설정
             if (rel.type !== '짝사랑') {
                 gameState.survivors = gameState.survivors.map(s => {
                     if (s.id === rel.targetId) {
@@ -4132,12 +4840,23 @@ function updateSurvivor(id) {
                 });
             }
         });
+    } else {
+        // 관계 설정이 없으면 모두 0(낯선 사람)으로
+        survivor.relationshipTypes = {};
+        gameState.survivors.forEach(s => {
+            if (s.id !== id) {
+                survivor.favorability[s.id] = 0;
+                // 상대방도 관계가 없으면 0으로
+                if (!s.relationshipTypes || !s.relationshipTypes[id]) {
+                    s.favorability[id] = 0;
+                }
+            }
+        });
     }
     
     gameState.survivors = gameState.survivors.map(s => {
         if (s.id !== id) return s;
         
-        // 현재 체력/정신력 절대값 유지 (최대치를 초과하지 않도록)
         const newHp = Math.min(s.hp, newMaxHp);
         const newMental = Math.min(s.mental, newMaxMental);
         
@@ -4152,10 +4871,10 @@ function updateSurvivor(id) {
             charm,
             gender: document.getElementById('survivorGender').value,
             personality,
-            status: document.getElementById('survivorStatus').value,
+            status: '인간',
             image: (document.getElementById('imagePreview').src && 
-        document.getElementById('imagePreview').src !== window.location.href)
-        ? document.getElementById('imagePreview').src : s.image,
+                document.getElementById('imagePreview').src !== window.location.href)
+                ? document.getElementById('imagePreview').src : s.image,
             maxHp: newMaxHp,
             hp: newHp,
             maxMental: newMaxMental,
@@ -4576,10 +5295,10 @@ function autoSaveData() {
             survivors: gameState.survivors,
             logs: gameState.logs,
             turn: gameState.turn,
-            actualTurn: gameState.actualTurn,
             gamePhase: gameState.gamePhase,
             subGameType: gameState.subGameType,
-            turnDialogues: gameState.turnDialogues
+            turnDialogues: gameState.turnDialogues,
+            hasStarted: gameState.hasStarted
         };
         localStorage.setItem('yttd_autosave', JSON.stringify(data));
     } catch (error) {
@@ -4595,11 +5314,11 @@ function autoLoadData() {
             const data = JSON.parse(saved);
             gameState.survivors = data.survivors || [];
             gameState.logs = data.logs || [];
-            gameState.turn = data.turn || 1;
-            gameState.actualTurn = data.actualTurn || data.turn || 1;
+            gameState.turn = data.turn || 0;
             gameState.gamePhase = data.gamePhase || 'initial';
             gameState.subGameType = data.subGameType || null;
             gameState.turnDialogues = data.turnDialogues || {};
+            gameState.hasStarted = data.hasStarted || false;
             
             if (gameState.survivors.length > 0) {
                 addLog('이전 플레이 내역을 불러왔다.', 'system');
@@ -4641,7 +5360,7 @@ function showEndingScreen(winners) {
         const otherWinner = winners[1];
         subtitleText = `${otherWinner.name}이(가) 함께 살아남았다.`;
     } else {
-        titleText = `${mainWinner.name}이(가) 승리했습니다!`;
+        titleText = `${mainWinner.name}이(가) 승리했습니다.`;
         const otherNames = winners.slice(1).map(w => w.name).join(', ');
         subtitleText = `${otherNames}이(가) 함께 살아남았다.`;
     }
@@ -4703,8 +5422,8 @@ function resetSimulation() {
     gameState = {
         survivors: [],
         logs: [],
-        turn: 1,
-        actualTurn: 1,
+        turn: 0,
+        actualTurn: 0,
         gamePhase: 'initial',
         subGameType: null,
         isRunning: false,
@@ -4719,8 +5438,8 @@ function resetSimulation() {
         
         // 호감도 초기화 (새로 시작)
         gameState.survivors.forEach(s => {
-            survivor.favorability[s.id] = 50;
-            s.favorability[survivor.id] = 50;
+            survivor.favorability[s.id] = 0;
+            s.favorability[survivor.id] = 0;
         });
         
         gameState.survivors.push(survivor);
@@ -4737,4 +5456,134 @@ function resetSimulation() {
     updateDisplay();
 }
 
+async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'dice-overlay';
+        
+        // 애니메이션 스킵 플래그
+        let isSkipped = false;
+        
+        // 0~9까지 숫자를 나열 (자연스러운 회전을 위해 세 번 반복)
+        const numbers = [0,1,2,3,4,5,6,7,8,9, 0,1,2,3,4,5,6,7,8,9, 0,1,2,3,4,5,6,7,8,9];
+        const numHTML = numbers.map(n => `<div class="slot-number">${n}</div>`).join('');
 
+        overlay.innerHTML = `
+            <div style="color:white; margin-bottom:20px; font-size:1.2rem; font-family:'DungGeunMo'; text-align:center;">
+                ${statName} 판정 중... (목표: ${targetValue} 이상)
+                <div style="font-size:0.9rem; margin-top:10px; opacity:0.7;">클릭하여 스킵</div>
+            </div>
+            <div class="slot-container">
+                <div class="slot-box"><div id="slot-10" class="slot-column">${numHTML}</div></div>
+                <div class="slot-box"><div id="slot-1" class="slot-column">${numHTML}</div></div>
+            </div>
+            <div id="dice-result-text" class="roll-result-text" style="display:none; text-align:center;"></div>
+        `;
+        
+        // 클릭 이벤트로 스킵 처리
+        overlay.addEventListener('click', () => {
+            if (!isSkipped) {
+                isSkipped = true;
+                skipAnimation();
+            }
+        });
+        
+        document.body.appendChild(overlay);
+
+        // 1~100 사이의 실제 값 결정
+        const rollValue = Math.floor(Math.random() * 100) + 1;
+        
+        let displayValue = rollValue === 100 ? 99 : rollValue;
+        if (rollValue === 100) displayValue = 99;
+
+        const tens = Math.floor(rollValue / 10) % 10;
+        const ones = rollValue % 10;
+
+        const slotHeight = 90;
+        
+        let animationTimeout1, animationTimeout2, animationTimeout3, animationTimeout4;
+        
+        // 애니메이션 스킵 함수
+        function skipAnimation() {
+            // 모든 타이머 클리어
+            clearTimeout(animationTimeout1);
+            clearTimeout(animationTimeout2);
+            clearTimeout(animationTimeout3);
+            clearTimeout(animationTimeout4);
+            
+            const col10 = document.getElementById('slot-10');
+            const col1 = document.getElementById('slot-1');
+            
+            if (col10 && col1) {
+                // 애니메이션 클래스 제거
+                col10.classList.remove('slot-rolling');
+                col1.classList.remove('slot-rolling');
+                
+                // 최종 위치로 즉시 이동
+                col10.style.transition = 'none';
+                col1.style.transition = 'none';
+                col10.style.transform = `translateY(-${(10 + tens) * slotHeight}px)`;
+                col1.style.transform = `translateY(-${(10 + ones) * slotHeight}px)`;
+            }
+            
+            // 결과 즉시 표시
+            showResult();
+        }
+        
+        // 결과 표시 함수
+        function showResult() {
+            const resultDisplay = document.getElementById('dice-result-text');
+            const total = rollValue + bonusValue;
+            const isSuccess = total >= targetValue;
+
+            if (resultDisplay) {
+                resultDisplay.style.display = 'block';
+                resultDisplay.style.color = isSuccess ? '#16a34a' : '#ff4444';
+                
+                const bonusText = bonusValue > 0 ? ` ${statName} 보너스 +${bonusValue}` : '';
+
+                resultDisplay.innerHTML = `
+                    <div>
+                        <div style="font-size: 2.5rem;">${total}</div>
+                        ${bonusValue > 0 ? `<div style="font-size: 0.9rem; margin-top: 5px; opacity: 0.9;">${bonusText}</div>` : ''}
+                    </div>
+                    <div style="font-size: 1.5rem; margin-top: 5px;">${isSuccess ? '판정 성공' : '판정 실패'}</div>
+                `;
+            }
+
+            animationTimeout4 = setTimeout(() => {
+                if (document.body.contains(overlay)) document.body.removeChild(overlay);
+                resolve({ isSuccess, roll: rollValue });
+            }, isSkipped ? 500 : 2000); // 스킵 시 500ms, 아니면 2000ms
+        }
+
+        // 애니메이션 시작
+        animationTimeout1 = setTimeout(() => {
+            if (isSkipped) return;
+            
+            const col10 = document.getElementById('slot-10');
+            const col1 = document.getElementById('slot-1');
+            
+            if (!col10 || !col1) return;
+            
+            col10.classList.add('slot-rolling');
+            col1.classList.add('slot-rolling');
+
+            col10.style.transform = `translateY(-${(10 + tens) * slotHeight}px)`;
+            
+            animationTimeout2 = setTimeout(() => {
+                if (isSkipped) return;
+                col1.style.transform = `translateY(-${(10 + ones) * slotHeight}px)`;
+            }, 200);
+
+            animationTimeout3 = setTimeout(() => {
+                if (isSkipped) return;
+                
+                col10.classList.remove('slot-rolling');
+                col1.classList.remove('slot-rolling');
+                
+                showResult();
+            }, 1700);
+        }, 100);
+    });
+}
