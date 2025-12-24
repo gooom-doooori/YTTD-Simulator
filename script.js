@@ -11,7 +11,8 @@ let gameState = {
     turnDialogues: {},
     hasStarted: false,
     initialTrialPopupsShown: {},
-    mainGameTurn: 0
+    mainGameTurn: 0,
+    usedTrialEvents: []
 };
 // 상수
 const GENDERS = ['남성', '여성', '기타'];
@@ -1153,7 +1154,7 @@ const POPUP_EVENTS = {
             const candidates = gameState.survivors.filter(s => 
                 s.isAlive && 
                 s.status === '인간' && 
-                (s.hp / s.maxHp) <= 0.3
+                (s.hp / s.maxHp) <= 0.4
             );
             return candidates.length > 0 ? candidates : null;
         },
@@ -2522,7 +2523,21 @@ function processInitialTrial() {
 
 // 가독성을 위한 헬퍼 함수들
 function startSoloTrial(survivor) {
-    const trial = INITIAL_TRIAL_EVENTS.solo[Math.floor(Math.random() * INITIAL_TRIAL_EVENTS.solo.length)];
+    // 사용 가능한 이벤트 필터링 (이미 사용된 이벤트 제외)
+    const availableEvents = INITIAL_TRIAL_EVENTS.solo.filter(event => 
+        !gameState.usedTrialEvents.includes(event.id)
+    );
+    
+    // 사용 가능한 이벤트가 없으면 전체에서 선택
+    const eventPool = availableEvents.length > 0 ? availableEvents : INITIAL_TRIAL_EVENTS.solo;
+    
+    const trial = eventPool[Math.floor(Math.random() * eventPool.length)];
+    
+    // 카드 숨기기 이벤트(soloTrial1)는 사용 기록에 추가
+    if (trial.id === 'soloTrial1') {
+        gameState.usedTrialEvents.push(trial.id);
+    }
+    
     showSoloTrialPopup(trial, survivor);
     gameState.initialTrialPopupsShown[survivor.id] = true;
 }
@@ -4327,7 +4342,8 @@ function saveData() {
         turnDialogues: gameState.turnDialogues,
         hasStarted: gameState.hasStarted,
         initialTrialPopupsShown: gameState.initialTrialPopupsShown,
-        mainGameTurn: gameState.mainGameTurn 
+        mainGameTurn: gameState.mainGameTurn,
+        usedTrialEvents: gameState.usedTrialEvents
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -4357,6 +4373,7 @@ function loadData(event) {
             gameState.hasStarted = data.hasStarted || false;
             gameState.initialTrialPopupsShown = data.initialTrialPopupsShown || {};
             gameState.mainGameTurn = data.mainGameTurn || 0;
+            gameState.usedTrialEvents = data.usedTrialEvents || []; 
             addLog('데이터를 불러왔다.', 'system');
             updateDisplay();
             
@@ -5448,7 +5465,9 @@ function resetSimulation() {
         isRunning: false,
         timer: null,
         pendingAlliances: [],
-        turnDialogues: {}
+        turnDialogues: {},
+        mainGameTurn: 0,
+        usedTrialEvents: []
     };
     
     // 생존자 재등록
@@ -5604,4 +5623,3 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
         }, 100);
     });
 }
-
