@@ -3480,15 +3480,16 @@ function assignRoles() {
 
 // 메인게임 처리
 function processMainGame() {
-    const cyclePosition = ((gameState.turn - 2) % 13) + 1;
-    if (cyclePosition === 10) {
-         gameState.gamePhase = 'main';
-         gameState.mainGameTurn = 1;
+    const cyclePosition = ((gameState.turn - 1) % 13) + 1;
+    if (cyclePosition === 11) {
+        gameState.gamePhase = 'main';
+        gameState.mainGameTurn = 1;  // 메인게임 시작
         assignRoles();
     } else {
         gameState.gamePhase = 'main';
-        gameState.mainGameTurn++;
+        gameState.mainGameTurn++;  // 턴 증가
     }
+
 
     gameState.survivors = gameState.survivors.map(s => {
         if (!s.isAlive || !s.currentAction || s.currentAction === 'free') return s;
