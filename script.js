@@ -2453,17 +2453,17 @@ function processInitialTrial() {
 
     if (gameState.isRunning) stopSimulation();
 
+    // ★★★ 핵심: 남은 생존자들을 완전히 랜덤하게 섞기 ★★★
     const shuffledSurvivors = [...remainingSurvivors].sort(() => Math.random() - 0.5);
 
-    // --- [최우선 단계] 특별 관계(가족 등) 2인 매칭 ---
-    // 아직 시련을 안 본 사람 중 서로 호감도가 250 이상인 후보가 있는지 확인
+    // --- [최우선 단계] 친구 이상(호감도 250+) 관계 2인 매칭 ---
+    // 섞인 순서에서 찾기 때문에 매번 다른 순서로 체크됨
     let specialPair = null;
-    for (let i = 0; i < remainingSurvivors.length; i++) {
-        for (let j = i + 1; j < remainingSurvivors.length; j++) {
-            const s1 = remainingSurvivors[i];
-            const s2 = remainingSurvivors[j];
+    for (let i = 0; i < shuffledSurvivors.length; i++) {
+        for (let j = i + 1; j < shuffledSurvivors.length; j++) {
+            const s1 = shuffledSurvivors[i];
+            const s2 = shuffledSurvivors[j];
             
-            // 80이 아니라 250으로 수정하여 '친구' 관계인 쌍만 먼저 찾음
             const f1 = s1.favorability[s2.id] || 0;
             const f2 = s2.favorability[s1.id] || 0;
             
@@ -2475,7 +2475,6 @@ function processInitialTrial() {
         if (specialPair) break;
     }
 
-    // 만약 특별 관계가 발견되면 과반수 여부와 상관없이 즉시 2인 시련 실행
     if (specialPair) {
         const char1 = specialPair[0];
         const char2 = specialPair[1];
@@ -2484,14 +2483,14 @@ function processInitialTrial() {
         return;
     }
 
-    // --- [일반 단계] 특별 관계가 없을 때 기존 로직 수행 ---
+    // --- [일반 단계] 친구 관계가 없을 때 ---
     const totalCount = aliveSurvivors.length;
     const completedCount = Object.keys(gameState.initialTrialPopupsShown).length;
     const isOverHalf = completedCount >= Math.ceil(totalCount / 2);
 
-    // 과반수 미만: 1인 시련
     if (!isOverHalf) {
-        const soloCandidate = remainingSurvivors.find(survivor => {
+        // 과반수 미만: 1인 시련 우선 (호감도 80 미만인 사람)
+        const soloCandidate = shuffledSurvivors.find(survivor => {
             return !aliveSurvivors.some(other => 
                 other.id !== survivor.id && (survivor.favorability[other.id] || 0) >= 80
             );
@@ -2503,22 +2502,23 @@ function processInitialTrial() {
         }
     }
 
-    // 과반수 이상 또는 1인 대상 없음: 일반 2인 매칭
-    if (remainingSurvivors.length >= 2) {
-    const shuffled = [...remainingSurvivors].sort(() => Math.random() - 0.5);
-    const char1 = shuffled[0];
-    const char2 = shuffled[1];
+    // 과반수 이상이거나 1인 대상이 없으면 2인 시련
+    if (shuffledSurvivors.length >= 2) {
+        // ★★★ 이미 섞여있으므로 첫 두 명은 매번 랜덤 ★★★
+        const char1 = shuffledSurvivors[0];
+        const char2 = shuffledSurvivors[1];
 
-    // 1. 조건(호감도 250 등)에 맞는 이벤트가 있는지 찾음
-    let trial = INITIAL_TRIAL_EVENTS.duo.find(e => e.condition && e.condition(char1, char2));
+        let trial = INITIAL_TRIAL_EVENTS.duo.find(e => e.condition && e.condition(char1, char2));
 
-    // 2. 만약 조건에 맞는 게 없다면 (친구가 아니라면) 기본 이벤트(twoLegs) 실행
-    if (!trial) {
-        trial = INITIAL_TRIAL_EVENTS.duo.find(e => e.id === 'twoLegs');
+        if (!trial) {
+            trial = INITIAL_TRIAL_EVENTS.duo.find(e => e.id === 'twoLegs');
+        }
+
+        startDuoTrial(trial, char1, char2);
+    } else if (shuffledSurvivors.length === 1) {
+        // 한 명만 남았으면 1인 시련
+        startSoloTrial(shuffledSurvivors[0]);
     }
-
-    startDuoTrial(trial, char1, char2);
-}
 }
 
 // 가독성을 위한 헬퍼 함수들
