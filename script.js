@@ -757,7 +757,7 @@ const INITIAL_TRIAL_EVENTS = {
             // 카드 설치
             {
                 id: 'soloTrial1',
-                getMessage: (character) => `눈을 떠보니 ${character.name}의 앞에는 네모난 상자 하나와 여러장의 카드가 있었다.\n상자 위에는 '이 방을 나가서 이 카드들을 곳곳에 숨겨두세요. 다른 사람에게 들키게 되면 죽습니다.'라는 메모가 적혀있었다.\n어떻게 할까요?`,
+                getMessage: (character) => `눈을 떠보니 ${character.name}의 앞에는 네모난 상자 하나와 여러장의 카드가 있었다.\n'이 방을 나가서 이 카드들을 곳곳에 숨겨두세요. 다른 사람에게 들키게 되면 죽습니다.'\n 라는 메모가 상자의 위에 적혀있었다.\n어떻게 할까요?`,
                 choices: [
                     {
                         text: '시키는 대로 몰래 숨겨둔다.',
