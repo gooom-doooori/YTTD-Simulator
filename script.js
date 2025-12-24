@@ -10,7 +10,8 @@ let gameState = {
     pendingAlliances: [],
     turnDialogues: {},
     hasStarted: false,
-    initialTrialPopupsShown: {}
+    initialTrialPopupsShown: {},
+    mainGameTurn: 0
 };
 // 상수
 const GENDERS = ['남성', '여성', '기타'];
@@ -827,7 +828,7 @@ const INITIAL_TRIAL_EVENTS = {
                             } else {
                                 gameState.survivors = gameState.survivors.map(s => 
                                     s.id === character.id 
-                                        ? { ...s, hp: 0, status: '더미즈' }
+                                        ? { ...s, status: '더미즈' }
                                         : s
                                 );
                                 addLog(`${character.name}은(는) 다가오는 벽에 압사했다.`, 'death');
@@ -857,7 +858,7 @@ const INITIAL_TRIAL_EVENTS = {
                             } else {
                                 gameState.survivors = gameState.survivors.map(s => 
                                     s.id === character.id 
-                                        ? { ...s, hp: 0, status: '더미즈' }
+                                        ? { ...s, status: '더미즈' }
                                         : s
                                 );
                                 addLog(`${character.name}은(는) 다가오는 벽에 압사했다.`, 'death');
@@ -887,7 +888,7 @@ const INITIAL_TRIAL_EVENTS = {
                             } else {
                                 gameState.survivors = gameState.survivors.map(s => 
                                     s.id === character.id 
-                                        ? { ...s, hp: 0, status: '더미즈' }
+                                        ? { ...s, status: '더미즈' }
                                         : s
                                 );
                                 addLog(`${character.name}은(는) 잘못된 선택을 했다.`, 'death');
@@ -910,7 +911,7 @@ const INITIAL_TRIAL_EVENTS = {
                             } else {
                                 gameState.survivors = gameState.survivors.map(s => 
                                     s.id === character.id 
-                                        ? { ...s, hp: 0, status: '더미즈' }
+                                        ? { ...s, status: '더미즈' }
                                         : s
                                 );
                                 addLog(`${character.name}은(는) 잘못된 선택을 했다.`, 'death');
@@ -947,7 +948,7 @@ const INITIAL_TRIAL_EVENTS = {
                             } else {
                                 gameState.survivors = gameState.survivors.map(s => 
                                     s.id === character.id 
-                                        ? { ...s, hp: 0, status: '더미즈' }
+                                        ? { ...s, status: '더미즈' }
                                         : s
                                 );
                                 addLog(`${character.name}은(는) 두려움을 이겨내지 못했다.`, 'death');
@@ -972,7 +973,7 @@ const INITIAL_TRIAL_EVENTS = {
                             } else {
                                 gameState.survivors = gameState.survivors.map(s => 
                                     s.id === character.id 
-                                        ? { ...s, hp: 0, status: '더미즈' }
+                                        ? { ...s, status: '더미즈' }
                                         : s
                                 );
                                 addLog(`${character.name}은(는) 결국 구속을 풀지 못했다.`, 'death');
@@ -3482,9 +3483,11 @@ function processMainGame() {
     const cyclePosition = ((gameState.turn - 2) % 13) + 1;
     if (cyclePosition === 10) {
          gameState.gamePhase = 'main';
+         gameState.mainGameTurn = 1;
         assignRoles();
     } else {
         gameState.gamePhase = 'main';
+        gameState.mainGameTurn++;
     }
 
     gameState.survivors = gameState.survivors.map(s => {
@@ -3509,7 +3512,7 @@ function processMainGame() {
 
     updateDisplay();
 
-    if (cyclePosition === 13) {
+    if (gameState.mainGameTurn === 3) {
         executeVoting();
     }
 
@@ -3571,6 +3574,7 @@ function executeVoting() {
         processRoleEffect(sacrificed);
     }
     gameState.gamePhase = 'sub';
+    gameState.mainGameTurn = 0;
 }
 
 // 역할 효과 처리
@@ -3805,7 +3809,7 @@ function updateDisplay() {
 
 // 상태 표시 업데이트
 function updateStatus() {
-    const displayTurn = gameState.turn > 0 ? gameState.turn : 0; 
+    const displayTurn = gameState.turn > 0 ? gameState.turn  : 0; 
 document.getElementById('turnDisplay').textContent = displayTurn;
     
     const aliveCount = gameState.survivors.filter(s => s.isAlive).length;
@@ -4279,7 +4283,11 @@ function saveData() {
         logs: gameState.logs,
         turn: gameState.turn,
         gamePhase: gameState.gamePhase,
-        subGameType: gameState.subGameType
+        subGameType: gameState.subGameType,
+        turnDialogues: gameState.turnDialogues,
+        hasStarted: gameState.hasStarted,
+        initialTrialPopupsShown: gameState.initialTrialPopupsShown,
+        mainGameTurn: gameState.mainGameTurn 
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -4305,8 +4313,10 @@ function loadData(event) {
             gameState.turn = data.turn || 0;
             gameState.gamePhase = data.gamePhase || 'initial';
             gameState.subGameType = data.subGameType || null;
+            gameState.turnDialogues = data.turnDialogues || {};
             gameState.hasStarted = data.hasStarted || false;
             gameState.initialTrialPopupsShown = data.initialTrialPopupsShown || {};
+            gameState.mainGameTurn = data.mainGameTurn || 0;
             addLog('데이터를 불러왔다.', 'system');
             updateDisplay();
             
@@ -5298,7 +5308,9 @@ function autoSaveData() {
             gamePhase: gameState.gamePhase,
             subGameType: gameState.subGameType,
             turnDialogues: gameState.turnDialogues,
-            hasStarted: gameState.hasStarted
+            hasStarted: gameState.hasStarted,
+            initialTrialPopupsShown: gameState.initialTrialPopupsShown,
+            mainGameTurn: gameState.mainGameTurn
         };
         localStorage.setItem('yttd_autosave', JSON.stringify(data));
     } catch (error) {
@@ -5319,6 +5331,8 @@ function autoLoadData() {
             gameState.subGameType = data.subGameType || null;
             gameState.turnDialogues = data.turnDialogues || {};
             gameState.hasStarted = data.hasStarted || false;
+            gameState.initialTrialPopupsShown = data.initialTrialPopupsShown || {};
+            gameState.mainGameTurn = data.mainGameTurn || 0; 
             
             if (gameState.survivors.length > 0) {
                 addLog('이전 플레이 내역을 불러왔다.', 'system');
