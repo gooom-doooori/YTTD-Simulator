@@ -33,7 +33,7 @@ const JOBS = Object.values(JOB_CATEGORIES).flat();
 const PERSONALITY_TYPES = {
     activist: ['대범한', '열정적인', '사차원', '감정적인', '단세포', '운동광'],
     anxious: ['의존적인', '맹목적인', '편집증', '이기적인', '허언증', '회피성', '트라우마가 있는'],
-    stable: ['신중한', '평범한', '다정한', '희생적인', '무던한', '이타적인', '강단있는', '멍한'],
+    stable: ['신중한', '평범한', '다정한', '희생적인', '무던한', '이타적인', '강단있는', '멍한','사랑스러운'],
     egocentric: ['냉정한', '지능적인', '사이코패스', '소시오패스', '생명경시', '염세적인']
 };
 // 드롭다운 표시용 카테고리
@@ -613,6 +613,8 @@ const CHARACTER_DIALOGUES = {
         { personality: '희생적인', line: '그렇게 말씀하셔선 안됐어요. 모두 겨우 버티고 있는데... 난 당신을 용서할 수 없어요.' },
         { personality: '무던한', line: '음, 그건 사과하셔야겠는데요. 반복되면 저도 가만히 있을 순 없으니까요.' },
         { personality: '이타적인', line: '모두를 위한 길을 네가 망치고 있어. 네 이기심이 얼마나 많은 사람을 힘들게 했는지 알아?!' },
+        { personality: '멍한', line: '어... 방금 그거, 조금 화나려고 하는데...' },
+        { personality: '사랑스러운', line: '정말 너무해! 나 삐칠 거야!' },
         { personality: '냉정한', line: '이딴식으로 언쟁하는 것도 피곤해. 알아서 잘 좀했으면 좋겠네.' },
         { personality: '지능적인', line: '그 머리는 장식이야? 너야말로 머리가 있다면 생각을 해!' },
         { personality: '사이코패스', line: '화난 거 아닌데. 그냥 네가 숨 쉬는 소리가 거슬려서.' },
@@ -639,6 +641,8 @@ const CHARACTER_DIALOGUES = {
         { personality: '희생적인', line: '모두가 웃고 있네요. 네, 저는 이런 모습을 보고싶었어요. 정말 기뻐요.' },
         { personality: '무던한', line: '좋네요. 이 정도면 충분하죠.' },
         { personality: '이타적인', line: '드디어 웃어주셨네요! 당신이 기뻐보이니 나도 기쁘네요.' },
+        { personality: '멍한', line: '나비가 지나갔어... 예쁘다... 헤헤.' },
+        { personality: '사랑스러운', line: '너랑 있으니까 마음이 몽글몽글해졌어...!' },
         { personality: '냉정한', line: '정은 안주려고 했는데... 상관없겠지.' },
         { personality: '지능적인', line: '하, 멍청해지는 기분이야. ...뭐, 가끔은 멍청하게 즐기는 것도 나쁘진 않네.' },
         { personality: '사이코패스', line: '망가지는 모습이 꽤 예쁘네. 다음엔 어떤 표정을 지어줄 거야?' },
@@ -665,6 +669,8 @@ const CHARACTER_DIALOGUES = {
         { personality:'희생적인', line:'다행이다. 아무도 다치지 않았어. 정말로… 다행이야.' },
         { personality:'무던한', line:'뭐, 어떻게든 되네요. 다행이에요.' },
         { personality:'이타적인', line:'다른 사람들도 다 무사한 거죠? 아, 정말 다행이다... 고생 많으셨어요.' },
+        { personality:'멍한', line:'아, 끝난 건가... 이제 자도 되겠지...' },
+        { personality:'사랑스러운', line:'휴우~ 정말 다행이다~! 이걸로 한동안은 안심이겠네!' },
         { personality:'냉정한', line:'잠시 쉴 수 있겠네. 나쁘지는 않아.' },
         { personality:'지능적인', line:'역시, 내 계산이 틀리지 않았어.' },
         { personality:'사이코패스', line:'재미없게 벌써 끝났어? 좀 더 버텨줄 줄 알았는데.' },
@@ -690,6 +696,8 @@ const CHARACTER_DIALOGUES = {
         { personality:'희생적인', line:'괜찮아... 나만 참으면 다들 편해질 텐데. 혼자 있는 게 익숙해.' },
         { personality:'무던한', line:'네가 나를 그렇게 느꼈다니. 의외네. 조금 슬프다.' },
         { personality:'이타적인', line:'내가 더 도울 수 있는 게 없어서... 그게 너무 미안하고 괴로워요.' },
+        { personality:'멍한', line:'... 나... 가볼게...' },
+        { personality:'사랑스러운', line:'어, 어떻게 그런 말을 할 수가 있어...? 너무해!' },
         { personality:'냉정한', line:'너...... 흠, 그래. 알았어.' },
         { personality:'지능적인', line:'네가 뭔데 나를 그렇게 판단해?! 저리 꺼져!' },
         { personality:'사이코패스', line:'상실은 논리적으로 피할 수 없는 현상이지. 하지만... 잔상이 오래 남는군.' },
@@ -716,6 +724,8 @@ const CHARACTER_DIALOGUES = {
         { personality:'희생적인', line:'더 이상 줄 게 없네요. 저도... 이제는 쉬어도 되겠죠?' },
         { personality:'무던한', line:'좀 피곤하네... 자고 일어나면 나아지겠지.' },
         { personality:'이타적인', line:'오늘은 정말 힘들었어... 잠시 쉬어야 겠네.' },
+        { personality:'멍한', line:'하암... 너무 졸린데... 나 잠깐만 잘게...' },
+        { personality:'사랑스러운', line:'으음... 조금 힘들지만, 힘내볼게!' },
         { personality:'냉정한', line:'내가 쉬겠다는데 허락이 필요해? 하! 저리 꺼져.' },
         { personality:'지능적인', line:'정말이지, 다들 멍청해서는! 나도 이젠 좀 쉬어야겠어.' },
         { personality:'사이코패스', line:'사람들 비위 맞춰주는 연기도 이젠 지루하네. 다 죽이고 끝낼까.' },
@@ -742,6 +752,8 @@ const CHARACTER_DIALOGUES = {
         { personality:'희생적인', line:'이미 각오했던 일이잖아..... 진정해야해.' },
         { personality:'무던한', line:'후, 침착하자. 괜찮아. 괜찮을거야.....' },
         { personality:'이타적인', line:'어, 어째서...? 어째서 다들 이런 선택을 하는거야...?' },
+        { personality:'멍한', line:'음... 오늘은 악몽을 꾸려나... 하암...' },
+        { personality:'사랑스러운', line:'꺄아악-! 너무 무서워! 도와줘~!' },
         { personality:'냉정한', line:'젠장! 이렇게 될 줄 알았어!' },
         { personality:'지능적인', line:'내가 틀릴리가 없어... 내가 틀렸을리 없는데...!' },
         { personality:'사이코패스', line:'별 거 아니야.' },
@@ -5623,3 +5635,4 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
         }, 100);
     });
 }
+
