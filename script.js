@@ -1260,7 +1260,7 @@ const POPUP_EVENTS = {
             );
             return candidates.length > 0 ? candidates : null;
         },
-        probability: 0.01,
+        probability: 0.9,
         getMessage: (character) => `
             <div style="text-align: center; margin-bottom: 10px;">
                 <strong>${character.name}은(는) 탈출구를 발견했다.</strong>
@@ -1370,8 +1370,10 @@ const POPUP_EVENTS = {
                     }
                     
                     addLog(`${character.name}은(는) 탈출구로 들어가기로 결정했다!(${total1}/${threshold})`, 'event');
+
+                    addLog(`${character.name}은(는) 탈출구가 있는 곳으로 향한다...(잠시 대기)`, 'event');
                     
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    await new Promise(resolve => setTimeout(resolve, 1500));
 
                     const result2 = await rollDiceWithAnimation(95, "탈출", 0);
                     const escapeTotal = result2.roll;
@@ -1502,7 +1504,7 @@ function toggleSimulation() {
         btn.innerHTML = '<i data-lucide="pause"></i><span>일시정지</span>';
         runSimulation();
     } else {
-        btn.innerHTML = '<i data-lucide="play"></i><span>시작</span>';
+        btn.innerHTML = '<i data-lucide="play"></i><span>자동진행</span>';
         if (gameState.timer) {
             clearTimeout(gameState.timer);
             gameState.timer = null;
@@ -1693,7 +1695,7 @@ function checkPopupEvents() {
         if (gameState.isRunning) {
             gameState.isRunning = false;
             const btn = document.getElementById('toggleBtn');
-            btn.innerHTML = '<i data-lucide="play"></i><span>시작</span>';
+            btn.innerHTML = '<i data-lucide="play"></i><span>자동진행</span>';
             if (gameState.timer) {
                 clearTimeout(gameState.timer);
                 gameState.timer = null;
@@ -3887,6 +3889,11 @@ function updateDisplay() {
     updateSurvivorList();
     updateLogList();
     updateButtons();
+
+    const logList = document.getElementById('logList');
+    if (logList) {
+        logList.scrollTop = 0;
+    }
 }
 
 // 상태 표시 업데이트
@@ -5732,12 +5739,26 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
                     s.isAlive && !gameState.initialTrialPopupsShown[s.id]
                 );
 
-                if (stillRemaining.length === 0) {
-                    // 모든 생존자의 판정이 끝났다면 0.5초 뒤 종료 로그 출력
+                if (stillRemaining.length === 0 && gameState.turn === 1) {
+                    // 버튼 비활성화
+                    const nextTurnBtn = document.getElementById('nextTurnBtn');
+                    if (nextTurnBtn) {
+                        nextTurnBtn.disabled = true;
+                        nextTurnBtn.style.opacity = '0.5';
+                        nextTurnBtn.style.cursor = 'not-allowed';
+                    }
+                    
                     setTimeout(() => {
                         addLog(`=== 턴 ${gameState.turn}: 모든 최초의 시련 완료 ===`, 'phase');
                         updateDisplay();
-                    }, 1000);
+                        
+                        // 버튼 다시 활성화
+                        if (nextTurnBtn) {
+                            nextTurnBtn.disabled = false;
+                            nextTurnBtn.style.opacity = '1';
+                            nextTurnBtn.style.cursor = 'pointer';
+                        }
+                    }, 2500);
                 }
 
             }, isSkipped ? 500 : 2000);
