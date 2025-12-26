@@ -13,7 +13,8 @@ let gameState = {
     hasStarted: false,
     initialTrialPopupsShown: {},
     mainGameTurn: 0,
-    usedTrialEvents: []
+    usedTrialEvents: [],
+    pendingDiceRolls: 0 
 };
 // 상수
 const GENDERS = ['남성', '여성', '기타'];
@@ -597,60 +598,64 @@ const INITIAL_RELATIONSHIP_VALUES = {
 // 성격별 대사 목록
 const CHARACTER_DIALOGUES = {
     anger: [
-        { personality: '대범한', line: '뭐? 고작 그 정도로 날 막겠다고? 하, 비켜. 다 박살 내버리기 전에.' },
-        { personality: '열정적인', line: '장난해? 이 정도로 포기할 거였으면 시작도 안 했어!' },
-        { personality: '사차원', line: '나도 내가 화가 났다는 건 알아. 심장에 금이 가서, 소리가 새고 있거든.' },
-        { personality: '감정적인', line: '어떻게 나한테 이래?! 내가 너한테 어떻게 했는데! 네가 사람이면 그러면 안 되지!!' },
-        { personality: '단세포', line: '아 몰라! 짜증 나! 야, 너 일로 와! 한 대 맞자!' },
-        { personality: '의존적인', line: '네가 없으면 안 된다고 했잖아! 근데 왜 자꾸 내 손을 놓으려고 해?!' },
-        { personality: '맹목적인', line: '네까짓 게 뭘 안다고 떠들어! 내가 무슨 생각을 하는지 너는 모르잖아!' },
-        { personality: '편집증', line: '거봐, 너도 한패지? 처음부터 날 망가뜨리려고 계획한 거잖아. 다 알고 있어!' },
-        { personality: '이기적인', line: '짜증나게 하지마. 나도 어울려주고 있는거니까!!' },
-        { personality: '허언증', line: '너 내가 누군지 알아? 내 말 한마디면 넌 이 바닥에서 매장이야. 감히 누굴 가르쳐!' },
-        { personality: '회피성', line: '아 진짜 짜증 나게... 왜 자꾸 대답을 강요해? 너만 없으면 되잖아!' },
-        { personality: '신중한', line: '이건 명백히 당신의 잘못입니다. 이런식으로 행동하시면 앞으로는 당신을 배제하겠어요.' },
-        { personality: '평범한', line: '사람 좋게 봐주니까 진짜... 저기요, 적당히 좀 하세요. 저도 화낼 줄 압니다.' },
-        { personality: '다정한', line: '당신 때문에 소중한 사람들이 다치고 있잖아요. 더 이상은 지켜만 보지 않겠어요.' },
-        { personality: '희생적인', line: '그렇게 말씀하셔선 안됐어요. 모두 겨우 버티고 있는데... 난 당신을 용서할 수 없어요.' },
-        { personality: '무던한', line: '음, 그건 사과하셔야겠는데요. 반복되면 저도 가만히 있을 순 없으니까요.' },
-        { personality: '이타적인', line: '모두를 위한 길을 네가 망치고 있어. 네 이기심이 얼마나 많은 사람을 힘들게 했는지 알아?!' },
-        { personality: '멍한', line: '어... 방금 그거, 조금 화나려고 하는데...' },
-        { personality: '사랑스러운', line: '정말 너무해! 나 삐칠 거야!' },
-        { personality: '냉정한', line: '이딴식으로 언쟁하는 것도 피곤해. 알아서 잘 좀했으면 좋겠네.' },
-        { personality: '지능적인', line: '그 머리는 장식이야? 너야말로 머리가 있다면 생각을 해!' },
-        { personality: '사이코패스', line: '화난 거 아닌데. 그냥 네가 숨 쉬는 소리가 거슬려서.' },
-        { personality: '소시오패스', line: '...하! 말은 조심하는 게 좋아.' },
-        { personality: '생명경시', line: '어차피 다 끝날 목숨인데, 이딴 걸로 싸움질 할 마음도 안들어.' },
-        { personality: '염세적인', line: '그래, 결국 이렇게 뒤통수를 치는군. 세상이 다 그렇지 뭐. 역겨워.' },
-        { personality: '트라우마가 있는', line: '오지 마! 내 몸에 손대지 마! 죽여버릴 거야, 가까이 오지 말라고!' }
+        { personality:'대범한', line: '뭐? 고작 그 정도로 날 막겠다고? 하, 비켜. 다 박살 내버리기 전에.' },
+        { personality:'열정적인', line: '장난해? 이 정도로 포기할 거였으면 시작도 안 했어!' },
+        { personality:'사차원', line: '나도 내가 화가 났다는 건 알아. 심장에 금이 가서, 소리가 새고 있거든.' },
+        { personality:'감정적인', line: '어떻게 나한테 이래?! 내가 너한테 어떻게 했는데! 네가 사람이면 그러면 안 되지!!' },
+        { personality:'단세포', line: '아 몰라! 짜증 나! 야, 너 일로 와! 한 대 맞자!' },
+        { personality:'운동광', line: '야, 그딴식으로 굴거면 말로만 그러지말고 한 판 붙어보자고.' },
+        { personality:'의존적인', line: '네가 없으면 안 된다고 했잖아! 근데 왜 자꾸 내 손을 놓으려고 해?!' },
+        { personality:'맹목적인', line: '네까짓 게 뭘 안다고 떠들어! 내가 무슨 생각을 하는지 너는 모르잖아!' },
+        { personality:'편집증', line: '거봐, 너도 한패지? 처음부터 날 망가뜨리려고 계획한 거잖아. 다 알고 있어!' },
+        { personality:'이기적인', line: '짜증나게 하지마. 나도 어울려주고 있는거니까!!' },
+        { personality:'허언증', line: '너 내가 누군지 알아? 내 말 한마디면 넌 이 바닥에서 매장이야. 감히 누굴 가르쳐!' },
+        { personality:'회피성', line: '아 진짜 짜증 나게... 왜 자꾸 대답을 강요해? 너만 없으면 되잖아!' },
+        { personality:'신중한', line: '이건 명백히 당신의 잘못입니다. 이런식으로 행동하시면 앞으로는 당신을 배제하겠어요.' },
+        { personality:'평범한', line: '사람 좋게 봐주니까 진짜... 저기요, 적당히 좀 하세요. 저도 화낼 줄 압니다.' },
+        { personality:'다정한', line: '당신 때문에 소중한 사람들이 다치고 있잖아요. 더 이상은 지켜만 보지 않겠어요.' },
+        { personality:'희생적인', line: '그렇게 말씀하셔선 안됐어요. 모두 겨우 버티고 있는데... 난 당신을 용서할 수 없어요.' },
+        { personality:'무던한', line: '음, 그건 사과하셔야겠는데요. 반복되면 저도 가만히 있을 순 없으니까요.' },
+        { personality:'이타적인', line: '모두를 위한 길을 네가 망치고 있어. 네 이기심이 얼마나 많은 사람을 힘들게 했는지 알아?!' },
+        { personality:'강단있는', line: '기까지 하죠. 내 인내심도, 당신에 대한 예우도 끝났으니까.' },
+        { personality:'멍한', line: '어... 방금 그거, 조금 화나려고 하는데...' },
+        { personality:'사랑스러운', line: '정말 너무해! 나 삐칠 거야!' },
+        { personality:'냉정한', line: '이딴식으로 언쟁하는 것도 피곤해. 알아서 잘 좀했으면 좋겠네.' },
+        { personality:'지능적인', line: '그 머리는 장식이야? 너야말로 머리가 있다면 생각을 해!' },
+        { personality:'사이코패스', line: '화난 거 아닌데. 그냥 네가 숨 쉬는 소리가 거슬려서.' },
+        { personality:'소시오패스', line: '...하! 말은 조심하는 게 좋아.' },
+        { personality:'생명경시', line: '어차피 다 끝날 목숨인데, 이딴 걸로 싸움질 할 마음도 안들어.' },
+        { personality:'염세적인', line: '그래, 결국 이렇게 뒤통수를 치는군. 세상이 다 그렇지 뭐. 역겨워.' },
+        { personality:'트라우마가 있는', line: '오지 마! 내 몸에 손대지 마! 죽여버릴 거야, 가까이 오지 말라고!' }
     ],
     happiness: [
-        { personality: '대범한', line: '하하하! 봤지? 내가 된다고 했잖아! 오늘은 끝까지 가는 거야!' },
-        { personality: '열정적인', line: '와! 드디어 해냈어! 이 짜릿한 기분!' },
-        { personality: '사차원', line: '지금 내 머릿속에서 설탕 가루가 내리고 있어. 구름들이 나한테 윙크하는 것 같아!' },
-        { personality: '감정적인', line: '너무 좋아... 정말 꿈만 같아. 나 지금 눈물 날 것 같아, 어떡해!' },
-        { personality: '단세포', line: '우와! 신난다! 오늘 진짜 최고!' },
-        { personality: '의존적인', line: '네가 웃으니까 나도 너무 행복해. 우리 평생 이렇게만 있자, 응?' },
-        { personality: '맹목적인', line: '당신이 좋다면 나도 좋아. 당신의 선택이 틀릴 리 없잖아?' },
-        { personality: '편집증', line: '잠깐 괜찮네… 이상할 정도로. 오히려 더 수상해.' },
-        { personality: '이기적인', line: '특별히 그쪽한테도 드릴게요. 오늘은 기분이 나쁘지 않으니까.' },
-        { personality: '허언증', line: '거봐, 내 능력이라면 이 정도는 당연한 결과지. 다들 나만 믿으라니까?' },
-        { personality: '회피성', line: '아무 일도 안 일어나서 다행이다... 그냥 이대로 조용히 지나갔으면.' },
-        { personality: '신중한', line: '내 선택이 좋은 결과를 나은 것 같네. 다행이야.' },
-        { personality: '평범한', line: '소소하지만 이런 게 행복이죠. 날씨도 좋고, 다 좋네요.' },
-        { personality: '다정한', line: '널 위해서 준비해봤어. 하하, 마음에 들어하니 기쁘네.' },
-        { personality: '희생적인', line: '모두가 웃고 있네요. 네, 저는 이런 모습을 보고싶었어요. 정말 기뻐요.' },
-        { personality: '무던한', line: '좋네요. 이 정도면 충분하죠.' },
-        { personality: '이타적인', line: '드디어 웃어주셨네요! 당신이 기뻐보이니 나도 기쁘네요.' },
-        { personality: '멍한', line: '나비가 지나갔어... 예쁘다... 헤헤.' },
-        { personality: '사랑스러운', line: '너랑 있으니까 마음이 몽글몽글해졌어...!' },
-        { personality: '냉정한', line: '정은 안주려고 했는데... 상관없겠지.' },
-        { personality: '지능적인', line: '하, 멍청해지는 기분이야. ...뭐, 가끔은 멍청하게 즐기는 것도 나쁘진 않네.' },
-        { personality: '사이코패스', line: '망가지는 모습이 꽤 예쁘네. 다음엔 어떤 표정을 지어줄 거야?' },
-        { personality: '소시오패스', line: '그래. 내가 성공할 줄 알았지. 하하!' },
-        { personality: '생명경시', line: '삶은 덧없지만, 가끔은 웃어보는 것도 나쁘진 않은 것 같아요.' },
-        { personality: '염세적인', line: '뭐, 잠시는 좋겠지. 조만간 또 망가지겠지만 지금은 즐겨두자고.' },
-        { personality: '트라우마가 있는', line: '이렇게 웃어도 되는 걸까...? 정말... 나 안전한 거 맞지?' }
+        { personality:'대범한', line: '하하하! 봤지? 내가 된다고 했잖아! 오늘은 끝까지 가는 거야!' },
+        { personality:'열정적인', line: '와! 드디어 해냈어! 이 짜릿한 기분!' },
+        { personality:'사차원', line: '지금 내 머릿속에서 설탕 가루가 내리고 있어. 구름들이 나한테 윙크하는 것 같아!' },
+        { personality:'감정적인', line: '너무 좋아... 정말 꿈만 같아. 나 지금 눈물 날 것 같아, 어떡해!' },
+        { personality:'단세포', line: '우와! 신난다! 오늘 진짜 최고!' },
+        { personality:'운동광', line: '와! 컨디션 최고다! 심장 터질 것 같아! 오늘 한 세트 더 갈 수 있겠는데?' },
+        { personality:'의존적인', line: '네가 웃으니까 나도 너무 행복해. 우리 평생 이렇게만 있자, 응?' },
+        { personality:'맹목적인', line: '당신이 좋다면 나도 좋아. 당신의 선택이 틀릴 리 없잖아?' },
+        { personality:'편집증', line: '잠깐 괜찮네… 이상할 정도로. 오히려 더 수상해.' },
+        { personality:'이기적인', line: '특별히 그쪽한테도 드릴게요. 오늘은 기분이 나쁘지 않으니까.' },
+        { personality:'허언증', line: '거봐, 내 능력이라면 이 정도는 당연한 결과지. 다들 나만 믿으라니까?' },
+        { personality:'회피성', line: '아무 일도 안 일어나서 다행이다... 그냥 이대로 조용히 지나갔으면.' },
+        { personality:'신중한', line: '내 선택이 좋은 결과를 나은 것 같네. 다행이야.' },
+        { personality:'평범한', line: '소소하지만 이런 게 행복이죠. 날씨도 좋고, 다 좋네요.' },
+        { personality:'다정한', line: '널 위해서 준비해봤어. 하하, 마음에 들어하니 기쁘네.' },
+        { personality:'희생적인', line: '모두가 웃고 있네요. 네, 저는 이런 모습을 보고싶었어요. 정말 기뻐요.' },
+        { personality:'무던한', line: '좋네요. 이 정도면 충분하죠.' },
+        { personality:'이타적인', line: '드디어 웃어주셨네요! 당신이 기뻐보이니 나도 기쁘네요.' },
+        { personality:'강단있는', line: '이 순간을 보려고 그 고생을 했나 봐. 정말 좋다.' },
+        { personality:'멍한', line: '나비가 지나갔어... 예쁘다... 헤헤.' },
+        { personality:'사랑스러운', line: '너랑 있으니까 마음이 몽글몽글해졌어...!' },
+        { personality:'냉정한', line: '정은 안주려고 했는데... 상관없겠지.' },
+        { personality:'지능적인', line: '하, 멍청해지는 기분이야. ...뭐, 가끔은 멍청하게 즐기는 것도 나쁘진 않네.' },
+        { personality:'사이코패스', line: '망가지는 모습이 꽤 예쁘네. 다음엔 어떤 표정을 지어줄 거야?' },
+        { personality:'소시오패스', line: '그래. 내가 성공할 줄 알았지. 하하!' },
+        { personality:'생명경시', line: '삶은 덧없지만, 가끔은 웃어보는 것도 나쁘진 않은 것 같아요.' },
+        { personality:'염세적인', line: '뭐, 잠시는 좋겠지. 조만간 또 망가지겠지만 지금은 즐겨두자고.' },
+        { personality:'트라우마가 있는', line: '이렇게 웃어도 되는 걸까...? 정말... 나 안전한 거 맞지?' }
     ],
     relief: [
         { personality:'대범한', line:'휴, 살았네. 죽을 고비 한 번 넘기니까 더 팔팔해지는데?' },
@@ -658,6 +663,7 @@ const CHARACTER_DIALOGUES = {
         { personality:'사차원', line:'음, 우주가 오늘은 내 편인 것 같아.' },
         { personality:'감정적인', line:'주, 죽는 줄 알았어... 너, 너무 무서워서...!' },
         { personality:'단세포', line:'아~ 살았다! 배고파!' },
+        { personality:'운동광', line: '휴, 땀 한 판 쭉 빼고 나니까 살 것 같네. 역시 스트레스에는 움직이는 게 최고야.' },
         { personality:'의존적인', line:'다행이야... 당신이 옆에 있어서 정말 다행이에요.' },
         { personality:'맹목적인', line:'아아, 역시 나를 도와줄 줄 알았어...!' },
         { personality:'편집증', line:'일단은 따돌린 건가? 아니, 안심하긴 일러. 다른 함정이 있을지도 몰라.' },
@@ -670,6 +676,7 @@ const CHARACTER_DIALOGUES = {
         { personality:'희생적인', line:'다행이다. 아무도 다치지 않았어. 정말로… 다행이야.' },
         { personality:'무던한', line:'뭐, 어떻게든 되네요. 다행이에요.' },
         { personality:'이타적인', line:'다른 사람들도 다 무사한 거죠? 아, 정말 다행이다... 고생 많으셨어요.' },
+        { personality:'강단있는', line: '됐어. 최악의 고비는 넘겼네.' },
         { personality:'멍한', line:'아, 끝난 건가... 이제 자도 되겠지...' },
         { personality:'사랑스러운', line:'휴우~ 정말 다행이다~! 이걸로 한동안은 안심이겠네!' },
         { personality:'냉정한', line:'잠시 쉴 수 있겠네. 나쁘지는 않아.' },
@@ -686,10 +693,12 @@ const CHARACTER_DIALOGUES = {
         { personality:'사차원', line:'내 마음속의 무지개가 까맣게 변해서 바닥으로 뚝뚝 떨어지고 있어.' },
         { personality:'감정적인', line:'어, 어떡하지....? 흡... 내가, 나도 이런 걸 원한게 아니야...!' },
         { personality:'단세포', line:'흐앙! 슬퍼! 눈물이 안 멈춰!' },
+        { personality:'운동광', line: '흡, 울면 안 돼... 근손실 난단말이야...' },
         { personality:'의존적인', line:'내, 내가 잘못했어...! 이제 시키는대로 할 게...!' },
         { personality:'맹목적인', line:'나, 날 버릴거야...? 네가 없으면 난...!' },
         { personality:'편집증', line:'결국 이럴 줄 알았어. 다들 날 비웃고 있겠지? 이게 당신들 계획이었지?' },
-        { personality:'이기적인', line:'왜 나한테만 이래?! 너는 잘못 안했어?!' },
+        { personality:'이기적인', line:'아무리 나라도 그런식으로 말하면 상처받아. 어떻게 그런 말을 할 수가 있어?' },
+        { personality:'허언증', line: '어, 음. 나도 너 별로 안좋아했어. 그리고 난 너 말고도 친구 많거든?' },
         { personality:'회피성', line:'그냥 다 없었던 일이면 좋겠다. 너도, 나도 모르는 사여였다면...' },
         { personality:'신중한', line:'어디서부터 잘못된 걸까. 좀 더 신중했어야 했는데...' },
         { personality:'평범한', line:'다 보니 이런 날도 오는구나. 역시 마음이 좀 허전하다...' },
@@ -697,6 +706,7 @@ const CHARACTER_DIALOGUES = {
         { personality:'희생적인', line:'괜찮아... 나만 참으면 다들 편해질 텐데. 혼자 있는 게 익숙해.' },
         { personality:'무던한', line:'네가 나를 그렇게 느꼈다니. 의외네. 조금 슬프다.' },
         { personality:'이타적인', line:'내가 더 도울 수 있는 게 없어서... 그게 너무 미안하고 괴로워요.' },
+        { personality:'강단있는', line: '네가 준 상처 때문에 모든 걸 포기하지는 않을 거야.' },
         { personality:'멍한', line:'... 나... 가볼게...' },
         { personality:'사랑스러운', line:'어, 어떻게 그런 말을 할 수가 있어...? 너무해!' },
         { personality:'냉정한', line:'너...... 흠, 그래. 알았어.' },
@@ -713,6 +723,7 @@ const CHARACTER_DIALOGUES = {
         { personality:'사차원', line:'내 영혼이 투명해지고 있어. 곧 공기 중으로 흩어져서 사라질지도 몰라.' },
         { personality:'감정적인', line:'이제 울 힘도 없어. 마음이 닳고 닳아서 구멍이 난 것 같아.' },
         { personality:'단세포', line:'졸려. 배고파. 힘들어. 나 잘래.' },
+        { personality:'운동광', line: '하얗게 불태웠어... 근섬유 마디마디가 비명을 지르네...' },
         { personality:'의존적인', line:'나 너무 힘들어... 네가 나 좀 안아주면 안 돼? 아무 말도 하지 말고...' },
         { personality:'맹목적인', line:'시키는 대로 다 했는데... 왜 내 영혼은 점점 말라가는 걸까.' },
         { personality:'편집증', line:'사방이 적인데 도망칠 기력도 없어.' },
@@ -725,6 +736,7 @@ const CHARACTER_DIALOGUES = {
         { personality:'희생적인', line:'더 이상 줄 게 없네요. 저도... 이제는 쉬어도 되겠죠?' },
         { personality:'무던한', line:'좀 피곤하네... 자고 일어나면 나아지겠지.' },
         { personality:'이타적인', line:'오늘은 정말 힘들었어... 잠시 쉬어야 겠네.' },
+        { personality:'강단있는', line: '잠시 숨 좀 돌리자. 오늘만 날이 있는 건 아니잖아? 더 멀리를 봐야지.' },
         { personality:'멍한', line:'하암... 너무 졸린데... 나 잠깐만 잘게...' },
         { personality:'사랑스러운', line:'으음... 조금 힘들지만, 힘내볼게!' },
         { personality:'냉정한', line:'내가 쉬겠다는데 허락이 필요해? 하! 저리 꺼져.' },
@@ -741,10 +753,11 @@ const CHARACTER_DIALOGUES = {
         { personality:'사차원', line:'저기 봐, 그림자들이 나를 보고 속삭여. 저 사람들이 내 이름을 다 가져가버리면 어떡하지...?' },
         { personality:'감정적인', line:'무서워! 너무 무서워! 나, 나는 이런 거 못 버텨!!' },
         { personality:'단세포', line:'으아악!' },
+        { personality:'운동광', line: '이, 이건 내 근성으로도 안 되겠는데? ... 무서워!' },
         { personality:'의존적인', line:'싫어.. 싫어...! 혼자 남기 싫어...!! 무서워...!' },
         { personality:'맹목적인', line:'내가 바라는 건 하나 뿐이었는데... 대체 왜...!!' },
         { personality:'편집증', line:'뭐야, 도대체 뭐냐고! 왜, 왜 이렇게 된거야...!' },
-        { personality:'이기적인', line:'나, 나는 아니야...! 난 잘못한 거 없어...!!' },
+        { personality:'이기적인', line:'나, 나는 아니야...! 난 잘못한 거 없어!!' },
         { personality:'허언증', line:'하, 하하... 내가 뭘 그렇게 잘못했지?' },
         { personality:'회피성', line:'싫어... 도망, 도망가야해. 싫어...!!' },
         { personality:'신중한', line:'역시 다시 한 번 생각했어야 했어. 내가 잘 선택했더라면...!' },
@@ -753,6 +766,7 @@ const CHARACTER_DIALOGUES = {
         { personality:'희생적인', line:'이미 각오했던 일이잖아..... 진정해야해.' },
         { personality:'무던한', line:'후, 침착하자. 괜찮아. 괜찮을거야.....' },
         { personality:'이타적인', line:'어, 어째서...? 어째서 다들 이런 선택을 하는거야...?' },
+        { personality:'강단있는', line: '떨리냐고? 당연하지. 하지만 그게 물러설 이유가 되는 건 아니야.' },
         { personality:'멍한', line:'음... 오늘은 악몽을 꾸려나... 하암...' },
         { personality:'사랑스러운', line:'꺄아악-! 너무 무서워! 도와줘~!' },
         { personality:'냉정한', line:'젠장! 이렇게 될 줄 알았어!' },
@@ -1317,17 +1331,13 @@ const POPUP_EVENTS = {
                     addLog(`탈출 다이스: ${total} : ${target}`, total >= target ? 'success' : 'error');
                     
                     if (total >= target) {
-                        addLog(`${character.name}이(가) 성공적으로 탈출했다. (${total}/95)`, 'escape');
-                        
-                        gameState.survivors = gameState.survivors.map(s => 
-                            s.id === character.id ? { ...s, isAlive: false } : s
-                        );
+                        addLog(`${character.name}이(가) 성공적으로 탈출했다. (${total}/80)`, 'escape');
+                        updateDisplay(); 
                         
                         gameState.isRunning = false;
-                        setTimeout(() => {
-                            addLog(`${character.name}의 단독 승리!`, 'game-end');
-                            setTimeout(() => showEndingScreen([character]), 5000);
-                        }, 500);
+                        addLog(`${character.name}의 단독 승리!`, 'game-end');
+                        updateDisplay();
+                        setTimeout(() => showEndingScreen([character]), 3500);
                     } else {
                         addLog(`탈출구의 끝이 막혀있었다. 탈출 실패 (${total}/80)`, 'event');
                         
@@ -1366,6 +1376,7 @@ const POPUP_EVENTS = {
                     
                     if (total1 < threshold) {
                         addLog(`${character.name}은(는) 탈출구로 들어가기를 포기했다. (${total1}/${threshold})`, 'event');
+                        updateDisplay();
                         return;
                     }
                     
@@ -1381,17 +1392,13 @@ const POPUP_EVENTS = {
                     addLog(`탈출 다이스: ${escapeTotal} : 95`, escapeTotal >= 95 ? 'success' : 'error');
                     
                     if (escapeTotal >= 95) {
-                        addLog(`${character.name}이(가) 성공적으로 탈출했다. (${escapeTotal}/95)`, 'escape');
-                        
-                        gameState.survivors = gameState.survivors.map(s => 
-                            s.id === character.id ? { ...s, isAlive: false } : s
-                        );
+                        addLog(`${character.name}이(가) 성공적으로 탈출했다. (${total}/80)`, 'escape');
+                        updateDisplay(); 
                         
                         gameState.isRunning = false;
-                        setTimeout(() => {
-                            addLog(`${character.name}의 단독 승리!`, 'game-end');
-                            setTimeout(() => showEndingScreen([character]), 5000);
-                        }, 500);
+                        addLog(`${character.name}의 단독 승리!`, 'game-end');
+                        updateDisplay();
+                        setTimeout(() => showEndingScreen([character]), 3500);
                     } else {
                         addLog(`탈출구의 끝이 막혀있었다! 탈출 실패 (${escapeTotal}/95)`, 'event');
                         
@@ -1557,7 +1564,7 @@ function processTurn() {
         addLog('생존자가 2명 이하가 되었다!', 'game-end');
         gameState.isRunning = false;
         updateDisplay();
-        setTimeout(() => showEndingScreen(aliveSurvivors), 5000);
+        setTimeout(() => showEndingScreen(aliveSurvivors), 3500);
         return;
     }
     
@@ -1981,7 +1988,7 @@ function processSingleFreeAction(s) {
             gameState.isRunning = false;
             setTimeout(() => {
                 addLog('생존자가 2명 이하가 되었다!', 'game-end');
-                setTimeout(() => showEndingScreen(aliveSurvivors), 5000);
+                setTimeout(() => showEndingScreen(aliveSurvivors), 3500);
             }, 500);
         }
     }
@@ -2052,7 +2059,7 @@ function processPanicEffects() {
         gameState.isRunning = false;
         setTimeout(() => {
             addLog('생존자가 2명 이하가 되었다!', 'game-end');
-            setTimeout(() => showEndingScreen(aliveSurvivors), 5000);
+            setTimeout(() => showEndingScreen(aliveSurvivors), 3500);
         }, 500);
     }
 }
@@ -2705,7 +2712,7 @@ function selectSoloTrialChoice(choiceIndex, characterId, eventId) {
         gameState.isRunning = false;
         setTimeout(() => {
             addLog('생존자가 2명 이하가 되었다.', 'game-end');
-            setTimeout(() => showEndingScreen(aliveSurvivors), 5000);
+            setTimeout(() => showEndingScreen(aliveSurvivors), 3500);
         }, 500);
         return;
     }
@@ -2744,7 +2751,7 @@ function selectDuoTrialChoice(choiceIndex, char1Id, char2Id, eventId) {
         gameState.isRunning = false;
         setTimeout(() => {
             addLog('생존자가 2명 이하가 되었다.', 'game-end');
-            setTimeout(() => showEndingScreen(aliveSurvivors), 5000);
+            setTimeout(() => showEndingScreen(aliveSurvivors), 3500);
         }, 500);
         return;
     }
@@ -3716,7 +3723,7 @@ function processRoleEffect(sacrificed) {
             const remainingSurvivors = gameState.survivors.filter(s => s.isAlive);
             if (remainingSurvivors.length <= 2 && remainingSurvivors.length > 0) {
                 addLog('메인게임이 종료되었다.', 'game-end');
-                setTimeout(() => showEndingScreen(finalWinners), 10000);
+                setTimeout(() => showEndingScreen(finalWinners), 3500);
             }
         } else {
             // 대역만 남은 경우
@@ -3777,7 +3784,7 @@ function processRoleEffect(sacrificed) {
     // 2명 이하만 남았을 때 승리
     if (remainingSurvivors.length <= 2 && remainingSurvivors.length > 0) {
         addLog('메인게임이 종료되었다.', 'game-end');
-        setTimeout(() => showEndingScreen(remainingSurvivors), 5000);
+        setTimeout(() => showEndingScreen(remainingSurvivors), 3500);
     } else if (remainingSurvivors.length === 0) {
         addLog('모든 생존자가 절명했다.', 'game-end');
     }
@@ -3846,29 +3853,10 @@ function addLog(message, type = 'info') {
         type,
         timestamp: new Date().toLocaleTimeString()
     };
-    
-    gameState.logs.push(newLog);
 
     // phase 로그인 경우 맨 앞에 추가
     if (type === 'phase') {
         gameState.logs.unshift(newLog);
-    }
-    // dialogue 로그인 경우 첫 번째 phase 로그 바로 다음에 추가
-    else if (type === 'dialogue') {
-        const currentPhaseIndex = gameState.logs.findIndex(log => 
-            log.type === 'phase' && log.turn === gameState.turn
-        );
-        if (currentPhaseIndex !== -1) {
-            let insertIndex = currentPhaseIndex + 1;
-            while (insertIndex < gameState.logs.length && 
-                gameState.logs[insertIndex].type === 'dialogue' &&
-                gameState.logs[insertIndex].turn === gameState.turn) {
-                insertIndex++;
-            }
-            gameState.logs.splice(insertIndex, 0, newLog);
-        } else {
-            gameState.logs.unshift(newLog);
-        }
     }
     // 일반 로그는 기존대로
     else {
@@ -5555,20 +5543,81 @@ function showEndingScreen(winners) {
         `;
     }).join('');
     
+    // 로그 HTML 생성
+    const logsHTML = gameState.logs.map(log => `
+        <div class="log-entry">
+            <span class="log-${log.type}">${log.message}</span>
+        </div>
+    `).join('');
+    
     container.innerHTML = `
-        <div class="ending-overlay" onclick="resetSimulation()">
-            <div class="ending-content">
+        <div class="ending-overlay">
+            <div class="ending-content" id="endingContent">
                 <div class="ending-title">${titleText}</div>
                 <div class="ending-subtitle">${subtitleText}</div>
                 <div class="ending-survivors">
                     ${survivorsHTML}
                 </div>
-                <div class="ending-hint">화면을 클릭하여 계속...</div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center;">
+                    <button onclick="showEndingLogs()" class="btn btn-blue" style="padding: 0.75rem 1.5rem; font-size: 1rem;">
+                        <i data-lucide="file-text"></i> 로그 확인하기
+                    </button>
+                    <button onclick="resetSimulation()" class="btn btn-green" style="padding: 0.75rem 1.5rem; font-size: 1rem;">
+                        <i data-lucide="refresh-cw"></i> 새 시뮬레이션 시작
+                    </button>
+                </div>
+            </div>
+            
+            <div class="ending-logs" id="endingLogs" style="display: none;">
+                <div style="max-width: 800px; width: 100%; background: var(--bg-secondary); border-radius: 1rem; padding: 2rem; max-height: 80vh; display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h2 style="font-size: 1.5rem; font-weight: bold; color: var(--text-primary);">
+                            <i data-lucide="file-text"></i> 시뮬레이션 로그
+                        </h2>
+                        <button onclick="hideEndingLogs()" class="btn btn-purple" style="padding: 0.5rem 1rem;">
+                            <i data-lucide="eye"></i> 엔딩화면 보기
+                        </button>
+                    </div>
+                    <div style="overflow-y: auto; flex: 1; background: var(--bg-primary); border-radius: 0.5rem; padding: 1rem;">
+                        ${logsHTML}
+                    </div>
+                    <button onclick="resetSimulation()" class="btn btn-green" style="margin-top: 1rem; padding: 0.75rem; font-size: 1rem;">
+                        <i data-lucide="refresh-cw"></i> 새 시뮬레이션 시작
+                    </button>
+                </div>
             </div>
         </div>
     `;
     
     lucide.createIcons();
+}
+
+// 엔딩 로그 표시
+function showEndingLogs() {
+    const endingContent = document.getElementById('endingContent');
+    const endingLogs = document.getElementById('endingLogs');
+    
+    if (endingContent && endingLogs) {
+        endingContent.style.display = 'none';
+        endingLogs.style.display = 'flex';
+        endingLogs.style.alignItems = 'center';
+        endingLogs.style.justifyContent = 'center';
+        
+        lucide.createIcons();
+    }
+}
+
+// 엔딩 로그 숨기기
+function hideEndingLogs() {
+    const endingContent = document.getElementById('endingContent');
+    const endingLogs = document.getElementById('endingLogs');
+    
+    if (endingContent && endingLogs) {
+        endingLogs.style.display = 'none';
+        endingContent.style.display = 'block';
+        
+        lucide.createIcons();
+    }
 }
 
 // 시뮬레이션 리셋 (생존자 목록은 유지)
@@ -5605,7 +5654,8 @@ function resetSimulation() {
         hasStarted: false,
         initialTrialPopupsShown: {},
         mainGameTurn: 0,
-        usedTrialEvents: []
+        usedTrialEvents: [],
+        pendingDiceRolls: 0
     };
     
     // 생존자 재등록
@@ -5632,6 +5682,8 @@ function resetSimulation() {
 }
 
 async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
+
+    gameState.pendingDiceRolls++;
     return new Promise((resolve) => {
         const overlay = document.createElement('div');
         overlay.className = 'dice-overlay';
@@ -5703,6 +5755,36 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
             
             // 결과 즉시 표시
             showResult();
+            gameState.pendingDiceRolls--;
+            // 2. 판정이 끝난 후, 남은 인원이 있는지 체크합니다.
+                const stillRemaining = gameState.survivors.filter(s => 
+                    s.isAlive && !gameState.initialTrialPopupsShown[s.id]
+                );
+
+                if (stillRemaining.length === 0 && gameState.turn === 1 && gameState.pendingDiceRolls === 0) {
+
+                    // 버튼 비활성화
+                    const nextTurnBtn = document.getElementById('nextTurnBtn');
+                    if (nextTurnBtn) {
+                        nextTurnBtn.disabled = true;
+                        nextTurnBtn.style.opacity = '0.5';
+                        nextTurnBtn.style.cursor = 'not-allowed';
+                        nextTurnBtn.style.pointerEvents = 'none';
+                    }
+                    
+                    setTimeout(() => {
+                        addLog(`=== 턴 ${gameState.turn}: 모든 최초의 시련 완료 ===`, 'phase');
+                        updateDisplay();
+                        
+                        // 버튼 다시 활성화
+                        if (nextTurnBtn) {
+                            nextTurnBtn.disabled = false;
+                            nextTurnBtn.style.opacity = '1';
+                            nextTurnBtn.style.cursor = 'pointer';
+                            nextTurnBtn.style.pointerEvents = 'auto';
+                        }
+                    }, 2500);
+                }
         }
         
         // 결과 표시 함수
@@ -5734,33 +5816,6 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
                 // 1. 먼저 이번 주사위 판정 결과를 반환(resolve)합니다.
                 resolve({ isSuccess, roll: rollValue });
 
-                // 2. 판정이 끝난 후, 남은 인원이 있는지 체크합니다.
-                const stillRemaining = gameState.survivors.filter(s => 
-                    s.isAlive && !gameState.initialTrialPopupsShown[s.id]
-                );
-
-                if (stillRemaining.length === 0 && gameState.turn === 1) {
-                    // 버튼 비활성화
-                    const nextTurnBtn = document.getElementById('nextTurnBtn');
-                    if (nextTurnBtn) {
-                        nextTurnBtn.disabled = true;
-                        nextTurnBtn.style.opacity = '0.5';
-                        nextTurnBtn.style.cursor = 'not-allowed';
-                    }
-                    
-                    setTimeout(() => {
-                        addLog(`=== 턴 ${gameState.turn}: 모든 최초의 시련 완료 ===`, 'phase');
-                        updateDisplay();
-                        
-                        // 버튼 다시 활성화
-                        if (nextTurnBtn) {
-                            nextTurnBtn.disabled = false;
-                            nextTurnBtn.style.opacity = '1';
-                            nextTurnBtn.style.cursor = 'pointer';
-                        }
-                    }, 2500);
-                }
-
             }, isSkipped ? 500 : 2000);
 
         }
@@ -5791,8 +5846,37 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
                 col1.classList.remove('slot-rolling');
                 
                 showResult();
+                gameState.pendingDiceRolls--;
+                // 2. 판정이 끝난 후, 남은 인원이 있는지 체크합니다.
+                const stillRemaining = gameState.survivors.filter(s => 
+                    s.isAlive && !gameState.initialTrialPopupsShown[s.id]
+                );
+
+                if (stillRemaining.length === 0 && gameState.turn === 1 && gameState.pendingDiceRolls === 0) {
+
+                    // 버튼 비활성화
+                    const nextTurnBtn = document.getElementById('nextTurnBtn');
+                    if (nextTurnBtn) {
+                        nextTurnBtn.disabled = true;
+                        nextTurnBtn.style.opacity = '0.5';
+                        nextTurnBtn.style.cursor = 'not-allowed';
+                        nextTurnBtn.style.pointerEvents = 'none';
+                    }
+                    
+                    setTimeout(() => {
+                        addLog(`=== 턴 ${gameState.turn}: 모든 최초의 시련 완료 ===`, 'phase');
+                        updateDisplay();
+                        
+                        // 버튼 다시 활성화
+                        if (nextTurnBtn) {
+                            nextTurnBtn.disabled = false;
+                            nextTurnBtn.style.opacity = '1';
+                            nextTurnBtn.style.cursor = 'pointer';
+                            nextTurnBtn.style.pointerEvents = 'auto';
+                        }
+                    }, 2500);
+                }
             }, 1700);
         }, 100);
     });
 }
-
