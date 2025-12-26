@@ -14,7 +14,8 @@ let gameState = {
     initialTrialPopupsShown: {},
     mainGameTurn: 0,
     usedTrialEvents: [],
-    pendingDiceRolls: 0 
+    pendingDiceRolls: 0,
+    laptopEventOccurred: false
 };
 // 상수
 const GENDERS = ['남성', '여성', '기타'];
@@ -1425,6 +1426,162 @@ const POPUP_EVENTS = {
                 }
             }
         ]
+    },
+    preciousYou: {
+        id: 'preciousYou',
+        name: '소중한 당신에게',
+        checkCondition: () => {
+            // 신뢰매매게임이 아니면 발생하지 않음
+            if (gameState.subGameType !== 'trust') return null;
+            
+            const candidates = gameState.survivors.filter(survivor => {
+                if (!survivor.isAlive) return false;
+
+                if (survivor.experiencedPreciousYou) return false;
+                
+                // 죽은 캐릭터 중 친구 이상인 캐릭터가 있는지 확인
+                const deadFriends = gameState.survivors.filter(dead => {
+                    if (dead.isAlive) return false;
+                    const fav = survivor.favorability[dead.id] || 0;
+                    return fav >= 250; // 친구 이상
+                });
+                
+                return deadFriends.length > 0;
+            });
+            
+            if (candidates.length === 0) return null;
+            
+            // 각 후보자별로 확률 계산하여 필터링
+            const validCandidates = candidates.filter(survivor => {
+                const baseProbability = 0.95; // 5%
+                const panicBonus = survivor.isPanic ? 0.05 : 0; // 패닉 시 5% 추가
+                const totalProbability = baseProbability + panicBonus;
+                
+                return Math.random() < totalProbability;
+            });
+            
+            return validCandidates.length > 0 ? validCandidates : null;
+        },
+        probability: 1, // checkCondition에서 이미 확률 처리
+        getMessage: (character) => {
+            // 죽은 친구 중 랜덤 선택
+            const deadFriends = gameState.survivors.filter(dead => {
+                if (dead.isAlive) return false;
+                const fav = character.favorability[dead.id] || 0;
+                return fav >= 250;
+            });
+            
+            const deadFriend = deadFriends[Math.floor(Math.random() * deadFriends.length)];
+            
+            // 임시로 저장 (선택지에서 사용)
+            character._tempDeadFriend = deadFriend;
+            
+            return `
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <strong>${character.name}은(는) 모니터룸에서 ${deadFriend.name}의 AI를 발견했습니다.</strong>
+                    <br>
+                    ${deadFriend.name}은(는)...
+                </div>
+            `;
+        },
+        choices: [
+            {
+                text: `내가 죽은 이유는 당신의 탓이라고 말한다.`,
+                condition: () => true,
+                effect: (character) => {
+                    const oldMental = character.mental;
+                    gameState.survivors = gameState.survivors.map(s => {
+                        if (s.id === character.id) {
+                            return {
+                                ...s,
+                                mental: Math.max(0, s.mental - 50),
+                                experiencedPreciousYou: true
+                            };
+                        }
+                        return s;
+                    });
+                    const deadFriend = character._tempDeadFriend;
+                    addLog(`${character.name}이(가) ${deadFriend ? deadFriend.name : '누군가'} AI의 말에 충격을 받았다. - 정신력 -50`, 'damage');
+                    
+                    // 임시 데이터 정리
+                    delete character._tempDeadFriend;
+                }
+            },
+            {
+                text: `진짜 '나'는 당신이 살아남아서 다행이라고 생각했을 것이라고 말한다.`,
+                condition: () => true,
+                effect: (character) => {
+                    const isPanic = character.isPanic;
+                    const mentalGain = isPanic ? 25 : 10;
+                    
+                    gameState.survivors = gameState.survivors.map(s => {
+                        if (s.id === character.id) {
+                            return {
+                                ...s,
+                                mental: Math.min(s.maxMental, s.mental + mentalGain),
+                                experiencedPreciousYou: true  // 플래그 설정
+                            };
+                        }
+                        return s;
+                    });
+                    const deadFriend = character._tempDeadFriend;
+                if (isPanic) {
+                    addLog(`비록 AI의 위로이지만, ${character.name}이(가) ${deadFriend ? deadFriend.name : '누군가'}의 말에 위로받았다. - 정신력 +${mentalGain}`, 'heal');
+                } else {
+                    addLog(`비록 AI의 위로이지만, ${character.name}이(가) ${deadFriend ? deadFriend.name : '누군가'}의 말에 위로받았다. - 정신력 +${mentalGain}`, 'heal');
+                }
+                    
+                    // 임시 데이터 정리
+                    delete character._tempDeadFriend;
+                }
+            }
+        ]
+    },
+    
+    mysteryLaptop: {
+        id: 'mysteryLaptop',
+        name: '누구의 노트북이지?',
+        checkCondition: () => {
+            // 이미 발생했으면 다시 발생하지 않음
+            if (gameState.laptopEventOccurred) return null;
+            
+            const candidates = gameState.survivors.filter(survivor => {
+                if (!survivor.isAlive) return false;
+                if (survivor.intelligence < 8) return false;
+                if (survivor.hasLaptop) return false; // 이미 노트북을 가진 경우 제외
+                
+                // 친구 이상의 관계인 생존자가 있는지 확인
+                const hasFriend = gameState.survivors.some(other => {
+                    if (!other.isAlive || other.id === survivor.id) return false;
+                    const fav = survivor.favorability[other.id] || 0;
+                    return fav >= 250; // 친구 이상
+                });
+                
+                return hasFriend;
+            });
+            
+            return candidates.length > 0 ? candidates : null;
+        },
+        probability: 0.2, // 20%
+        getMessage: (character) => `
+            <div style="text-align: center; margin-bottom: 10px;">
+                <strong>${character.name}은(는) 수색 중 우연히 노트북을 발견했습니다.</strong>
+                <br>
+                이 노트북은 유용하게 사용될 것 같습니다.
+            </div>
+        `,
+        choices: [
+            {
+                text: '노트북을 챙긴다.',
+                condition: () => true,
+                effect: (character) => {
+                    character.hasLaptop = true;
+                    gameState.laptopEventOccurred = true; // 이벤트 발생 기록
+                    
+                    addLog(`${character.name}이(가) 노트북을 획득했다.`, 'reward');
+                }
+            }
+        ]
     }
 };
 
@@ -2302,9 +2459,8 @@ function processDeathRelationships(deadSurvivor) {
         
         const relation = s.relationshipTypes?.[deadSurvivor.id];
         if (relation && familyRelations.includes(relation)) {
-            const mentalLoss = Math.floor(s.maxMental * 0.1);
-            s.mental = Math.max(0, s.mental - mentalLoss);
-            addLog(`${s.name}은(는) ${deadSurvivor.name}의 죽음에 큰 충격을 받았다. - 정신력 -${mentalLoss}`, 'damage');
+            s.mental = Math.max(0, s.mental === 30);
+            addLog(`${s.name}은(는) ${deadSurvivor.name}의 죽음에 큰 충격을 받았다. - 패닉 상태 돌입`, 'damage');
         }
     });
 }
@@ -3489,6 +3645,9 @@ function endSubGame() {
             
             // 탈출한 더미즈 확인 및 사망 처리
             const escapedDummies = dummies.filter(d => !d.inCoffin && d.id !== lowestTrust.id);
+            const shouldDischarge = escapedDummies.length < 2;
+            lowestTrust.isAlive = false;
+            lowestTrust.inCoffin = false;
             
             // 생존본능 스킬 제거 및 스탯 복구
             gameState.survivors = gameState.survivors.map(s => {
@@ -3502,7 +3661,7 @@ function endSubGame() {
                     s.mental = Math.min(s.mental, s.maxMental);
                     
                     // 탈출한 더미즈는 사망 처리
-                    if (wasEscaped) {
+                    if (shouldDischarge && !s.inCoffin && s.id !== lowestTrust.id && s.isAlive) {
                         return { ...s, isAlive: false, inCoffin: false };
                     }
                 }
@@ -3513,10 +3672,12 @@ function endSubGame() {
             processDeathRelationships(lowestTrust);
             
             // 탈출한 더미즈 로그 출력
-            escapedDummies.forEach(dummy => {
-                addLog(`${dummy.name}이(가) 방전되었다.`, 'death');
-                processDeathRelationships(dummy);
-            });
+            if (shouldDischarge && escapedDummies.length > 0) {
+                escapedDummies.forEach(dummy => {
+                    addLog(`${dummy.name}이(가) 방전되었다.`, 'death');
+                    processDeathRelationships(dummy);
+                });
+            }
         }
     }
     updateDisplay()
@@ -3798,6 +3959,8 @@ function processRoleEffect(sacrificed) {
         ...s,
         role: null
     }));
+
+    checkLaptopEvent(sacrificed);
     
     // 메인게임 종료 후 생존자 체크
     const remainingSurvivors = gameState.survivors.filter(s => s.isAlive);
@@ -3809,6 +3972,160 @@ function processRoleEffect(sacrificed) {
     } else if (remainingSurvivors.length === 0) {
         addLog('모든 생존자가 절명했다.', 'game-end');
     }
+}
+
+// 노트북 이벤트 체크 함수
+function checkLaptopEvent(sacrificed) {
+    // 노트북을 가진 생존자 찾기
+    const laptopOwner = gameState.survivors.find(s => s.hasLaptop);
+    
+    if (!laptopOwner) return;
+    
+    // 노트북 소유자가 대역이나 열쇠지기인 경우 이벤트 발생 안 함
+    if (laptopOwner.role === '대역' || laptopOwner.role === '열쇠지기') return;
+    
+    // 희생자가 대역이나 열쇠지기인 경우 이벤트 발생 안 함
+    if (sacrificed.role === '대역' || sacrificed.role === '열쇠지기') return;
+    
+    // 노트북 소유자의 친구 이상 관계 캐릭터들
+    const friends = gameState.survivors.filter(other => {
+        if (other.id === laptopOwner.id) return false;
+        const fav = laptopOwner.favorability[other.id] || 0;
+        return fav >= 250; // 친구 이상
+    });
+    
+    // 희생자가 친구 중 하나인지 확인
+    const isFriendSacrificed = friends.some(f => f.id === sacrificed.id);
+    
+    // 노트북 소유자가 희생되었는지 확인
+    const isOwnerSacrificed = sacrificed.id === laptopOwner.id;
+    
+    if (isFriendSacrificed) {
+        // 친구가 희생된 경우 - 복수 이벤트
+        showLaptopRevengePopup(laptopOwner, sacrificed);
+    } else if (isOwnerSacrificed && friends.length > 0) {
+        // 노트북 소유자가 희생되고 친구가 있는 경우 - 희망 이벤트
+        showLaptopHopePopup(laptopOwner, friends);
+    }
+}
+
+// 노트북 복수 팝업
+function showLaptopRevengePopup(laptopOwner, sacrificedFriend) {
+    const container = document.getElementById('popupContainer');
+    
+    container.innerHTML = `
+        <div class="popup-overlay">
+            <div class="popup" onclick="event.stopPropagation()">
+                <div class="popup-header">
+                    <h2 class="popup-title">${sacrificedFriend.name}의 죽음</h2>
+                </div>
+                <div class="popup-content">
+                    <div class="form" style="text-align: center;">
+                        ${laptopOwner.image && laptopOwner.image !== 'data:,' && laptopOwner.image !== '' 
+                            ? `<img src="${laptopOwner.image}" alt="${laptopOwner.name}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 1rem;">`
+                            : `<div style="width: 100px; height: 100px; border-radius: 50%; background-color: ${getRandomColor(laptopOwner.id)}; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                                <i data-lucide="user" size="48" color="white"></i>
+                            </div>`
+                        }
+                        <p style="margin-bottom: 1.5rem; font-size: 1.1rem; line-height: 1.6;">
+                            <strong>${laptopOwner.name}은(는) ${sacrificedFriend.name}의 사망하게 한 다른 생존자들을 용서할 수 없었다.</strong>
+                            <br>
+                            소유중인 노트북을 이용해 모두에게 트라우마가 되는 기억을 심어주었다.
+                        </p>
+                        <button onclick="executeLaptopRevenge(${laptopOwner.id})" class="btn btn-purple" style="width: 100%; color: white;">
+                            확인
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    lucide.createIcons();
+}
+
+// 노트북 희망 팝업
+function showLaptopHopePopup(laptopOwner, friends) {
+    const container = document.getElementById('popupContainer');
+    
+    // 친구가 없으면 이벤트 발생 안 함
+    if (!friends || friends.length === 0) return;
+    
+    const friendNames = friends.map(f => f.name).join(', ');
+    
+    container.innerHTML = `
+        <div class="popup-overlay">
+            <div class="popup" onclick="event.stopPropagation()">
+                <div class="popup-header">
+                    <h2 class="popup-title">감사의 표시</h2>
+                </div>
+                <div class="popup-content">
+                    <div class="form" style="text-align: center;">
+                        ${laptopOwner.image && laptopOwner.image !== 'data:,' && laptopOwner.image !== '' 
+                            ? `<img src="${laptopOwner.image}" alt="${laptopOwner.name}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 1rem;">`
+                            : `<div style="width: 100px; height: 100px; border-radius: 50%; background-color: ${getRandomColor(laptopOwner.id)}; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                                <i data-lucide="user" size="48" color="white"></i>
+                            </div>`
+                        }
+                        <p style="margin-bottom: 1.5rem; font-size: 1.1rem; line-height: 1.6;">
+                            <strong>${laptopOwner.name}은(는) ${friendNames} 대신 자신이 희생할 수 있었음에 다른 생존자들에게 감사를 느꼈다.</strong>
+                            <br>
+                            소유중인 노트북을 이용해 모두에게 희망이 되는 정보를 공유해주었다.
+                        </p>
+                        <button onclick="executeLaptopHope(${laptopOwner.id})" class="btn btn-green" style="width: 100%; color: white;">
+                            확인
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    lucide.createIcons();
+}
+
+// 노트북 복수 실행
+function executeLaptopRevenge(laptopOwnerId) {
+    const laptopOwner = gameState.survivors.find(s => s.id === laptopOwnerId);
+    
+    if (!laptopOwner) return; // 안전장치 추가
+    
+    gameState.survivors = gameState.survivors.map(s => {
+        if (s.isAlive && s.id !== laptopOwnerId) {
+            return {
+                ...s,
+                mental: Math.max(0, s.mental - 15)
+            };
+        }
+        return s;
+    });
+    
+    addLog(`${laptopOwner.name}의 행동으로 생존자들의 정신력이 감소했다. - 전원 정신력 -15`, 'damage');
+    
+    document.getElementById('popupContainer').innerHTML = '';
+    updateDisplay();
+}
+
+// 노트북 희망 실행
+function executeLaptopHope(laptopOwnerId) {
+    const laptopOwner = gameState.survivors.find(s => s.id === laptopOwnerId);
+    
+    if (!laptopOwner) return; // 안전장치 추가
+    
+    gameState.survivors = gameState.survivors.map(s => {
+        if (s.isAlive) {
+            return {
+                ...s,
+                mental: Math.min(s.maxMental, s.mental + 15)
+            };
+        }
+        return s;
+    });
+    
+    addLog(`${laptopOwner.name}의 행동으로 생존자들의 정신력이 회복되었다. - 전원 정신력 +15`, 'heal');
+    
+    document.getElementById('popupContainer').innerHTML = '';
+    updateDisplay();
 }
 
 // 생존자 초기화
@@ -4182,6 +4499,11 @@ function updateSurvivorList() {
                                             return names[part] || part;
                                         }).join(', ')}
                                     </div>
+                                </span>
+                            ` : ''}
+                            ${s.hasLaptop ? `
+                                <span style="background-color: #dbeafe; color: #1e40af; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                    <i data-lucide="laptop" size="14"></i>
                                 </span>
                             ` : ''}
                             ${s.role && ['열쇠지기', '현자', '대역'].includes(s.role) ? `
@@ -4847,18 +5169,23 @@ function addSurvivor() {
         survivor.favorability[s.id] = 0;
         s.favorability[survivor.id] = 0;
     });
+
+    survivor.initialRelationshipTypes = {};
     
     if (window.tempRelationships && window.tempRelationships.length > 0) {
         window.tempRelationships.forEach(rel => {
             const favorabilityValue = INITIAL_RELATIONSHIP_VALUES[rel.type];
             survivor.favorability[rel.targetId] = favorabilityValue;
             survivor.relationshipTypes[rel.targetId] = rel.type;
+            survivor.initialRelationshipTypes[rel.targetId] = rel.type;
             
             // 짝사랑은 한쪽만 설정
             if (rel.type !== '짝사랑') {
                 gameState.survivors = gameState.survivors.map(s => {
                     if (s.id === rel.targetId) {
                         const minFav = INITIAL_RELATIONSHIP_VALUES[rel.type];
+                        if (!s.initialRelationshipTypes) s.initialRelationshipTypes = {};
+                        s.initialRelationshipTypes[survivor.id] = rel.type;
                         return {
                             ...s,
                             favorability: { ...s.favorability, [survivor.id]: favorabilityValue },
@@ -4945,6 +5272,7 @@ function updateSurvivor(id) {
     } else {
         newBaseTrust = 50;
     }
+    const newInitialRelationships = {};
 
     // 관계 업데이트 - 기존 관계 초기화하고 새로 설정
     if (window.tempRelationships && window.tempRelationships.length > 0) {
@@ -4974,6 +5302,7 @@ function updateSurvivor(id) {
                 survivor.favorability[rel.targetId] = favorabilityValue;
             }
             survivor.relationshipTypes[rel.targetId] = rel.type;
+            newInitialRelationships[rel.targetId] = rel.type;
             
             // 짝사랑이 아니면 양방향 설정
             if (rel.type !== '짝사랑') {
@@ -4985,6 +5314,8 @@ function updateSurvivor(id) {
                         }
                         if (!s.relationshipTypes) s.relationshipTypes = {};
                         s.relationshipTypes[id] = rel.type;
+                        if (!s.initialRelationshipTypes) s.initialRelationshipTypes = {};
+                        s.initialRelationshipTypes[id] = rel.type;
                     }
                     return s;
                 });
@@ -5029,7 +5360,8 @@ function updateSurvivor(id) {
             hp: newHp,
             maxMental: newMaxMental,
             mental: newMental,
-            trust: newBaseTrust
+            trust: newBaseTrust,
+            initialRelationshipTypes: newInitialRelationships
         };
     });
 
@@ -5656,8 +5988,8 @@ function resetSimulation() {
         gender: s.gender,
         personality: s.personality,
         status: s.status,
-        image: s.image
-        // favorability, relationshipTypes 등은 제외
+        image: s.image,
+        initialRelationshipTypes: s.initialRelationshipTypes || {}
     }));
     
     // 게임 상태 완전 초기화
@@ -5677,20 +6009,45 @@ function resetSimulation() {
         initialTrialPopupsShown: {},
         mainGameTurn: 0,
         usedTrialEvents: [],
-        pendingDiceRolls: 0
+        pendingDiceRolls: 0,
+        laptopEventOccurred: false
     };
     
     // 생존자 재등록
     savedSurvivors.forEach(survivorData => {
         const survivor = initializeSurvivor(survivorData);
+
+        const initialRelationships = survivorData.initialRelationshipTypes || {};
+        survivor.relationshipTypes = { ...initialRelationships };
+        survivor.initialRelationshipTypes = { ...initialRelationships };
         
-        // 호감도 초기화 (새로 시작)
+        // 호감도 초기화
         gameState.survivors.forEach(s => {
             survivor.favorability[s.id] = 0;
             s.favorability[survivor.id] = 0;
         });
         
         gameState.survivors.push(survivor);
+    });
+
+    // 초기 관계에 따른 호감도 재설정
+    gameState.survivors.forEach(survivor => {
+        Object.entries(survivor.initialRelationshipTypes).forEach(([targetId, relationType]) => {
+            const favorabilityValue = INITIAL_RELATIONSHIP_VALUES[relationType];
+            if (favorabilityValue !== undefined) {
+                survivor.favorability[targetId] = favorabilityValue;
+                
+                // 직사랑이 아니면 양방향 설정
+                if (relationType !== '직사랑') {
+                    const target = gameState.survivors.find(s => s.id == targetId);
+                    if (target) {
+                        target.favorability[survivor.id] = favorabilityValue;
+                        if (!target.relationshipTypes) target.relationshipTypes = {};
+                        target.relationshipTypes[survivor.id] = relationType;
+                    }
+                }
+            }
+        });
     });
     
     addLog('새로운 시뮬레이션이 시작되었다.', 'system');
