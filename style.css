@@ -1265,7 +1265,7 @@ body {
 .ending-survivors {
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
     gap: 3rem;
     margin-bottom: 2rem;
 }
@@ -1426,12 +1426,16 @@ body.light-mode .ending-hint {
     }
 
     #log{
-        min-width: 85%;
+        min-width: 85% !important;
+        max-width: 85% !important;
+        width: 85% !important;
         margin: 0 auto;
     }
 
     #suv{
-        min-width: 85%;
+        min-width: 85% !important;
+        max-width: 85% !important;
+        width: 85% !important;
         margin: 0 auto;
     }
     
