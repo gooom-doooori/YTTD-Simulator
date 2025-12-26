@@ -1424,6 +1424,16 @@ body.light-mode .ending-hint {
         font-size: 1.25rem;
         margin-bottom: 0.75rem;
     }
+
+    #log{
+        min-width: 85%;
+        margin: 0 auto;
+    }
+
+    #suv{
+        min-width: 85%;
+        margin: 0 auto;
+    }
     
     /* 생존자 카드 */
     .survivor-list {
@@ -1511,8 +1521,6 @@ body.light-mode .ending-hint {
     .action-grid {
         grid-template-columns: 1fr;
     }
-
-    
     
     /* 로그 */
     .log-list {
