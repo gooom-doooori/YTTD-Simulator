@@ -204,7 +204,7 @@ const JOB_SKILLS = {
     },
     '회사원': {
         name: '초과 근무',
-        description: '서브게임 중 정신력 10을 써서 해당 턴 행동을 한 번 더 수행'
+        description: '서브게임 중 정신력 수치 5를 써서 해당 턴 행동을 한 번 더 수행'
     },
     '비서': {
         name: '일정 관리',
@@ -453,39 +453,38 @@ const SKILL_LOSS_SCRIPTS = [
 ];
 
 const FAVORABILITY_UP_SCRIPTS = [
-    { message: "함께 식사를 하며 친해졌다.", change: 15 },
-    { message: "서로 도와주며 신뢰가 쌓였다.", change: 18 },
-    { message: "좋은 대화를 나눴다.", change: 12 },
-    { message: "농담을 주고받으며 웃었다.", change: 27 },
-    { message: "과거 이야기를 나누며 가까워졌다.", change: 22 },
-    { message: "위험한 상황에서 서로를 지켜줬다.", change: 100 },
-    { message: "같은 취미가 있다는 것을 알게 되었다.", change: 16 },
-    { message: "서로를 칭찬하며 기분이 좋아졌다.", change: 14 },
-    { message: "함께 문제를 해결했다.", change: 20 },
-    { message: "서로의 고민을 들어줬다.", change: 21 },
-    { message: "작은 선물을 주고받았다.", change: 15 },
-    { message: "함께 운동을 했다.", change: 12 },
-    { message: "서로를 응원해줬다.", change: 16 },
-    { message: "좋은 추억을 공유했다.", change: 18 },
-    { message: "서로에게 고마움을 표현했다.", change: 15 }
+    { message: "와 함께 식사를 하며 친해졌다.", change: 15 },
+    { message: "을(를) 도와주며 신뢰를 쌓았다.", change: 18 },
+    { message: "와(과) 좋은 대화를 나눴다.", change: 12 },
+    { message: "와(과) 농담을 주고받으며 웃었다.", change: 27 },
+    { message: "와(과) 과거 이야기를 나누며 가까워졌다.", change: 22 },
+    { message: "와(과) 위험한 상황에서 서로를 지켜줬다.", change: 100 },
+    { message: "이(가) 자신과 같은 취미가 있다는 것을 알게 되었다.", change: 16 },
+    { message: "와(과) 서로를 칭찬하며 기분이 좋아졌다.", change: 14 },
+    { message: "와(과) 서로의 고민을 들어줬다.", change: 21 },
+    { message: "에게 작은 선물을 받았다.", change: 15 },
+    { message: "와(과) 함께 운동을 했다.", change: 12 },
+    { message: "에게 응원받았다.", change: 16 },
+    { message: "와(과) 좋은 추억을 공유했다.", change: 18 },
+    { message: "이(가) 고마움을 표현했다.", change: 15 }
 ];
 
 const FAVORABILITY_DOWN_SCRIPTS = [
-    { message: "사소한 일로 다퉜다.", change: -8 },
-    { message: "의견 충돌이 있었다.", change: -10 },
-    { message: "오해가 생겼다.", change: -9 },
-    { message: "서로를 믿지 못하게 되었다.", change: -15 },
-    { message: "이기적인 행동을 보였다.", change: -12 },
-    { message: "약속을 지키지 않았다.", change: -11 },
-    { message: "상처 주는 말을 했다.", change: -13 },
-    { message: "서로를 무시했다.", change: -10 },
-    { message: "배신감을 느꼈다.", change: -18 },
-    { message: "불공평한 대우를 받았다.", change: -11 },
-    { message: "서로의 비밀을 누설했다.", change: -16 },
-    { message: "차갑게 대했다.", change: -9 },
-    { message: "도움을 거절당했다.", change: -10 },
-    { message: "질투심을 느꼈다.", change: -12 },
-    { message: "신뢰를 저버렸다.", change: -14 }
+    { message: "과(와) 사소한 일로 다퉜다.", change: -8 },
+    { message: "과(와) 의견 충돌이 있었다.", change: -10 },
+    { message: "에게 오해가 생겼다.", change: -9 },
+    { message: "을(를) 믿지 못하게 되었다.", change: -15 },
+    { message: "에게 이기적인 행동을 보였다.", change: -12 },
+    { message: "이(가) 약속을 지키지 않았다는 것을 깨달았다.", change: -11 },
+    { message: "이(가) 상처 주는 말을 했다.", change: -13 },
+    { message: "을(를) 무시했다.", change: -10 },
+    { message: "에게 배신감을 느꼈다.", change: -18 },
+    { message: "에게 불공평한 대우를 받았다.", change: -11 },
+    { message: "이(가) 자신의 비밀을 누설했음을 알게 되었다.", change: -16 },
+    { message: "을(를) 차갑게 대했다.", change: -9 },
+    { message: "에게 도움을 거절당했다.", change: -10 },
+    { message: "에게 질투심을 느꼈다.", change: -12 },
+    { message: "이(가) 신뢰를 저버렸다고 느꼈다.", change: -14 }
 ];
 
 const BIG_FIGHT_SCRIPTS = [
@@ -584,16 +583,16 @@ const INITIAL_RELATIONSHIP_VALUES = {
     '라이벌': -80,
     '어색함': -10,
     '낯선 사람': 0,
-    '서먹함': 40,
-    '동료': 80,
-    '친구': 250,
-    '연인': 900,
-    '부부': 1500,
-    '형제/자매': 300,
-    '부모/자식': 400,
-    '짝사랑': 150,
-    '유사가족': 350,
-    '친척': 200
+    '서먹함': 30,
+    '동료': 60,
+    '친구': 150,
+    '연인': 500,
+    '부부': 800,
+    '형제/자매': 200,
+    '부모/자식': 250,
+    '짝사랑': 100,
+    '유사가족': 220,
+    '친척': 120
 };
 
 // 성격별 대사 목록
@@ -2435,11 +2434,11 @@ function getRelationshipStatus(favorability, baseRelation) {
         return baseRelation;
     }
     
-    if (favorability >= 1500) return '부부';
-    if (favorability >= 900) return '연인';
-    if (favorability >= 250) return '친구';
-    if (favorability >= 80) return '동료';
-    if (favorability >= 40) return '서먹함';
+    if (favorability >= 800) return '부부';
+    if (favorability >= 500) return '연인';
+    if (favorability >= 150) return '친구';
+    if (favorability >= 60) return '동료';
+    if (favorability >= 30) return '서먹함';
     if (favorability >= 0) return '낯선 사람';
     if (favorability >= -10) return '어색함';
     if (favorability >= -80) return '라이벌';
@@ -2600,7 +2599,7 @@ function processFavorabilityChanges() {
                 addDialogue(person1, 'sorrow', 0.3);
             }
             
-            addLog(`${person1.name}와(과) ${person2.name}은(는) ${script} - 호감도 ${change > 0 ? '+' : ''}${change}`, 'favorability');
+            addLog(`${person1.name}은(는) ${person2.name}${script} - 호감도 ${change > 0 ? '+' : ''}${change}`, 'favorability');
         }
         
         gameState.survivors = gameState.survivors.map(s => {
@@ -3004,7 +3003,7 @@ function processTalkAction(survivor) {
     const target = others[Math.floor(Math.random() * others.length)];
     
     // 호감도 변화량: -80 ~ +120
-    const favorabilityChange = Math.floor(Math.random() * 201) - 80;
+    const favorabilityChange = Math.floor(Math.random() * 241) - 80;
     
     // 성격 타입에 따른 보정
     const survivorType = getPersonalityType(survivor.personality);
@@ -3153,7 +3152,7 @@ function processSubGame() {
                         updated.trust += 8;
                         target.trust = Math.min(100, target.trust + 5);
                         
-                        addLog(`${s.name}의 동맹 제의를 ${target.name}이(가) 수락했다. - 호감도 +25, 신뢰도 상승`, 'alliance');
+                        addLog(`${s.name}의 동맹 제의를 ${target.name}이(가) 수락했다. - 호감도 +25, 신뢰도 +${target.trust}`, 'alliance');
                     } else {
                         // 거절
                         updated.favorability[target.id] = Math.max(-200, (updated.favorability[target.id] || 50) - 10);
@@ -3162,7 +3161,7 @@ function processSubGame() {
                         updated.trust = Math.max(0, updated.trust - 5);
                         updated.mental = Math.max(0, updated.mental - 10);
                         
-                        addLog(`${s.name}의 동맹 제의를 ${target.name}이(가) 거절했다. - 호감도 -10, 신뢰도/정신력 감소`, 'alliance');
+                        addLog(`${s.name}의 동맹 제의를 ${target.name}이(가) 거절했다. - 호감도 -10, 신뢰도 -${updated.trust}, 정신력 -${updated.mental}`, 'alliance');
                     }
                 } else {
                     addLog(`${s.name}은(는) 이미 모두와 동맹상태다.`, 'fail');
@@ -3171,8 +3170,8 @@ function processSubGame() {
         }
         const jobSkill = JOB_SKILLS[s.job];
         if (jobSkill && jobSkill.name === '초과 근무' && updated.mental >= 10) {
-            updated.mental -= 10;
-            addLog(`${s.name}의 '초과 근무' 발동! - 정신력 -10, 추가 행동`, 'event');
+            updated.mental -= 5;
+            addLog(`${s.name}의 '초과 근무' 발동! - 정신력 -5, 추가 행동`, 'event');
         }
 
         updated.trust = Math.max(0, Math.min(100, updated.trust));
@@ -4717,7 +4716,7 @@ function saveData() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `YTTD_Simulator_${data.turn}turn.json`;
+    a.download = `YTTD_Simulator_${data.actualTurn}turn.json`;
     a.click();
     URL.revokeObjectURL(url);
 }
@@ -5178,6 +5177,12 @@ function addSurvivor() {
             survivor.favorability[rel.targetId] = favorabilityValue;
             survivor.relationshipTypes[rel.targetId] = rel.type;
             survivor.initialRelationshipTypes[rel.targetId] = rel.type;
+
+            const familyRelations = ['형제/자매', '부모/자식', '유사가족', '친척'];
+            if (familyRelations.includes(rel.type)) {
+                if (!survivor.allianceWith) survivor.allianceWith = [];
+                survivor.allianceWith.push(rel.targetId);
+            }
             
             // 짝사랑은 한쪽만 설정
             if (rel.type !== '짝사랑') {
@@ -5186,6 +5191,18 @@ function addSurvivor() {
                         const minFav = INITIAL_RELATIONSHIP_VALUES[rel.type];
                         if (!s.initialRelationshipTypes) s.initialRelationshipTypes = {};
                         s.initialRelationshipTypes[survivor.id] = rel.type;
+
+                        // 상대방도 가족 관계면 동맹 추가
+                        const updatedSurvivor = {
+                            ...s,
+                            favorability: { ...s.favorability, [survivor.id]: favorabilityValue },
+                            relationshipTypes: { ...s.relationshipTypes, [survivor.id]: rel.type }
+                        };
+                        
+                        if (familyRelations.includes(rel.type)) {
+                            if (!updatedSurvivor.allianceWith) updatedSurvivor.allianceWith = [];
+                            updatedSurvivor.allianceWith.push(survivor.id);
+                        }
                         return {
                             ...s,
                             favorability: { ...s.favorability, [survivor.id]: favorabilityValue },
@@ -6231,4 +6248,3 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
         }, 100);
     });
 }
-
