@@ -1504,8 +1504,19 @@ function setupEventListeners() {
 
 // 시뮬레이션 토글
 function toggleSimulation() {
-    gameState.isRunning = !gameState.isRunning;
+    
     const btn = document.getElementById('toggleBtn');
+    const totalSurvivors = gameState.survivors.length; // 이 줄 추가
+    
+    if (!gameState.isRunning && gameState.turn === 0 && totalSurvivors < 3) {
+        addLog('참가자가 부족합니다.', 'vote');
+        addLog('시뮬레이션을 시작할 수 없습니다.', 'vote');
+        addLog(`(최소 3명 필요, 현재 ${totalSurvivors}명)`, 'vote');
+        updateDisplay();
+        return;
+    }
+
+    gameState.isRunning = !gameState.isRunning;
     
     if (gameState.isRunning) {
         btn.innerHTML = '<i data-lucide="pause"></i><span>일시정지</span>';
@@ -1534,6 +1545,17 @@ function runSimulation() {
 
 // 턴 처리
 function processTurn() {
+    
+    const totalSurvivors = gameState.survivors.length;
+        
+    if (!gameState.isRunning && gameState.turn === 0 && totalSurvivors < 3) {
+        addLog('참가자가 부족합니다.', 'vote');
+        addLog('시뮬레이션을 시작할 수 없습니다.', 'vote');
+        addLog(`(최소 3명 필요, 현재 ${totalSurvivors}명)`, 'vote');
+        updateDisplay();
+        return;
+    }
+
     // 0턴
     if (gameState.turn === 0) {
         gameState.hasStarted = true;
@@ -2505,7 +2527,7 @@ function processInitialTrial() {
     // --- [일반 단계] 친구 관계가 없을 때 ---
     const totalCount = aliveSurvivors.length;
     const completedCount = Object.keys(gameState.initialTrialPopupsShown).length;
-    const isOverHalf = completedCount >= Math.ceil(totalCount / 2);
+    const isOverHalf = completedCount <= Math.ceil(totalCount / 5);
 
     if (!isOverHalf) {
         // 과반수 미만: 1인 시련 우선 (호감도 80 미만인 사람)
@@ -2523,7 +2545,6 @@ function processInitialTrial() {
 
     // 과반수 이상이거나 1인 대상이 없으면 2인 시련
     if (shuffledSurvivors.length >= 2) {
-        // ★★★ 이미 섞여있으므로 첫 두 명은 매번 랜덤 ★★★
         const char1 = shuffledSurvivors[0];
         const char2 = shuffledSurvivors[1];
 
@@ -3834,6 +3855,7 @@ function initializeSurvivor(survivor) {
         isPanic: false,
         inCoffin: false,
         role: null,
+        status: survivor.status || '인간',
         skills: initialSkills,
         favorability: {},
         relationshipTypes: {},
@@ -5729,6 +5751,36 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
         const slotHeight = 90;
         
         let animationTimeout1, animationTimeout2, animationTimeout3, animationTimeout4;
+
+        function checkAndLogCompletion() {
+            gameState.pendingDiceRolls--;
+            
+            const stillRemaining = gameState.survivors.filter(s => 
+                s.isAlive && !gameState.initialTrialPopupsShown[s.id]
+            );
+
+            if (stillRemaining.length === 0 && gameState.turn === 1 && gameState.pendingDiceRolls === 0) {
+                const nextTurnBtn = document.getElementById('nextTurnBtn');
+                if (nextTurnBtn) {
+                    nextTurnBtn.disabled = true;
+                    nextTurnBtn.style.opacity = '0.5';
+                    nextTurnBtn.style.cursor = 'not-allowed';
+                    nextTurnBtn.style.pointerEvents = 'none';
+                }
+                
+                setTimeout(() => {
+                    addLog(`=== 턴 ${gameState.turn}: 모든 최초의 시련 완료 ===`, 'phase');
+                    updateDisplay();
+                    
+                    if (nextTurnBtn) {
+                        nextTurnBtn.disabled = false;
+                        nextTurnBtn.style.opacity = '1';
+                        nextTurnBtn.style.cursor = 'pointer';
+                        nextTurnBtn.style.pointerEvents = 'auto';
+                    }
+                }, 500); // 🔴 2500ms에서 500ms로 단축
+            }
+        }
         
         // 애니메이션 스킵 함수
         function skipAnimation() {
@@ -5755,36 +5807,7 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
             
             // 결과 즉시 표시
             showResult();
-            gameState.pendingDiceRolls--;
-            // 2. 판정이 끝난 후, 남은 인원이 있는지 체크합니다.
-                const stillRemaining = gameState.survivors.filter(s => 
-                    s.isAlive && !gameState.initialTrialPopupsShown[s.id]
-                );
-
-                if (stillRemaining.length === 0 && gameState.turn === 1 && gameState.pendingDiceRolls === 0) {
-
-                    // 버튼 비활성화
-                    const nextTurnBtn = document.getElementById('nextTurnBtn');
-                    if (nextTurnBtn) {
-                        nextTurnBtn.disabled = true;
-                        nextTurnBtn.style.opacity = '0.5';
-                        nextTurnBtn.style.cursor = 'not-allowed';
-                        nextTurnBtn.style.pointerEvents = 'none';
-                    }
-                    
-                    setTimeout(() => {
-                        addLog(`=== 턴 ${gameState.turn}: 모든 최초의 시련 완료 ===`, 'phase');
-                        updateDisplay();
-                        
-                        // 버튼 다시 활성화
-                        if (nextTurnBtn) {
-                            nextTurnBtn.disabled = false;
-                            nextTurnBtn.style.opacity = '1';
-                            nextTurnBtn.style.cursor = 'pointer';
-                            nextTurnBtn.style.pointerEvents = 'auto';
-                        }
-                    }, 2500);
-                }
+            checkAndLogCompletion();
         }
         
         // 결과 표시 함수
@@ -5846,36 +5869,7 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
                 col1.classList.remove('slot-rolling');
                 
                 showResult();
-                gameState.pendingDiceRolls--;
-                // 2. 판정이 끝난 후, 남은 인원이 있는지 체크합니다.
-                const stillRemaining = gameState.survivors.filter(s => 
-                    s.isAlive && !gameState.initialTrialPopupsShown[s.id]
-                );
-
-                if (stillRemaining.length === 0 && gameState.turn === 1 && gameState.pendingDiceRolls === 0) {
-
-                    // 버튼 비활성화
-                    const nextTurnBtn = document.getElementById('nextTurnBtn');
-                    if (nextTurnBtn) {
-                        nextTurnBtn.disabled = true;
-                        nextTurnBtn.style.opacity = '0.5';
-                        nextTurnBtn.style.cursor = 'not-allowed';
-                        nextTurnBtn.style.pointerEvents = 'none';
-                    }
-                    
-                    setTimeout(() => {
-                        addLog(`=== 턴 ${gameState.turn}: 모든 최초의 시련 완료 ===`, 'phase');
-                        updateDisplay();
-                        
-                        // 버튼 다시 활성화
-                        if (nextTurnBtn) {
-                            nextTurnBtn.disabled = false;
-                            nextTurnBtn.style.opacity = '1';
-                            nextTurnBtn.style.cursor = 'pointer';
-                            nextTurnBtn.style.pointerEvents = 'auto';
-                        }
-                    }, 2500);
-                }
+                checkAndLogCompletion();
             }, 1700);
         }, 100);
     });
