@@ -1392,7 +1392,7 @@ const POPUP_EVENTS = {
                     addLog(`탈출 다이스: ${escapeTotal} : 95`, escapeTotal >= 95 ? 'success' : 'error');
                     
                     if (escapeTotal >= 95) {
-                        addLog(`${character.name}이(가) 성공적으로 탈출했다. (${total}/80)`, 'escape');
+                        addLog(`${character.name}이(가) 성공적으로 탈출했다. (${escapeTotal}/95)`, 'escape');
                         updateDisplay(); 
                         
                         gameState.isRunning = false;
