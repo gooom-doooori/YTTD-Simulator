@@ -1040,13 +1040,13 @@ body {
     height: 50px;
     border-radius: 50%;
     background: var(--primary-color);
-    color: white;
+    color: var(--text-primary);
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px var(--bg-tertiary-tran);
     transition: all 0.3s ease;
     z-index: 100;
 }
