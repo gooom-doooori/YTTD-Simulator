@@ -2117,12 +2117,27 @@ function processSingleFreeAction(s) {
             
             gameState.survivors.forEach(other => {
                 if (other.isAlive && other.status === '인간' && other.id !== s.id) {
-                    const oldFav = other.favorability[s.id] || 50;
-                    const increase = Math.floor(Math.random() * 8) + 3;
-                    other.favorability[s.id] = Math.min(1500, oldFav + increase);
-                    increases.push(`${other.name} +${increase}`);
-                    totalIncrease += increase;
+                const oldFav = other.favorability[s.id] || 50;
+                
+                // 기본 증가량
+                let increase = Math.floor(Math.random() * 8) + 3;
+                
+                // 매력 보너스 (매력 7 이상일 때)
+                if (s.charm >= 7) {
+                    increase += Math.floor((s.charm - 6) * 0.5); // 매력 7: +0.5, 8: +1, 9: +1.5, 10: +2
                 }
+                
+                // 지능 보너스 (지능 7 이상일 때)
+                if (s.intelligence >= 7) {
+                    increase += Math.floor((s.intelligence - 6) * 0.3); // 지능 7: +0.3, 8: +0.6, 9: +0.9, 10: +1.2
+                }
+                
+                increase = Math.floor(increase); // 정수로 변환
+                
+                other.favorability[s.id] = Math.min(1500, oldFav + increase);
+                increases.push(`${other.name} +${increase}`);
+                totalIncrease += increase;
+            }
             });
             
             if (totalIncrease > 0) {
@@ -3200,10 +3215,12 @@ function processSubGame() {
                     
                     if (Math.random() < adjustedChance) {
                         // 수락
-                        updated.favorability[target.id] = Math.min(1500, (updated.favorability[target.id] || 0) + 25);
-                        target.favorability[s.id] = Math.min(1500, (target.favorability[s.id] || 0) + 25);
+                        const currentFav = updated.favorability[target.id] || 50;
+                        const targetCurrentFav = target.favorability[s.id] || 50;
                         
-                        // 양쪽 모두 동맹 목록에 추가
+                        updated.favorability[target.id] = Math.min(1500, Math.min(currentFav + 20, currentFav + 25));
+                        target.favorability[s.id] = Math.min(1500, Math.min(targetCurrentFav + 20, targetCurrentFav + 25));
+                        
                         if (!updated.allianceWith) updated.allianceWith = [];
                         if (!target.allianceWith) target.allianceWith = [];
                         
@@ -3214,19 +3231,28 @@ function processSubGame() {
                             target.allianceWith.push(s.id);
                         }
                         
-                        updated.trust += 8;
-                        target.trust = Math.min(100, target.trust + 5);
+                        const trustIncrease = Math.min(20, 8);
+                        const targetTrustIncrease = Math.min(20, 5);
                         
-                        addLog(`${s.name}의 동맹 제의를 ${target.name}이(가) 수락했다. - 호감도 +25, 신뢰도 +${target.trust}`, 'alliance');
+                        updated.trust = Math.min(100, updated.trust + trustIncrease);
+                        target.trust = Math.min(100, target.trust + targetTrustIncrease);
+                        
+                        addLog(`${s.name}의 동맹 제의를 ${target.name}이(가) 수락했다. - 호감도 +20, 신뢰도 +8`, 'alliance');
                     } else {
                         // 거절
-                        updated.favorability[target.id] = Math.max(-200, (updated.favorability[target.id] || 50) - 10);
-                        target.favorability[s.id] = Math.max(-200, (target.favorability[s.id] || 50) - 5);
+                        const currentFav = updated.favorability[target.id] || 50;
+                        const targetCurrentFav = target.favorability[s.id] || 50;
                         
-                        updated.trust = Math.max(0, updated.trust - 5);
-                        updated.mental = Math.max(0, updated.mental - 10);
+                        updated.favorability[target.id] = Math.max(-200, Math.max(currentFav - 20, currentFav - 10));
+                        target.favorability[s.id] = Math.max(-200, Math.max(targetCurrentFav - 20, targetCurrentFav - 5));
                         
-                        addLog(`${s.name}의 동맹 제의를 ${target.name}이(가) 거절했다. - 호감도 -10, 신뢰도 -${updated.trust}, 정신력 -${updated.mental}`, 'alliance');
+                        const trustDecrease = Math.min(20, 5);
+                        const mentalDecrease = Math.min(20, 10);
+                        
+                        updated.trust = Math.max(0, updated.trust - trustDecrease);
+                        updated.mental = Math.max(0, updated.mental - mentalDecrease);
+                        
+                        addLog(`${s.name}의 동맹 제의를 ${target.name}이(가) 거절했다. - 호감도 -10, 신뢰도 -5, 정신력 -10`, 'alliance');
                     }
                 } else {
                     addLog(`${s.name}은(는) 이미 모두와 동맹상태다.`, 'fail');
@@ -3404,6 +3430,16 @@ function processSubGameAction(survivor, actionLevel) {
         case 'body':
             const parts = ['leftArm', 'rightArm', 'leftLeg', 'rightLeg', 'head', 'torso'];
             let randomPart = parts[Math.floor(Math.random() * parts.length)];
+            
+            // 힘 스탯이 높으면 추가 발견 확률
+            if (survivor.strength >= 7) {
+                const bonusChance = (survivor.strength - 6) * 0.08; // 힘 7: 8%, 8: 16%, 9: 24%, 10: 32%
+                if (Math.random() < bonusChance) {
+                    const bonusPart = parts[Math.floor(Math.random() * parts.length)];
+                    survivor.bodyParts[bonusPart] = true;
+                    addLog(`${survivor.name}의 높은 힘으로 신체 추가 발견!`, 'event');
+                }
+            }
 
             // 도굴꾼: [부품 끼워맞추기]
             if (jobSkill && jobSkill.name === '부품 끼워맞추기') {
@@ -3528,11 +3564,12 @@ function endSubGame() {
             }
         } else if (rewardType < 0.8) {
             // 스킬만
-            const tempSkill = '행운의축복(임시)';
-            if (!highest.skills.includes(tempSkill)) {
-                highest.skills.push(tempSkill);
+            const availableSkills = getAvailableSpecialSkills(highest);
+            if (availableSkills.length > 0) {
+                const newSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
+                highest.skills.push(newSkill.name);
                 skillGained = true;
-                addLog(`${highest.name}이(가) 토큰 보유 수 최상위 보상으로 임시 스킬을 획득했다.`, 'reward');
+                addLog(`${highest.name}이(가) 토큰 보유 수 최상위 보상으로 [${newSkill.name}] 스킬을 획득했다.`, 'reward');
             }
         } else {
             // 둘 다
@@ -3542,11 +3579,14 @@ function endSubGame() {
                 highest[stat]++;
                 statGained = true;
             }
-            const tempSkill = '행운의축복(임시)';
-            if (!highest.skills.includes(tempSkill)) {
-                highest.skills.push(tempSkill);
+            
+            const availableSkills = getAvailableSpecialSkills(highest);
+            if (availableSkills.length > 0) {
+                const newSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
+                highest.skills.push(newSkill.name);
                 skillGained = true;
             }
+            
             if (statGained || skillGained) {
                 addLog(`${highest.name}이(가) 토큰 보유 수 최상위 보상으로 스탯과 스킬을 모두 획득했다.`, 'reward');
             }
@@ -3598,7 +3638,6 @@ function endSubGame() {
             const isReward = Math.random() < 0.5;
             
             if (isReward) {
-                // 보상
                 const rewardType = Math.random();
                 let statGained = false;
                 let skillGained = false;
@@ -3612,11 +3651,12 @@ function endSubGame() {
                         addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 ${stat} 스탯을 획득했다.`, 'reward');
                     }
                 } else if (rewardType < 0.8) {
-                    const tempSkill = '인형의축복(임시)';
-                    if (!completedSurvivor.skills.includes(tempSkill)) {
-                        completedSurvivor.skills.push(tempSkill);
+                    const availableSkills = getAvailableSpecialSkills(completedSurvivor);
+                    if (availableSkills.length > 0) {
+                        const newSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
+                        completedSurvivor.skills.push(newSkill.name);
                         skillGained = true;
-                        addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 임시 스킬을 획득했다.`, 'reward');
+                        addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 [${newSkill.name}] 스킬을 획득했다.`, 'reward');
                     }
                 } else {
                     const stats = ['strength', 'agility', 'intelligence', 'charisma', 'charm'];
@@ -3625,11 +3665,14 @@ function endSubGame() {
                         completedSurvivor[stat]++;
                         statGained = true;
                     }
-                    const tempSkill = '인형의축복(임시)';
-                    if (!completedSurvivor.skills.includes(tempSkill)) {
-                        completedSurvivor.skills.push(tempSkill);
+                    
+                    const availableSkills = getAvailableSpecialSkills(completedSurvivor);
+                    if (availableSkills.length > 0) {
+                        const newSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
+                        completedSurvivor.skills.push(newSkill.name);
                         skillGained = true;
                     }
+                    
                     if (statGained || skillGained) {
                         addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 스탯과 스킬을 모두 획득했다.`, 'reward');
                     }
@@ -3828,7 +3871,17 @@ function executeVoting() {
         
         alive.forEach(candidate => {
             if (candidate.id === voter.id) return;
-            const score = candidate.trust + (voter.favorability[candidate.id] || 50);
+            
+            // 신뢰도 가중치: 3.0
+            // 매력 가중치: 2.0
+            // 카리스마 가중치: 1.5
+            // 지능 가중치: 1.5
+            const score = (candidate.trust * 3.0) + 
+                         (candidate.charm * 2.0) + 
+                         (candidate.charisma * 1.5) + 
+                         (candidate.intelligence * 1.5) + 
+                         (voter.favorability[candidate.id] || 50);
+            
             if (score < minScore) {
                 minScore = score;
                 target = candidate;
@@ -3836,17 +3889,17 @@ function executeVoting() {
         });
         
         if (target) {
-            // 판사: [최후 판결]
+            // 판사 스킬 체크는 그대로 유지
             const voterJobSkill = JOB_SKILLS[voter.job];
             if (voterJobSkill && voterJobSkill.name === '최후 판결') {
                 const cancelChance = voter.charisma * 0.08;
                 if (Math.random() < cancelChance) {
                     addLog(`${voter.name}의 '최후 판결' 발동! ${target.name}의 득표 1표 무효화`, 'event');
-                    return; // 이 투표는 카운트하지 않음
+                    return;
                 }
             }
             
-            // 아이돌: [팬덤 형성]
+            // 아이돌 스킬 체크는 그대로 유지
             const targetJobSkill = JOB_SKILLS[target.job];
             if (targetJobSkill && targetJobSkill.name === '팬덤 형성') {
                 const voterFav = voter.favorability[target.id] || 50;
@@ -5453,7 +5506,7 @@ function getActionsPopup() {
         <div class="popup-content">
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
                 ${aliveSurvivors.map(s => {
-                    const allyCount = Object.values(s.favorability).filter(fav => fav >= 30).length;
+                    const allyCount = Object.values(s.allianceWith).length;
                     const isAllianceFull = allyCount > aliveSurvivors.length / 2;
                     const hasOthers = aliveSurvivors.length > 1;
                     
