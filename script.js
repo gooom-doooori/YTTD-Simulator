@@ -453,45 +453,45 @@ const SKILL_LOSS_SCRIPTS = [
 ];
 
 const FAVORABILITY_UP_SCRIPTS = [
-    { message: "와 함께 식사를 하며 친해졌다.", change: 15 },
-    { message: "을(를) 도와주며 신뢰를 쌓았다.", change: 18 },
-    { message: "와(과) 좋은 대화를 나눴다.", change: 12 },
-    { message: "와(과) 농담을 주고받으며 웃었다.", change: 27 },
-    { message: "와(과) 과거 이야기를 나누며 가까워졌다.", change: 22 },
-    { message: "와(과) 위험한 상황에서 서로를 지켜줬다.", change: 100 },
-    { message: "이(가) 자신과 같은 취미가 있다는 것을 알게 되었다.", change: 16 },
-    { message: "와(과) 서로를 칭찬하며 기분이 좋아졌다.", change: 14 },
-    { message: "와(과) 서로의 고민을 들어줬다.", change: 21 },
-    { message: "에게 작은 선물을 받았다.", change: 15 },
-    { message: "와(과) 함께 운동을 했다.", change: 12 },
-    { message: "에게 응원받았다.", change: 16 },
-    { message: "와(과) 좋은 추억을 공유했다.", change: 18 },
-    { message: "이(가) 고마움을 표현했다.", change: 15 }
+    { message: "와 함께 식사를 하며 친해졌다.", change: 24 },
+    { message: "을(를) 도와주며 신뢰를 쌓았다.", change: 28 },
+    { message: "와(과) 좋은 대화를 나눴다.", change: 21 },
+    { message: "와(과) 농담을 주고받으며 웃었다.", change: 50 },
+    { message: "와(과) 과거 이야기를 나누며 가까워졌다.", change: 26 },
+    { message: "을(를) 위험한 상황에서 지켜줬다.", change: 100 },
+    { message: "이(가) 자신과 같은 취미가 있다는 것을 알게 되었다.", change: 23 },
+    { message: "와(과) 서로를 칭찬하며 기분이 좋아졌다.", change: 22 },
+    { message: "와(과) 서로의 고민을 들어줬다.", change: 29 },
+    { message: "에게 작은 선물을 받았다.", change: 25 },
+    { message: "와(과) 함께 운동을 했다.", change: 20 },
+    { message: "에게 응원받았다.", change: 27 },
+    { message: "와(과) 좋은 추억을 공유했다.", change: 24 },
+    { message: "이(가) 고마움을 표현했다.", change: 22 }
 ];
 
 const FAVORABILITY_DOWN_SCRIPTS = [
-    { message: "과(와) 사소한 일로 다퉜다.", change: -8 },
-    { message: "과(와) 의견 충돌이 있었다.", change: -10 },
-    { message: "에게 오해가 생겼다.", change: -9 },
-    { message: "을(를) 믿지 못하게 되었다.", change: -15 },
+    { message: "과(와) 사소한 일로 다퉜다.", change: -11 },
+    { message: "과(와) 의견 충돌이 있었다.", change: -13 },
+    { message: "에게 오해가 생겼다.", change: -10 },
+    { message: "을(를) 믿지 못하게 되었다.", change: -26 },
     { message: "에게 이기적인 행동을 보였다.", change: -12 },
-    { message: "이(가) 약속을 지키지 않았다는 것을 깨달았다.", change: -11 },
-    { message: "이(가) 상처 주는 말을 했다.", change: -13 },
-    { message: "을(를) 무시했다.", change: -10 },
-    { message: "에게 배신감을 느꼈다.", change: -18 },
-    { message: "에게 불공평한 대우를 받았다.", change: -11 },
-    { message: "이(가) 자신의 비밀을 누설했음을 알게 되었다.", change: -16 },
-    { message: "을(를) 차갑게 대했다.", change: -9 },
-    { message: "에게 도움을 거절당했다.", change: -10 },
-    { message: "에게 질투심을 느꼈다.", change: -12 },
-    { message: "이(가) 신뢰를 저버렸다고 느꼈다.", change: -14 }
+    { message: "이(가) 약속을 지키지 않았다는 것을 깨달았다.", change: -14 },
+    { message: "이(가) 상처 주는 말을 했다.", change: -22 },
+    { message: "을(를) 무시했다.", change: -15 },
+    { message: "에게 배신감을 느꼈다.", change: -28 },
+    { message: "에게 불공평한 대우를 받았다.", change: -12 },
+    { message: "이(가) 자신의 비밀을 누설했음을 알게 되었다.", change: -30 },
+    { message: "을(를) 차갑게 대했다.", change: -11 },
+    { message: "에게 도움을 거절당했다.", change: -14 },
+    { message: "에게 질투심을 느꼈다.", change: -21 },
+    { message: "이(가) 신뢰를 저버렸다고 느꼈다.", change: -25 } 
 ];
 
 const BIG_FIGHT_SCRIPTS = [
-    { message: "큰 싸움이 일어났다.", change: -30 },
-    { message: "격렬하게 다퉜다.", change: -35 },
-    { message: "심한 말다툼을 했다.", change: -32 },
-    { message: "돌이킬 수 없는 말을 했다.", change: -40 }
+    { message: "큰 싸움이 일어났다.", change: -55 },
+    { message: "격렬하게 다퉜다.", change: -72 },
+    { message: "심한 말다툼을 했다.", change: -64 },
+    { message: "돌이킬 수 없는 말을 했다.", change: -80 }
 ];
 
 // 메인게임 전용 자유행동 스크립트
@@ -1511,7 +1511,7 @@ const POPUP_EVENTS = {
                 condition: () => true,
                 effect: (character) => {
                     const isPanic = character.isPanic;
-                    const mentalGain = isPanic ? 25 : 10;
+                    const mentalGain = isPanic ? 50 : 25;
                     
                     gameState.survivors = gameState.survivors.map(s => {
                         if (s.id === character.id) {
@@ -3068,7 +3068,7 @@ function processTalkAction(survivor) {
     const target = others[Math.floor(Math.random() * others.length)];
     
     // 호감도 변화량: -80 ~ +120
-    const favorabilityChange = Math.floor(Math.random() * 241) - 80;
+    const favorabilityChange = Math.floor(Math.random() * 251) - 100;
     
     // 성격 타입에 따른 보정
     const survivorType = getPersonalityType(survivor.personality);
