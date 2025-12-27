@@ -567,10 +567,10 @@ const RELATIONSHIPS = {
     rival: { name: '라이벌', min: -80, canLove: false },
     awkward: { name: '어색함', min: -10, canLove: true },
     stranger: { name: '낯선 사람', min: 0, canLove: true },
-    colleague: { name: '동료', min: 80, canLove: true },
-    friend: { name: '친구', min: 250, canLove: true },
-    lover: { name: '연인', min: 900, canLove: true },
-    married: { name: '부부', min: 1500, canLove: true },
+    colleague: { name: '동료', min: 60, canLove: true },
+    friend: { name: '친구', min: 150, canLove: true },
+    lover: { name: '연인', min: 500, canLove: true },
+    married: { name: '부부', min: 800, canLove: true },
     sibling: { name: '형제/자매', min: 0, canLove: false },
     parent: { name: '부모/자식', min: 0, canLove: false },
     crush: { name: '짝사랑', min: 0, canLove: true },
@@ -1020,7 +1020,7 @@ const INITIAL_TRIAL_EVENTS = {
             condition: (char1, char2) => {
                 const fav1 = char1.favorability[char2.id] || 0;
                 const fav2 = char2.favorability[char1.id] || 0;
-                return fav1 >= 250 || fav2 >= 250; // 친구 이상
+                return fav1 >= 150 || fav2 >= 150; // 친구 이상
             },
             getMessage: (char1, char2) => 
                 `${char1.name}와(과) ${char2.name}은(는) 낯선 방의 침대 위에서 깨어났습니다.\n` +
@@ -1442,7 +1442,7 @@ const POPUP_EVENTS = {
                 const deadFriends = gameState.survivors.filter(dead => {
                     if (dead.isAlive) return false;
                     const fav = survivor.favorability[dead.id] || 0;
-                    return fav >= 250; // 친구 이상
+                    return fav >= 150; // 친구 이상
                 });
                 
                 return deadFriends.length > 0;
@@ -1467,7 +1467,7 @@ const POPUP_EVENTS = {
             const deadFriends = gameState.survivors.filter(dead => {
                 if (dead.isAlive) return false;
                 const fav = character.favorability[dead.id] || 0;
-                return fav >= 250;
+                return fav >= 150;
             });
             
             const deadFriend = deadFriends[Math.floor(Math.random() * deadFriends.length)];
@@ -1553,7 +1553,7 @@ const POPUP_EVENTS = {
                 const hasFriend = gameState.survivors.some(other => {
                     if (!other.isAlive || other.id === survivor.id) return false;
                     const fav = survivor.favorability[other.id] || 0;
-                    return fav >= 250; // 친구 이상
+                    return fav >= 150; // 친구 이상
                 });
                 
                 return hasFriend;
@@ -1583,6 +1583,67 @@ const POPUP_EVENTS = {
         ]
     }
 };
+
+// 자동 저장 함수
+function autoSaveToLocalStorage() {
+    try {
+        // 현재 턴의 로그만 필터링
+        const currentTurnLogs = gameState.logs.filter(log => log.turn === gameState.turn);
+        
+        const data = {
+            survivors: gameState.survivors,
+            logs: currentTurnLogs,  // 현재 턴 로그만 저장
+            turn: gameState.turn,
+            gamePhase: gameState.gamePhase,
+            subGameType: gameState.subGameType,
+            subGameTurn: gameState.subGameTurn,
+            turnDialogues: gameState.turnDialogues,
+            hasStarted: gameState.hasStarted,
+            initialTrialPopupsShown: gameState.initialTrialPopupsShown,
+            mainGameTurn: gameState.mainGameTurn,
+            usedTrialEvents: gameState.usedTrialEvents,
+            laptopEventOccurred: gameState.laptopEventOccurred,
+            savedAt: new Date().toISOString()
+        };
+        
+        localStorage.setItem('yttd_simulator_autosave', JSON.stringify(data));
+        console.log('자동 저장 완료:', gameState.turn, '턴');
+    } catch (error) {
+        console.error('자동 저장 실패:', error);
+    }
+}
+
+// 자동 로드 함수
+function loadAutoSaveFromLocalStorage() {
+    try {
+        const saved = localStorage.getItem('yttd_simulator_autosave');
+        if (!saved) return;
+        
+        const data = JSON.parse(saved);
+        
+        // 데이터가 유효한지 확인
+        if (!data.survivors || !Array.isArray(data.survivors)) return;
+        
+        gameState.survivors = data.survivors || [];
+        gameState.logs = data.logs || [];
+        gameState.turn = data.turn || 0;
+        gameState.gamePhase = data.gamePhase || 'initial';
+        gameState.subGameType = data.subGameType || null;
+        gameState.subGameTurn = data.subGameTurn || 0;
+        gameState.turnDialogues = data.turnDialogues || {};
+        gameState.hasStarted = data.hasStarted || false;
+        gameState.initialTrialPopupsShown = data.initialTrialPopupsShown || {};
+        gameState.mainGameTurn = data.mainGameTurn || 0;
+        gameState.usedTrialEvents = data.usedTrialEvents || [];
+        gameState.laptopEventOccurred = data.laptopEventOccurred || false;
+        
+        addLog('자동 저장된 데이터를 불러왔습니다.', 'system');
+        console.log('자동 로드 완료:', data.turn, '턴');
+    } catch (error) {
+        console.error('자동 로드 실패:', error);
+        localStorage.removeItem('yttd_simulator_autosave');
+    }
+}
 
 function toggleTheme() {
     document.body.classList.toggle('light-mode');
@@ -1617,6 +1678,8 @@ function init() {
     if (savedTheme === 'light') {
         document.body.classList.add('light-mode');
     }
+
+    loadAutoSaveFromLocalStorage();
     
     if (themeIcon) {
         lucide.createIcons();
@@ -1857,6 +1920,8 @@ function processTurn() {
 
     assignFreeActions();
     updateDisplay();
+    localStorage.removeItem('yttd_simulator_autosave');
+    autoSaveToLocalStorage();
 }
 
 // 팝업 이벤트 체크 및 실행
@@ -2652,7 +2717,7 @@ function processInitialTrial() {
 
     const shuffledSurvivors = [...remainingSurvivors].sort(() => Math.random() - 0.5);
 
-    // --- [최우선 단계] 친구 이상(호감도 250+) 관계 2인 매칭 ---
+    // --- [최우선 단계] 친구 이상(호감도 150+) 관계 2인 매칭 ---
     // 섞인 순서에서 찾기 때문에 매번 다른 순서로 체크됨
     let specialPair = null;
     for (let i = 0; i < shuffledSurvivors.length; i++) {
@@ -2663,7 +2728,7 @@ function processInitialTrial() {
             const f1 = s1.favorability[s2.id] || 0;
             const f2 = s2.favorability[s1.id] || 0;
             
-            if (f1 >= 250 || f2 >= 250) { 
+            if (f1 >= 150 || f2 >= 150) { 
                 specialPair = [s1, s2];
                 break; 
             }
@@ -2674,7 +2739,7 @@ function processInitialTrial() {
     if (specialPair) {
         const char1 = specialPair[0];
         const char2 = specialPair[1];
-        const trial = INITIAL_TRIAL_EVENTS.duo.find(e => e.condition(char1, char2));
+        const trial = INITIAL_TRIAL_EVENTS.duo.find(e => e.id === 'oneKey');
         startDuoTrial(trial, char1, char2);
         return;
     }
@@ -2688,7 +2753,7 @@ function processInitialTrial() {
         // 과반수 미만: 1인 시련 우선 (호감도 80 미만인 사람)
         const soloCandidate = shuffledSurvivors.find(survivor => {
             return !aliveSurvivors.some(other => 
-                other.id !== survivor.id && (survivor.favorability[other.id] || 0) >= 80
+                other.id !== survivor.id && (survivor.favorability[other.id] || 0) >= 60
             );
         });
 
@@ -3119,9 +3184,9 @@ function processSubGame() {
                     const target = aliveCandidates[Math.floor(Math.random() * aliveCandidates.length)];
                     
                     // 신뢰도 기반 수락 확률 계산
-                    const targetFavorability = target.favorability[s.id] || 50;
-                    const baseAcceptChance = targetFavorability / 200;
-                    const trustBonus = s.trust / 200;
+                    const targetFavorability = target.favorability[s.id] || 0;
+                    const baseAcceptChance = Math.max(0, (targetFavorability + 200) / 1000);
+                    const trustBonus = s.trust / 500;
                     const finalAcceptChance = Math.min(0.95, baseAcceptChance + trustBonus);
                     
                     // 성격별 보정
@@ -3135,8 +3200,8 @@ function processSubGame() {
                     
                     if (Math.random() < adjustedChance) {
                         // 수락
-                        updated.favorability[target.id] = Math.min(1500, (updated.favorability[target.id] || 50) + 25);
-                        target.favorability[s.id] = Math.min(1500, (target.favorability[s.id] || 50) + 25);
+                        updated.favorability[target.id] = Math.min(1500, (updated.favorability[target.id] || 0) + 25);
+                        target.favorability[s.id] = Math.min(1500, (target.favorability[s.id] || 0) + 25);
                         
                         // 양쪽 모두 동맹 목록에 추가
                         if (!updated.allianceWith) updated.allianceWith = [];
@@ -3990,7 +4055,7 @@ function checkLaptopEvent(sacrificed) {
     const friends = gameState.survivors.filter(other => {
         if (other.id === laptopOwner.id) return false;
         const fav = laptopOwner.favorability[other.id] || 0;
-        return fav >= 250; // 친구 이상
+        return fav >= 150; // 친구 이상
     });
     
     // 희생자가 친구 중 하나인지 확인
@@ -4180,7 +4245,7 @@ function initializeSurvivor(survivor) {
         voteTarget: null,
         panicTurnCount: 0,
         allianceWith: []
-};
+    };
 }
 
 // 로그 추가
@@ -4356,11 +4421,11 @@ function showFavorabilityDetails(survivorId) {
                                     let borderColor = '#d1d5db80';
                                     let favColor = '#ffffffff';
                                     
-                                    if (person.favorability >= 250) {
+                                    if (person.favorability >= 150) {
                                         bgColor = '#c1ffd34d';
                                         borderColor = '#22c55e80';
                                         favColor = '#22c55e';
-                                    } else if (person.favorability >= 80) {
+                                    } else if (person.favorability >= 60) {
                                         bgColor = '#eff6ff4d';
                                         borderColor = '#3b82f680';
                                         favColor = '#3b82f6';
@@ -4709,7 +4774,8 @@ function saveData() {
         hasStarted: gameState.hasStarted,
         initialTrialPopupsShown: gameState.initialTrialPopupsShown,
         mainGameTurn: gameState.mainGameTurn,
-        usedTrialEvents: gameState.usedTrialEvents
+        usedTrialEvents: gameState.usedTrialEvents,
+        laptopEventOccurred: gameState.laptopEventOccurred
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -4730,7 +4796,10 @@ function loadData(event) {
     reader.onload = (e) => {
         try {
             const data = JSON.parse(e.target.result);
-            gameState.survivors = data.survivors || [];
+            gameState.survivors = (data.survivors || []).map(s => ({
+                ...s,
+                initialRelationshipTypes: s.initialRelationshipTypes || {}  // 초기 관계 복원
+            }));
             gameState.logs = data.logs || [];
             gameState.turn = data.turn || 0;
             gameState.gamePhase = data.gamePhase || 'initial';
@@ -5168,15 +5237,12 @@ function addSurvivor() {
         survivor.favorability[s.id] = 0;
         s.favorability[survivor.id] = 0;
     });
-
-    survivor.initialRelationshipTypes = {};
     
     if (window.tempRelationships && window.tempRelationships.length > 0) {
         window.tempRelationships.forEach(rel => {
             const favorabilityValue = INITIAL_RELATIONSHIP_VALUES[rel.type];
             survivor.favorability[rel.targetId] = favorabilityValue;
             survivor.relationshipTypes[rel.targetId] = rel.type;
-            survivor.initialRelationshipTypes[rel.targetId] = rel.type;
 
             const familyRelations = ['형제/자매', '부모/자식', '유사가족', '친척'];
             if (familyRelations.includes(rel.type)) {
@@ -5188,11 +5254,6 @@ function addSurvivor() {
             if (rel.type !== '짝사랑') {
                 gameState.survivors = gameState.survivors.map(s => {
                     if (s.id === rel.targetId) {
-                        const minFav = INITIAL_RELATIONSHIP_VALUES[rel.type];
-                        if (!s.initialRelationshipTypes) s.initialRelationshipTypes = {};
-                        s.initialRelationshipTypes[survivor.id] = rel.type;
-
-                        // 상대방도 가족 관계면 동맹 추가
                         const updatedSurvivor = {
                             ...s,
                             favorability: { ...s.favorability, [survivor.id]: favorabilityValue },
@@ -5203,16 +5264,11 @@ function addSurvivor() {
                             if (!updatedSurvivor.allianceWith) updatedSurvivor.allianceWith = [];
                             updatedSurvivor.allianceWith.push(survivor.id);
                         }
-                        return {
-                            ...s,
-                            favorability: { ...s.favorability, [survivor.id]: favorabilityValue },
-                            relationshipTypes: { ...s.relationshipTypes, [survivor.id]: rel.type }
-                        };
+                        return updatedSurvivor;
                     }
                     return s;
                 });
             }
-            
         });
     }
     
@@ -5319,7 +5375,6 @@ function updateSurvivor(id) {
                 survivor.favorability[rel.targetId] = favorabilityValue;
             }
             survivor.relationshipTypes[rel.targetId] = rel.type;
-            newInitialRelationships[rel.targetId] = rel.type;
             
             // 짝사랑이 아니면 양방향 설정
             if (rel.type !== '짝사랑') {
@@ -5331,8 +5386,6 @@ function updateSurvivor(id) {
                         }
                         if (!s.relationshipTypes) s.relationshipTypes = {};
                         s.relationshipTypes[id] = rel.type;
-                        if (!s.initialRelationshipTypes) s.initialRelationshipTypes = {};
-                        s.initialRelationshipTypes[id] = rel.type;
                     }
                     return s;
                 });
@@ -5377,8 +5430,7 @@ function updateSurvivor(id) {
             hp: newHp,
             maxMental: newMaxMental,
             mental: newMental,
-            trust: newBaseTrust,
-            initialRelationshipTypes: newInitialRelationships
+            trust: newBaseTrust
         };
     });
 
@@ -5401,7 +5453,7 @@ function getActionsPopup() {
         <div class="popup-content">
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
                 ${aliveSurvivors.map(s => {
-                    const allyCount = Object.values(s.favorability).filter(fav => fav >= 80).length;
+                    const allyCount = Object.values(s.favorability).filter(fav => fav >= 30).length;
                     const isAllianceFull = allyCount > aliveSurvivors.length / 2;
                     const hasOthers = aliveSurvivors.length > 1;
                     
@@ -6004,9 +6056,10 @@ function resetSimulation() {
         charm: s.charm,
         gender: s.gender,
         personality: s.personality,
-        status: s.status,
+        status: '인간',
         image: s.image,
-        initialRelationshipTypes: s.initialRelationshipTypes || {}
+        relationshipTypes: { ...s.relationshipTypes },
+        savedFavorability: { ...s.favorability }
     }));
     
     // 게임 상태 완전 초기화
@@ -6031,14 +6084,10 @@ function resetSimulation() {
     };
     
     // 생존자 재등록
-    savedSurvivors.forEach(survivorData => {
+     savedSurvivors.forEach(survivorData => {
         const survivor = initializeSurvivor(survivorData);
-
-        const initialRelationships = survivorData.initialRelationshipTypes || {};
-        survivor.relationshipTypes = { ...initialRelationships };
-        survivor.initialRelationshipTypes = { ...initialRelationships };
         
-        // 호감도 초기화
+        // 모든 생존자에 대한 호감도를 0으로 초기화
         gameState.survivors.forEach(s => {
             survivor.favorability[s.id] = 0;
             s.favorability[survivor.id] = 0;
@@ -6047,20 +6096,71 @@ function resetSimulation() {
         gameState.survivors.push(survivor);
     });
 
-    // 초기 관계에 따른 호감도 재설정
-    gameState.survivors.forEach(survivor => {
-        Object.entries(survivor.initialRelationshipTypes).forEach(([targetId, relationType]) => {
+    // ID 매핑 생성 (이름 기반)
+    const idMapping = {};
+    savedSurvivors.forEach((saved, index) => {
+        const newSurvivor = gameState.survivors[index];
+        // 이전 ID들과 새 ID 매핑
+        const oldIds = savedSurvivors.map(s => 
+            Object.keys(saved.relationshipTypes).find(id => 
+                savedSurvivors.find(ss => ss === s && saved.relationshipTypes[id])
+            )
+        );
+        idMapping[saved.name] = newSurvivor.id;
+    });
+
+    // 관계 재설정
+    savedSurvivors.forEach((savedData, index) => {
+        const survivor = gameState.survivors[index];
+        
+        // relationshipTypes 복원
+        Object.entries(savedData.relationshipTypes).forEach(([oldTargetId, relationType]) => {
+            // 이전 ID로 저장된 생존자의 이름 찾기
+            const targetName = savedSurvivors.find((s, i) => {
+                const targetSurvivor = gameState.survivors[i];
+                return Object.keys(savedData.relationshipTypes).includes(String(targetSurvivor.id)) ||
+                       savedSurvivors[i] === savedSurvivors.find(ss => 
+                           Object.keys(ss.savedFavorability || {}).includes(oldTargetId)
+                       );
+            });
+            
+            // 새로운 ID 찾기
+            const newTarget = gameState.survivors.find(s => 
+                savedSurvivors.find((saved, i) => 
+                    gameState.survivors[i].id === s.id && 
+                    Object.keys(saved.relationshipTypes).includes(oldTargetId)
+                )
+            );
+            
+            if (!newTarget) return;
+            
             const favorabilityValue = INITIAL_RELATIONSHIP_VALUES[relationType];
-            if (favorabilityValue !== undefined) {
-                survivor.favorability[targetId] = favorabilityValue;
+            if (favorabilityValue === undefined) return;
+            
+            // 현재 생존자 → 대상에 대한 호감도 설정
+            survivor.favorability[newTarget.id] = favorabilityValue;
+            survivor.relationshipTypes[newTarget.id] = relationType;
+            
+            // 짝사랑이 아니면 양방향 설정
+            if (relationType !== '짝사랑') {
+                newTarget.favorability[survivor.id] = favorabilityValue;
+                if (!newTarget.relationshipTypes) newTarget.relationshipTypes = {};
+                newTarget.relationshipTypes[survivor.id] = relationType;
+            }
+            
+            // 가족 관계면 동맹 추가
+            const familyRelations = ['형제/자매', '부모/자식', '유사가족', '친척'];
+            if (familyRelations.includes(relationType)) {
+                if (!survivor.allianceWith) survivor.allianceWith = [];
+                if (!survivor.allianceWith.includes(newTarget.id)) {
+                    survivor.allianceWith.push(newTarget.id);
+                }
                 
-                // 직사랑이 아니면 양방향 설정
-                if (relationType !== '직사랑') {
-                    const target = gameState.survivors.find(s => s.id == targetId);
-                    if (target) {
-                        target.favorability[survivor.id] = favorabilityValue;
-                        if (!target.relationshipTypes) target.relationshipTypes = {};
-                        target.relationshipTypes[survivor.id] = relationType;
+                // 양방향 동맹
+                if (relationType !== '짝사랑') {
+                    if (!newTarget.allianceWith) newTarget.allianceWith = [];
+                    if (!newTarget.allianceWith.includes(survivor.id)) {
+                        newTarget.allianceWith.push(survivor.id);
                     }
                 }
             }
@@ -6069,6 +6169,8 @@ function resetSimulation() {
     
     addLog('새로운 시뮬레이션이 시작되었다.', 'system');
     
+    localStorage.removeItem('yttd_simulator_autosave');
+
     // 엔딩 화면 닫기
     document.getElementById('popupContainer').innerHTML = '';
     gameState.initialTrialPopupsShown === 0;
@@ -6117,7 +6219,7 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
         const rollValue = Math.floor(Math.random() * 100) + 1;
         
         let displayValue = rollValue === 100 ? 99 : rollValue;
-        if (rollValue === 100) displayValue = 99;
+        if (rollValue === 100) displayValue = 0;
 
         const tens = Math.floor(rollValue / 10) % 10;
         const ones = rollValue % 10;
