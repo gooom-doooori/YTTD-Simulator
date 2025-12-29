@@ -262,6 +262,24 @@ body {
     background-color: #d82222;
 }
 
+.action-btn[onclick*="'slander'"],
+.action-btn[onclick*="'falseTestimony'"] {
+    background-color: #291212 !important;
+    color: white !important;
+    font-weight: 800 !important;
+}
+
+.action-btn[onclick*="'slander'"]:not(.selected):not(:disabled):hover,
+.action-btn[onclick*="'falseTestimony'"]:not(.selected):not(:disabled):hover {
+    background-color: #d82222 !important;
+}
+
+.action-btn[onclick*="'slander'"].selected,
+.action-btn[onclick*="'falseTestimony'"].selected {
+    background-color: #d82222 !important;
+    color: white !important;
+}
+
 /* 메인 그리드 */
 .main-grid {
     display: grid;
