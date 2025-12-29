@@ -28,7 +28,7 @@ const JOB_CATEGORIES = {
     '사회 혼란': ['암살자', '스파이', '도박꾼', '조폭', '야쿠자', '도굴꾼'],
     '산업': ['회사원', '비서', '기자', '농부', '요리사', '바리스타', '바텐더', '미용사', '조향사', '호텔리어', '마사지사', '메이드'],
     '엔터테인먼트': ['예술가', '아이돌', '화가', '배우', '광대', '가수', '기타리스트', '드러머', '댄서', '무용수', '운동선수'],
-    '기타': ['주부', '환자', '죄수', '거지', '무직', '아르바이트', '스님', '신부', '수녀', '무당', '일용직 근로자']
+    '기타': ['주부', '환자', '죄수', '거지', '무직', '아르바이트', '일용직 근로자', '스님', '신부', '수녀', '무당']
 };
 const JOBS = Object.values(JOB_CATEGORIES).flat();
 
@@ -96,139 +96,139 @@ const JOB_SKILLS = {
         description: '체력/정신력 최대치 100 증가'},
     '초등학생': {
         name: '순수한 양보',
-        description: '[신뢰매매] 토큰 상실 시 자신을 제외한 전원의 호감도 +2'
+        description: '[신뢰매매게임] 토큰 개수 최하위 패널티를 받을 경우 전원의 호감도 +20'
     },
     '중학생': {
         name: '예민한 감각',
-        description: '[신체찾기] 행동 시 민첩 비례 확률로 인형의 신체 1개 추가 발견'
+        description: '[신체보물찾기] 행동 시 민첩 비례 확률로 인형의 신체 1개 추가 발견'
     },
     '고등학생': {
         name: '학습 효과',
-        description: '서브게임에서 스탯 획득 시 해당 스탯이 추가로 +1 상승'
+        description: '서브게임에서 보상으로 스탯 획득 시 해당 스탯이 추가로 +1 상승'
     },
     '대학생': {
         name: '벼락치기',
-        description: '[신체찾기] 종료 2턴 전부터 신체 발견 확률 2배 상승'
+        description: '[신체보물찾기] 서브게임 종료 2턴 전부터 신체 발견 확률 2배 상승'
     },
     '대학원생': {
         name: '오차 분석',
-        description: '[신뢰매매] 행동 시 지능 수치에 비례해 토큰 하락폭 50% 감소'
+        description: '[신뢰매매게임] 행동 시 지능 수치에 비례해 토큰 하락폭 50% 감소'
     },
     '교수': {
         name: '권위적 교환',
-        description: '[신체찾기] 타인과 신체 부위 교환 시 카리스마 판정으로 무조건 승리'
+        description: '[신체보물찾기] 신체보물찾기에서 대화하기 행동 시 카리스마 판정으로 상대가 가진 신체부위 한 개 강탈'
     },
     '의사': {
         name: '정밀 집도',
-        description: '[신체찾기] 완성 시 획득하는 보너스 스탯이 무조건 2개로 고정'
+        description: '[신체보물찾기] 인형 완성으로 보상 받을 때, 보너스 스탯을 받게 되면 무조건 보너스 스탯 2개 획득'
     },
     '간호사': {
         name: '헌신적 간호',
-        description: '치료 행동 시 정신력을 지능의 50%만큼 추가 회복'
+        description: '치료 행동 시 자신과 호감도 150이상인 랜덤 캐릭터 한 명의 정신력 50 함께 회복'
     },
     '약사': {
         name: '각성제',
-        description: '[연회] 관에 갇힌 아군에게 사용 시 1턴간 탈출 확률 20% 증가'
+        description: '[연회] 관에 갇힌 캐릭터 중 호감도 150이상인 캐릭터가 있을 경우, 1턴간  그 중 한 명의 탈출 확률 20% 증가'
     },
     '수의사': {
         name: '교감 능력',
-        description: '[연회] 인간 상태일 때 더미즈 캐릭터들과의 호감도 상승치 1.5배'
+        description: '[연회] 자신이 인간 상태일 때 더미즈인 캐릭터들과의 호감도 상승치 1.5배'
     },
     '변호사': {
         name: '공정 거래',
-        description: '[신뢰매매] 토큰 최하위일 때 받는 체력/정신력 데미지 30% 감소'
+        description: '[신뢰매매게임] 토큰 최하위일 때 받는 체력/정신력 데미지 30% 감소'
     },
     '판사': {
         name: '최후 판결',
-        description: '메인게임 투표 시 카리스마 비례 확률로 특정 인물 득표수 1표 무효화'
+        description: '메인게임 투표 시 대상의 카리스마 비례 확률로 랜덤 인물의 표 1표 무효화'
     },
     '연구원': {
         name: '논리 회로',
-        description: '[신뢰매매] 행동 시 지능 수치만큼 토큰 추가 획득'
+        description: '[신뢰매매게임] 행동 시 지능 수치만큼 토큰 추가 획득'
     },
     '환경미화원': {
         name: '자원 재활용',
-        description: '[신체찾기] 중복 부위 2개를 소모해 토큰 3개로 교환 가능'
+        description: '[신체보물찾기] 중복 부위 2개를 소모해 1개당 체력혹은 정신력 중 더 낮은 능력치 5 회복'
     },
     '정비공': {
         name: '장치 분석',
-        description: '[신체찾기] 행동 시 민첩 수치에 비례해 신체 발견 확률 상승'
+        description: '[신체보물찾기] 행동 시 민첩 수치에 비례해 신체 발견 확률 상승'
     },
     '경찰': {
         name: '질서 유지',
-        description: '[신뢰매매] 자신의 토큰이 타인에게 강탈당하는 것을 무효화'
+        description: '[신뢰매매게임] 자신의 토큰이 타인에게 강탈당하는 것을 무효화'
     },
     '군인': {
         name: '강철 정신',
-        description: '패닉 상태 돌입 시 3턴간 체력 감소 면제'
+        description: '자신이 패닉 상태 돌입 시 3턴간 체력 감소 면제'
     },
     '경호원': {
         name: '전담 방어',
-        description: '지정 아군이 서브게임 페널티로 입는 데미지를 대신 흡수'
+        description: '시뮬레이션 시작 시, 랜덤 캐릭터를 자신의 보호대상으로 설정.(호감도 높은 캐릭터 우선) 보호대상이 서브게임에서 페널티를 입는 경우 데미지를 대신 받음'
     },
     '소방관': {
         name: '인명 구조',
-        description: '[연회] 관에 갇힌 아군 구출 행동 시 힘 수치 비례 성공률 보너스'
+        description: '[연회] 패닉 상태의 캐릭터가 있는 경우 자신의 체력 30을 소모하여 해당 캐릭터의 정신력 10 회복. 자신의 체력이 최대체력의 30%이하로 떨어지면 발동하지 않음.'
     },
     '용병': {
         name: '생존 약탈',
-        description: '[신체찾기] 행동 시 낮은 확률로 타인의 신체를 강탈 - 신뢰도 -10'
+        description: '[신체보물찾기] 행동 시 낮은 확률로 타인 소유의 인형의 신체부위를 강탈 (신뢰도 -10)'
     },
     '경비원': {
         name: '구역 감시',
-        description: '[신체찾기] 타인이 자신의 구역에서 탐색 시 토큰 1개 징수'
+        description: '[신체보물찾기] 타인이 자신과 같은 행동을 진행할 경우 토큰 1개 징수'
     },
     '암살자': {
         name: '급소 타격',
-        description: '[신뢰매매] 토큰 1위를 차지할 확률 상승, 성공 시 무조건 스킬 획득'
+        description: '메인게임에서 대역이 되는 경우, 이간질하기 행동 성공률 20% 증가.'
     },
     '스파이': {
         name: '정보 조작',
-        description: '메인게임에서 자신의 신뢰도를 카리스마 비례 수치만큼 높게 위장'
+        description: '메인게임에서 자신의 신뢰도를 카리스마 비례 수치만큼 높게 위장(최대 70)'
     },
     '도박꾼': {
         name: '올 인',
-        description: '[신뢰매매] 행동 시 토큰 변동치가 0 아니면 2배로 적용 (랜덤)'
+        description: '[신뢰매매게임] 적극행동 시 랜덤으로 자신의 보유 토큰수가 두 배가 되거나 0이 됨.'
     },
     '조폭': {
         name: '공포 분위기',
-        description: '[연회] 인간 상태일 때 관 탈출 판정 중인 더미즈를 위협해 신뢰도 강탈'
+        description: '메인게임에서 자신이 인간 상태일 때 더미즈를 위협해 신뢰도 강탈(최대 20)'
     },
     '야쿠자': {
         name: '조직의 의리',
-        description: '[연회] 자신과 호감도가 높은 더미즈의 사망을 1회 방지 (자신 체력 -30)'
+        description: '자신과 호감도가 300 이상인 더미즈의 사망을 1회 방지 (자신 체력 -30)'
     },
     '도굴꾼': {
         name: '부품 끼워맞추기',
-        description: '[신체찾기] 부위 1개가 부족해도 완성한 것으로 인정 (성공 보상 50%)'
+        description: '[신체찾기] 부위 1개가 부족해도 완성한 것으로 인정 (성공 보상은 50% 감소)'
     },
     '회사원': {
         name: '초과 근무',
-        description: '서브게임 중 정신력 수치 5를 써서 해당 턴 행동을 한 번 더 수행'
+        description: '서브게임 중 랜덤 확률로 정신력 수치 5를 써서 해당 턴 행동을 한 번 더 수행'
     },
     '비서': {
         name: '일정 관리',
-        description: '호감도 1위 대상이 행동할 때마다 자신의 토큰도 1개씩 상승'
+        description: '호감도 1위 대상이 행동할 때마다 자신의 토큰도 1개씩 획득'
     },
     '기자': {
         name: '약점 노출',
-        description: '메인게임 득표 시 자신을 찍은 사람의 신뢰도를 지능만큼 깎음'
+        description: '메인게임 득표 시 자신에게 투표한 사람의 신뢰도를 자신의 지능에 비례하여 깎음'
     },
     '농부': {
         name: '결실의 계절',
-        description: '서브게임 종료 시 체력/정신력 회복량이 힘 수치에 비례해 증가'
+        description: '서브게임 종료 시 체력/정신력을 힘 수치에 비례해 회복'
     },
     '요리사': {
         name: '영양 식단',
-        description: '치료/휴식 행동 시 아군 전체의 체력을 5씩 추가 회복'
+        description: '휴식 행동 시 아군 전체의 체력을 5씩 추가 회복'
     },
     '바리스타': {
         name: '카페인 충전',
-        description: '[연회] 관에 갇힌 아군에게 사용 시 정신력 감소 페널티 무효화'
+        description: '[연회] 관에 갇힌 아군 중 랜덤 한 명의 정신력 감소 페널티 무효화'
     },
     '바텐더': {
         name: '취중 진담',
-        description: '휴식 중 대화 시 상대방의 호감도 상승폭 2배'
+        description: '대화 행동 시 상대방의 호감도 상승/감소폭 2배'
     },
     '미용사': {
         name: '이미지 메이킹',
@@ -240,11 +240,11 @@ const JOB_SKILLS = {
     },
     '호텔리어': {
         name: '최고의 서비스',
-        description: '자신과 대화한 캐릭터는 다음 턴 [신뢰매매] 토큰 획득량 +1'
+        description: '[신뢰매매게임] 자신과 대화한 캐릭터는 다음 턴 토큰 획득량 +1'
     },
     '마사지사': {
         name: '피로 회복',
-        description: '[신체찾기] 중 휴식 시 민첩 수치가 다음 턴에 1.5배 상승'
+        description: '[신체보물찾기] 중 휴식 시 민첩 수치가 다음 턴에 1.5배 상승'
     },
     '메이드': {
         name: '완벽한 시중',
@@ -252,75 +252,79 @@ const JOB_SKILLS = {
     },
     '예술가': {
         name: '영감의 원천',
-        description: '[신체찾기] 완료 시 새로운 스킬을 획득할 확률 2배 상승'
+        description: '[신체보물찾기] 인형 완성 시 새로운 스킬을 획득할 확률 2배 상승'
     },
     '아이돌': {
         name: '팬덤 형성',
-        description: '메인게임 투표 시 호감도 50 이상인 캐릭터들은 자신을 투표 불가'
+        description: '메인게임 투표 시 자신에 대한 호감도 150 이상인 캐릭터들은 자신에게 투표하지 않음'
     },
     '화가': {
         name: '정밀 묘사',
-        description: '[신체찾기] 보유하지 않은 부위가 탐색될 확률 지능 비례 상승'
+        description: '[신체보물찾기] 보유하지 않은 부위 획득할 확률 지능 비례 상승'
     },
     '배우': {
         name: '페르소나',
-        description: '패닉 상태에서도 신뢰도 하락 및 메인게임 득표율 패널티 무시'
+        description: '패닉 상태일 때, 신뢰도 하락 하지 않음'
     },
     '광대': {
         name: '시선 분산',
-        description: '[신뢰매매] 토큰 꼴찌일 때 페널티를 무작위 타인에게 전가 - 신뢰도 -20'
+        description: '[신뢰매매게임] 토큰 꼴찌일 때 페널티를 무작위 타인에게 전가 (신뢰도 -20)'
     },
     '가수': {
         name: '위로의 노래',
-        description: '[연회] 5턴 동안 매 턴 생존본능 상태인 아군 정신력 +10'
+        description: '휴식 행동 시 모든 아군 정신력 +5'
     },
     '기타리스트': {
         name: '불협화음',
-        description: '메인게임 중 특정 캐릭터의 발언권(카리스마)을 1턴간 봉쇄'
+        description: '메인게임 중 적극행동 할 경우 자신의 카리스마 2배 상승'
     },
     '드러머': {
         name: '비트 조절',
-        description: '서브게임 턴 진행 속도를 자신만 1턴 늦추거나 빠르게 조절'
+        description: '서브게임 중 랜덤하게 1턴에 2회 행동을 하거나 0회 행동을 함. 행동 하지 않을 경우 체력/정신력 +10'
     },
     '댄서': {
         name: '유연한 회피',
-        description: '서브게임 데미지 판정 시 민첩 비례 확률로 데미지 0화'
+        description: '데미지를 입을 경우 민첩 비례 확률로 데미지 무효화'
     },
     '무용수': {
         name: '유연한 회피',
-        description: '서브게임 데미지 판정 시 민첩 비례 확률로 데미지 0화'
+        description: '데미지를 입을 경우 민첩 비례 확률로 데미지 무효화'
     },
     '운동선수': {
         name: '한계 돌파',
-        description: '체력이 30% 이하일 때 모든 서브게임 성공 확률 1.5배'
+        description: '체력이 20% 이하일 때 모든 행동에서 [신뢰매매게임]중이라면 토큰을 [신체보물찾기]중이라면 신체부위를 2배로 획득 가능.'
     },
     '주부': {
         name: '알뜰살뜰',
-        description: '[신뢰매매] 토큰 소모 행동 시 30% 확률로 토큰을 소모하지 않음'
+        description: '[신뢰매매] 토큰 상실 시 30% 확률로 토큰을 상실하지 않음'
     },
     '환자': {
         name: '동정 유발',
-        description: '자신을 공격하거나 투표한 대상은 정신력이 매력 수치만큼 감소'
+        description: '자신을 공격하거나 투표한 대상은 정신력이 자신(환자)의 매력 수치만큼 감소'
     },
     '죄수': {
         name: '탈옥 본능',
-        description: '[연회] 관 탈출 판정 시 필요한 신뢰도 요구치 20% 감소'
+        description: '[연회] 연회 1턴째부터 관에서 99% 확률로 탈출 가능'
     },
     '거지': {
         name: '적선 구걸',
-        description: '매 턴 종료 시 무작위 생존자로부터 토큰 1개 획득'
+        description: '[신뢰매매게임] 매 턴 종료 시 무작위 생존자로부터 토큰 1개 획득 (호감도 낮은 순)'
     },
     '무직': {
         name: '기적의 요행',
-        description: '서브게임에서 아무 보상을 못 얻을 시 다음 서브게임 보상 확률 3배'
+        description: '서브게임 종료 시 아무 보상을 못 얻을 시 놀라운 요행으로 랜덤한 스킬 한 개 획득'
     },
     '아르바이트': {
         name: '추가 수당',
-        description: '[신뢰매매] 게임 중 휴식/치료를 포기하고 행동 시 토큰 +3'
+        description: '[신뢰매매게임] 게임 중 체력/정신력이 최대치의 30%이하일 때, 휴식/치료를 포기하고 행동 시 토큰 +5'
+    },
+    '일용직 근로자': {
+        name: '고된 노동',
+        description: '[신뢰매매] 지정 행동 시 체력 -5, 토큰 +3 추가 획득'
     },
     '스님': {
         name: '살생 유택',
-        description: '서브게임에서 타인에게 데미지를 주지 않으면 매 턴 정신력 +5'
+        description: '메인게임에서 자신을 투표하는 사람이 없다면 전원 정신력 +5'
     },
     '신부': {
         name: '고해 성사',
@@ -332,11 +336,7 @@ const JOB_SKILLS = {
     },
     '무당': {
         name: '영적 강림',
-        description: '[신체찾기] 신체 획득 시 랜덤하게 생존본능 스킬 1턴 획득'
-    },
-    '일용직 근로자': {
-        name: '고된 노동',
-        description: '[신뢰매매] 행동 시 체력 -5, 토큰 +2 추가 획득'
+        description: '[신체찾기] 신체 획득 시 랜덤하게 정신력 +5'
     }
 };
 
@@ -575,7 +575,8 @@ const RELATIONSHIPS = {
     parent: { name: '부모/자식', min: 0, canLove: false },
     crush: { name: '짝사랑', min: 0, canLove: true },
     pseudoFamily: { name: '유사가족', min: 0, canLove: false },
-    relative: { name: '친척', min: 0, canLove: false }
+    relative: { name: '친척', min: 0, canLove: false },
+    protectee: { name: '보호대상', min: 0, canLove: false }
 };
 
 const INITIAL_RELATIONSHIP_VALUES = {
@@ -592,7 +593,8 @@ const INITIAL_RELATIONSHIP_VALUES = {
     '부모/자식': 250,
     '짝사랑': 100,
     '유사가족': 220,
-    '친척': 120
+    '친척': 120,
+    '보호대상': 200 
 };
 
 // 성격별 대사 목록
@@ -1239,7 +1241,7 @@ const POPUP_EVENTS = {
                         return s;
                     });
                     
-                    addLog(`${character.name}이(가) ai콜링을 진행했다!`, 'penalty');
+                    addLog(`${character.name}이(가) ai콜링을 진행했다.`, 'penalty');
                     addLog(`${character.name}의 체력이 완전히 회복되었다. - HP +${character.maxHp - character.hp}`, 'heal');
                     addLog(`${bestAlly.name}의 ${character.name}에 대한 호감도가 크게 상승했다. - ${character.name} 호감도 +100`, 'favorability');
                 }
@@ -1308,7 +1310,7 @@ const POPUP_EVENTS = {
                         }
                     });
                     
-                    addLog(`${character.name}이(가) 탈출구 정보를 모두와 공유했다!`, 'event');
+                    addLog(`${character.name}이(가) 탈출구 정보를 모두와 공유했다.`, 'event');
                     addLog(`${character.name}의 신뢰도가 상승했다. - 신뢰도 +10`, 'event');
                     addLog(`모든 캐릭터의 ${character.name}에 대한 호감도가 크게 상승했다. - 호감도 +150`, 'event');
                     addLog(`모든 캐릭터들이 탈출구를 알게되었지만, 탈출구는 한 명이 통과하면 무너질 것 처럼 위태로웠다.`, 'event');
@@ -1380,7 +1382,7 @@ const POPUP_EVENTS = {
                         return;
                     }
                     
-                    addLog(`${character.name}은(는) 탈출구로 들어가기로 결정했다!(${total1}/${threshold})`, 'event');
+                    addLog(`${character.name}은(는) 탈출구로 들어가기로 결정했다.(${total1}/${threshold})`, 'event');
 
                     addLog(`${character.name}은(는) 탈출구가 있는 곳으로 향한다...(잠시 대기)`, 'event');
                     
@@ -1400,7 +1402,7 @@ const POPUP_EVENTS = {
                         updateDisplay();
                         setTimeout(() => showEndingScreen([character]), 3500);
                     } else {
-                        addLog(`탈출구의 끝이 막혀있었다! 탈출 실패 (${escapeTotal}/95)`, 'event');
+                        addLog(`탈출구의 끝이 막혀있었다. 탈출 실패 (${escapeTotal}/95)`, 'event');
                         
                         gameState.survivors = gameState.survivors.map(s => {
                             if (s.id === character.id) {
@@ -1802,7 +1804,7 @@ function processTurn() {
 
     const aliveSurvivors = gameState.survivors.filter(s => s.isAlive);
     if (aliveSurvivors.length <= 2 && aliveSurvivors.length > 0) {
-        addLog('생존자가 2명 이하가 되었다!', 'game-end');
+        addLog('생존자가 2명 이하가 되었다.', 'game-end');
         gameState.isRunning = false;
         updateDisplay();
         setTimeout(() => showEndingScreen(aliveSurvivors), 3500);
@@ -1851,68 +1853,17 @@ function processTurn() {
     gameState.survivors.forEach(s => {
         if (!s.isAlive) return;
         const jobSkill = JOB_SKILLS[s.job];
-        
-        if (jobSkill && jobSkill.name === '적선 구걸') {
-            const others = gameState.survivors
-                .filter(other => other.isAlive && other.id !== s.id)
-                .sort((a, b) => (a.favorability[s.id] || 50) - (b.favorability[s.id] || 50));
-            
-            if (others.length > 0) {
-                const target = others[0];
-                if (target.tokens > 0) {
-                    target.tokens--;
-                    s.tokens = (s.tokens || 0) + 1;
-                    addLog(`${s.name}의 '적선 구걸' 발동! ${target.name}에게서 토큰 1개 획득`, 'event');
-                }
+    });
+
+    // 미용사 [이미지 메이킹] 스킬 - 매 턴 종료 시 매력에 비례해 신뢰도 자동 상승
+    gameState.survivors.forEach(s => {
+        if (s.isAlive && s.job === '미용사') {
+            const trustIncrease = Math.floor(s.charm * 0.3); // 매력 수치의 30%
+            const oldTrust = s.trust;
+            s.trust = Math.min(100, s.trust + trustIncrease);
+            if (trustIncrease > 0) {
+                addLog(`${s.name}의 [이미지 메이킹] 스킬로 신뢰도가 상승했다. +${trustIncrease}`, 'event');
             }
-        }
-        
-        if (jobSkill && jobSkill.name === '이미지 메이킹') {
-            const trustBonus = Math.floor(s.charm * 0.5);
-            s.trust = Math.min(100, s.trust + trustBonus);
-            if (trustBonus > 0) {
-                addLog(`${s.name}의 '이미지 메이킹' 발동! - 신뢰도 +${trustBonus}`, 'event');
-            }
-        }
-        
-        if (jobSkill && jobSkill.name === '심신 안정') {
-            gameState.survivors.forEach(target => {
-                if (target.isAlive && target.isPanic && target.id !== s.id) {
-                    target.mental = Math.min(target.maxMental, target.mental + 5);
-                    addLog(`${s.name}의 '심신 안정' 발동! ${target.name}의 정신력 +5`, 'event');
-                }
-            });
-        }
-        
-        if (jobSkill && jobSkill.name === '일정 관리') {
-            let maxFav = -Infinity;
-            let topTarget = null;
-            Object.keys(s.favorability).forEach(targetId => {
-                const fav = s.favorability[targetId];
-                if (fav > maxFav) {
-                    maxFav = fav;
-                    topTarget = gameState.survivors.find(sv => sv.id == targetId);
-                }
-            });
-            
-            if (topTarget && topTarget.currentAction && topTarget.currentAction !== 'free') {
-                s.tokens = (s.tokens || 0) + 1;
-                addLog(`${s.name}의 '일정 관리' 발동! (토큰 +1)`, 'event');
-            }
-        }
-        
-        if (jobSkill && jobSkill.name === '위로의 노래' && gameState.subGameType === 'banquet') {
-            gameState.survivors.forEach(target => {
-                if (target.isAlive && target.skills.includes('생존본능') && target.id !== s.id) {
-                    target.mental = Math.min(target.maxMental, target.mental + 10);
-                    addLog(`${s.name}의 '위로의 노래' 발동! ${target.name}의 정신력 +10`, 'event');
-                }
-            });
-        }
-        
-        if (jobSkill && jobSkill.name === '살상 유택') {
-            s.mental = Math.min(s.maxMental, s.mental + 5);
-            addLog(`${s.name}의 '살상 유택' 발동! - 정신력 +5`, 'event');
         }
     });
 
@@ -2033,7 +1984,7 @@ function processSingleFreeAction(s) {
                 survivor.mental = Math.min(survivor.maxMental, survivor.mental + 15);
             }
         });
-        addLog(`${s.name}이(가) ${script.message} 모두의 정신력이 회복되었다! (+15)`, 'free-action');
+        addLog(`${s.name}이(가) ${script.message} 모두의 정신력이 회복되었다. (+15)`, 'free-action');
         return;
     }
 
@@ -2058,6 +2009,12 @@ function processSingleFreeAction(s) {
             // 신뢰매매: 토큰 획득/손실 (-2 ~ +3)
             const tokenChange = Math.floor(Math.random() * 6) - 2;
             s.tokens = Math.max(0, (s.tokens || 0) + tokenChange);
+
+            // 경찰 [질서 유지] 스킬: 토큰 손실 무효화
+            if (s.job === '경찰' && tokenChange < 0) {
+                addLog(`${s.name}의 [질서 유지] 스킬로 토큰 손실 방어`, 'event');
+                tokenChange = 0;
+            }
             
             if (tokenChange > 0) {
                 const gainScripts = [
@@ -2170,14 +2127,6 @@ function processSingleFreeAction(s) {
         if (trustChange < 0) trustChange -= 2;
     }
 
-    const jobSkill = JOB_SKILLS[s.job];
-    if (jobSkill && jobSkill.name === '알뜰살뜰' && script.trust > 0) {
-        if (Math.random() < 0.3) {
-            addLog(`${s.name}의 '알뜰살뜰' 발동! - 신뢰도 추가 상승`, 'event');
-            trustChange += 5;
-        }
-    }
-
     const oldHp = s.hp;
     const oldMental = s.mental;
     const oldTrust = s.trust;
@@ -2245,7 +2194,7 @@ function processSingleFreeAction(s) {
         if (aliveSurvivors.length <= 2 && aliveSurvivors.length > 0) {
             gameState.isRunning = false;
             setTimeout(() => {
-                addLog('생존자가 2명 이하가 되었다!', 'game-end');
+                addLog('생존자가 2명 이하가 되었다.', 'game-end');
                 setTimeout(() => showEndingScreen(aliveSurvivors), 3500);
             }, 500);
         }
@@ -2258,15 +2207,28 @@ function checkPanicState() {
         if (!s.isAlive) return s;
         
         const mentalPercent = (s.mental / s.maxMental) * 100;
+
+         // 배우 [페르소나] 스킬: 패닉 상태일 때 신뢰도 자동 하락 방지
+        if (s.isPanic && s.job === '배우') {
+            // 신뢰도 하락을 방지하기 위한 플래그 설정
+            s.preventTrustDecay = true;
+        }
         
         // 정신력 30% 이하면 패닉 상태
         if (mentalPercent <= 30 && !s.isPanic) {
             s.isPanic = true;
-            s.currentAction = null; // 행동 준비 취소
-            addLog(`${s.name}이(가) 패닉 상태에 빠졌다!`, 'panic');
+            s.currentAction = null;
+            
+            // 군인 [강철 정신] 스킬: 패닉 시 3턴간 체력 감소 면제
+            if (s.job === '군인') {
+                s.panicImmunityTurns = 3;
+                addLog(`${s.name}이(가) 패닉 상태에 빠졌다.`, 'panic');
+            } else {
+                addLog(`${s.name}이(가) 패닉 상태에 빠졌다.`, 'panic');
+            }
         }
         // 정신력이 30% 초과로 회복되면 패닉 해제
-        else if (mentalPercent > 30 && s.isPanic) {
+        else if (mentalPercent > 20 && s.isPanic) {
             s.isPanic = false;
             addLog(`${s.name}이(가) 패닉 상태에서 벗어났다.`, 'heal');
         }
@@ -2285,10 +2247,17 @@ function processPanicEffects() {
         
         let hpDamage = 5;
 
+        // 군인 [강철 정신] 스킬: 3턴간 체력 감소 면제
+        if (s.panicImmunityTurns > 0) {
+            hpDamage = 0;
+            s.panicImmunityTurns--;
+            addLog(`${s.name}의 [강철 정신]으로 3턴간 패닉 체력 피해 방어. 남은 턴: ${s.panicImmunityTurns}`, 'event');
+        }
+
         // 민첩 8 이상: 체력 감소 시 5포인트 방어
         if (s.agility >= 8) {
             hpDamage = 0;
-            addLog(`${s.name}의 높은 민첩으로 패닉 체력 피해 방어!`, 'event');
+            addLog(`${s.name}의 높은 민첩으로 패닉 체력 피해 방어`, 'event');
         }
 
         const newHp = Math.max(0, s.hp - hpDamage);
@@ -2310,13 +2279,31 @@ function processPanicEffects() {
         
         return { ...s, hp: newHp, mental: newMental };
     });
+
+    // 조향사 [심신 안정] 스킬 - 패닉 상태 아군의 정신력 회복 증가
+    const perfumers = gameState.survivors.filter(s => 
+        s.isAlive && s.job === '조향사'
+    );
+    
+    if (perfumers.length > 0) {
+        gameState.survivors = gameState.survivors.map(s => {
+            if (s.isAlive && s.isPanic) {
+                const bonusRecovery = perfumers.length * 5; // 조향사 1명당 +5
+                s.mental = Math.min(s.maxMental, s.mental + bonusRecovery);
+                if (bonusRecovery > 0) {
+                    addLog(`조향사들의 [심신 안정] 스킬로 ${s.name}의 정신력 회복이 증가했다. +${bonusRecovery}`, 'heal');
+                }
+            }
+            return s;
+        });
+    }
     
     // 패닉으로 인한 사망 후 생존자 수 체크
     const aliveSurvivors = gameState.survivors.filter(s => s.isAlive);
     if (aliveSurvivors.length <= 2 && aliveSurvivors.length > 0) {
         gameState.isRunning = false;
         setTimeout(() => {
-            addLog('생존자가 2명 이하가 되었다!', 'game-end');
+            addLog('생존자가 2명 이하가 되었다.', 'game-end');
             setTimeout(() => showEndingScreen(aliveSurvivors), 3500);
         }, 500);
     }
@@ -2360,17 +2347,6 @@ function processFreeActions() {
         if (personalityType === 'egocentric') {
             if (trustChange > 0) trustChange -= 2;
             if (trustChange < 0) trustChange -= 2;
-        }
-
-        // 직업 스킬 효과
-        const jobSkill = JOB_SKILLS[s.job];
-
-        // 주부: [알뜰살뜰]
-        if (jobSkill && jobSkill.name === '알뜰살뜰' && script.trust > 0) {
-            if (Math.random() < 0.3) {
-                addLog(`${s.name}의 '알뜰살뜰' 발동! - 신뢰도 추가 상승`, 'event');
-                trustChange += 5;
-            }
         }
 
         // 랜덤 스킬 획득 이벤트
@@ -2548,11 +2524,16 @@ function processDeathRelationships(deadSurvivor) {
 if (gameState.subGameType === 'banquet') {
     gameState.survivors = gameState.survivors.map(s => {
         if (s.status === '더미즈' && s.inCoffin && s.isAlive) {
-            const oldHp = s.hp;
-            const oldMental = s.mental;
             
             let hpDamage = 10;
             let mentalDamage = 15;
+
+            // 바리스타 [카페인 충전] 스킬로 보호받는 경우
+            if (s.caffeineProtection) {
+                mentalDamage = 0;
+                s.caffeineProtection = false; // 1회 사용 후 해제
+                addLog(`${s.name}은(는) [카페인 충전] 보호로 정신력 피해를 받지 않았다.`, 'event');
+            }
             
             // 스탯 특성 적용
             if (s.agility >= 8) {
@@ -2560,6 +2541,41 @@ if (gameState.subGameType === 'banquet') {
             }
             if (s.strength >= 8) {
                 mentalDamage = Math.max(0, mentalDamage - 5);
+            }
+
+            // 소방관 [인명 구조] 스킬 추가
+            const panicSurvivors = gameState.survivors.filter(s => 
+                s.isAlive && s.isPanic
+            );
+            
+            if (panicSurvivors.length > 0) {
+                const firefighters = gameState.survivors.filter(s => 
+                    s.isAlive && 
+                    s.job === '소방관' &&
+                    s.hp > s.maxHp * 0.3
+                );
+                
+                firefighters.forEach(firefighter => {
+                    if (panicSurvivors.length === 0) return;
+                    
+                    const target = panicSurvivors[Math.floor(Math.random() * panicSurvivors.length)];
+                    
+                    gameState.survivors = gameState.survivors.map(s => {
+                        if (s.id === firefighter.id) {
+                            return { ...s, hp: Math.max(0, s.hp - 30) };
+                        }
+                        if (s.id === target.id) {
+                            return { ...s, mental: Math.min(s.maxMental, s.mental + 10) };
+                        }
+                        return s;
+                    });
+                    
+                    addLog(`${firefighter.name}의 [인명 구조] 스킬로 ${target.name}의 정신력이 회복되었다. (HP -30, 정신력 +10)`, 'heal');
+                    
+                    // 배열에서 제거
+                    const idx = panicSurvivors.findIndex(p => p.id === target.id);
+                    if (idx !== -1) panicSurvivors.splice(idx, 1);
+                });
             }
             
             s.hp = Math.max(0, s.hp - hpDamage);
@@ -2679,6 +2695,12 @@ function processFavorabilityChanges() {
                 addDialogue(person1, 'sorrow', 0.3);
             }
             
+            // 수의사 [교감 능력] 스킬: 인간이 더미즈와의 호감도 상승 1.5배
+            if (change > 0 && person1.job === '수의사' && person1.status === '인간' && person2.status === '더미즈') {
+                change = Math.round(change * 1.5);
+                addLog(`${person1.name}의 [교감 능력] 스킬로 호감도 상승 증폭`, 'event');
+            }
+
             addLog(`${person1.name}은(는) ${person2.name}${script} - 호감도 ${change > 0 ? '+' : ''}${change}`, 'favorability');
         }
         
@@ -3052,7 +3074,7 @@ function startSubGame() {
         
         addLog('더미즈는 관에 갇혔다.', 'event');
         gameState.survivors.filter(s => s.status === '더미즈').forEach(s => {
-            addLog(`${s.name}이(가) 생존본능 스킬을 획득했다! (체력/정신력 최대치 +100)`, 'reward');
+            addLog(`${s.name}이(가) 생존본능 스킬을 획득했다. (체력/정신력 최대치 +100)`, 'reward');
         });
     }
     
@@ -3100,6 +3122,12 @@ function processTalkAction(survivor) {
     if (survivorType === 'anxious' && targetType === 'egocentric' && favorabilityChange < 0) {
         finalChange = Math.floor(favorabilityChange * 1.3);
     }
+
+    // 바텐더 [취중 진담] 스킬: 호감도 변화 2배
+    if (survivor.job === '바텐더') {
+        finalChange = finalChange * 2;
+        addLog(`${survivor.name}의 [취중 진담] 스킬로 호감도 변화가 2배가 되었다.`, 'event');
+    }
     
     // 호감도 적용
     const oldFav = survivor.favorability[target.id] || 50;
@@ -3132,11 +3160,20 @@ function processTalkAction(survivor) {
     }
     
     addLog(`${survivor.name}이(가) ${target.name}와(과) 대화했다. ${resultMessage} - 호감도 ${finalChange > 0 ? '+' : ''}${finalChange}`, 'action');
-    
-    // 바텐더 스킬: 취중 진담
-    const jobSkill = JOB_SKILLS[survivor.job];
-    if (jobSkill && jobSkill.name === '취중 진담' && survivor.currentAction === 'rest') {
-        addLog(`${survivor.name}의 '취중 진담' 발동! 대화 효과 2배`, 'event');
+
+    // 호텔리어 [최고의 서비스] 스킬
+    if (survivor.job === '호텔리어' && gameState.subGameType === 'trust') {
+        if (!target.hotelierBonus) target.hotelierBonus = 0;
+        const randomBonus = Math.floor(Math.random() * 5) + 1;
+        target.hotelierBonus += randomBonus;
+        addLog(`${survivor.name}의 [최고의 서비스] 스킬로 ${target.name}의 다음 턴 토큰 획득량이 증가한다. +${hotelierBonus}`, 'event');
+    }
+
+        // 신부/수녀 [고해 성사] 스킬
+    if ((survivor.job === '신부' || survivor.job === '수녀') && finalChange < 0) {
+        survivor.mental = Math.min(survivor.maxMental, survivor.mental + 15);
+        target.mental = Math.min(target.maxMental, target.mental + 15);
+        addLog(`${survivor.name}의 [고해 성사] 스킬로 ${survivor.name}와(과) ${target.name}의 정신력이 회복되었다. +15`, 'heal');
     }
 }
 
@@ -3163,35 +3200,109 @@ function processSubGame() {
                 break;
             case 'active':
                 updated.trust += Math.floor(Math.random() * 15) - 5;
+                updated.hp += Math.floor(Math.random() * 5) - 5;
                 processSubGameAction(updated, 2);
+                // 기타리스트 [불협화음] 스킬
+                if (s.job === '기타리스트') {
+                    if (!s.guitaristSkillActive) {
+                        s.guitaristSkillActive = true;
+                        updated.charisma = s.charisma * 2;
+                        addLog(`${s.name}의 [불협화음] 스킬로 카리스마가 2배 증가했다.`, 'event');
+                    }
+                }
+                // 아르바이트 [추가 수당] 스킬 체크
+                if (s.job === '아르바이트' && s.currentAction && 
+                    s.currentAction !== 'rest' && s.currentAction !== 'heal') {
+                    const hpPercent = (s.hp / s.maxHp) * 100;
+                    const mentalPercent = (s.mental / s.maxMental) * 100;
+                    
+                    if (hpPercent <= 30 || mentalPercent <= 30) {
+                        updated.tokens = (updated.tokens || 0) + 5;
+                        addLog(`${s.name}의 [추가 수당] 스킬로 토큰을 추가 획득했다. +5`, 'reward');
+                    }
+                }
                 break;
             case 'rest':
                 updated.mental = Math.min(updated.maxMental, updated.mental + 20 + Math.floor(Math.random() * 15));
-                // 메이드 스킬: 완벽한 시중
-                const restJobSkill = JOB_SKILLS[s.job];
-                if (restJobSkill && restJobSkill.name === '완벽한 시중') {
-                    const allies = gameState.survivors.filter(target => 
-                        target.isAlive && 
-                        target.id !== s.id && 
-                        (s.favorability[target.id] || 0) >= 80
+                
+                // 가수 [위로의 노래] 스킬
+                if (s.job === '가수') {
+                    gameState.survivors.forEach(ally => {
+                        if (ally.isAlive) {
+                            ally.mental = Math.min(ally.maxMental, ally.mental + 5);
+                        }
+                    });
+                    addLog(`${s.name}의 [위로의 노래] 스킬로 모든 아군 정신력이 회복되었다. +5`, 'heal');
+                }
+
+                // 메이드 [완벽한 시중] 스킬 추가
+                if (s.job === '메이드') {
+                    const allies = gameState.survivors.filter(ally => 
+                        ally.isAlive && 
+                        ally.id !== s.id && 
+                        s.allianceWith && 
+                        s.allianceWith.includes(ally.id)
                     );
                     
                     if (allies.length > 0) {
-                        const randomAlly = allies[Math.floor(Math.random() * allies.length)];
-                        randomAlly.mental = Math.min(randomAlly.maxMental, randomAlly.mental + 5);
-                        addLog(`${s.name}의 '완벽한 시중' 발동! ${randomAlly.name}의 정신력 +5`, 'event');
+                        const target = allies[Math.floor(Math.random() * allies.length)];
+                        target.mental = Math.min(target.maxMental, target.mental + 5);
+                        addLog(`${s.name}의 [완벽한 시중] 스킬로 ${target.name}의 정신력이 회복되었다. +5`, 'heal');
                     } else {
                         updated.mental = Math.min(updated.maxMental, updated.mental + 5);
-                        addLog(`${s.name}의 '완벽한 시중' 발동! (자신 정신력 +5)`, 'event');
+                        addLog(`${s.name}의 [완벽한 시중] 스킬로 자신의 정신력이 회복되었다. +5`, 'heal');
                     }
+                }
+
+                // 요리사 [영양 식단] 스킬
+                if (s.job === '요리사') {
+                    gameState.survivors.forEach(ally => {
+                        if (ally.isAlive && ally.id !== s.id) {
+                            ally.hp = Math.min(ally.maxHp, ally.hp + 5);
+                        }
+                    });
+                    addLog(`${s.name}의 [영양 식단] 스킬로 아군 전체의 체력이 회복되었다. +5`, 'heal');
+                }
+
+                // 마사지사 [피로 회복] 스킬 추가
+                if (s.job === '마사지사' && gameState.subGameType === 'body') {
+                    updated.agilityBoost = 1.5; // 다음 턴 민첩 버프
+                    addLog(`${s.name}의 [피로 회복] 스킬로 다음 턴 민첩이 1.5배 증가한다.`, 'event');
                 }
                 break;
             case 'heal':
                 updated.hp = Math.min(updated.maxHp, updated.hp + 25 + Math.floor(Math.random() * 20));
+                
+                // 간호사 [헌신적 간호] 스킬
+                if (s.job === '간호사') {
+                    const highFavSurvivors = gameState.survivors.filter(other => 
+                        other.isAlive && other.id !== s.id && (s.favorability[other.id] || 0) >= 150
+                    );
+                    if (highFavSurvivors.length > 0) {
+                        const target = highFavSurvivors[Math.floor(Math.random() * highFavSurvivors.length)];
+                        gameState.survivors = gameState.survivors.map(sv => {
+                            if (sv.id === target.id) {
+                                return {
+                                    ...sv,
+                                    mental: Math.min(sv.maxMental, sv.mental + 50)
+                                };
+                            }
+                            return sv;
+                        });
+                        addLog(`${s.name}의 [헌신적 간호] 스킬로 ${target.name}의 정신력 회복. +50`, 'heal');
+                    }
+                }
+                
                 break;
             case 'talk':
                 // 대화하기 행동 처리
                 processTalkAction(updated);
+                break;
+            case 'slander':
+                processSlanderAction(updated);
+                break;
+            case 'falseTestimony':
+                processFalseTestimonyAction(updated);
                 break;
             case 'alliance':
                 const aliveCandidates = gameState.survivors.filter(t => t.isAlive && t.id !== s.id);
@@ -3246,10 +3357,12 @@ function processSubGame() {
                         updated.favorability[target.id] = Math.max(-200, Math.max(currentFav - 20, currentFav - 10));
                         target.favorability[s.id] = Math.max(-200, Math.max(targetCurrentFav - 20, targetCurrentFav - 5));
                         
-                        const trustDecrease = Math.min(20, 5);
                         const mentalDecrease = Math.min(20, 10);
-                        
-                        updated.trust = Math.max(0, updated.trust - trustDecrease);
+                        const trustDecrease = s.preventTrustDecay ? 0 : Math.min(20, 5);
+                        if (trustDecrease > 0) {
+                            updated.trust = Math.max(0, updated.trust - trustDecrease);
+                        }
+                        delete updated.preventTrustDecay;
                         updated.mental = Math.max(0, updated.mental - mentalDecrease);
                         
                         addLog(`${s.name}의 동맹 제의를 ${target.name}이(가) 거절했다. - 호감도 -10, 신뢰도 -5, 정신력 -10`, 'alliance');
@@ -3259,10 +3372,48 @@ function processSubGame() {
                 }
                 break;
         }
-        const jobSkill = JOB_SKILLS[s.job];
-        if (jobSkill && jobSkill.name === '초과 근무' && updated.mental >= 10) {
-            updated.mental -= 5;
-            addLog(`${s.name}의 '초과 근무' 발동! - 정신력 -5, 추가 행동`, 'event');
+
+        // 드러머 [비트 조절] 스킬
+        if (s.job === '드러머' && gameState.gamePhase === 'sub') {
+            const randomChance = Math.random();
+            
+            if (randomChance < 0.33) {
+                // 0회 행동 (33% 확률)
+                updated.hp = Math.min(updated.maxHp, updated.hp + 10);
+                updated.mental = Math.min(updated.maxMental, updated.mental + 10);
+                addLog(`${s.name}의 [비트 조절] 스킬로 행동하지 않고 휴식했다. +체력/정신력 +10`, 'heal');
+                // 이미 처리된 행동 효과를 취소하기 위해 updated를 원래 상태로 복원
+                Object.keys(updated).forEach(key => {
+                    if (key !== 'hp' && key !== 'mental' && key !== 'job') {
+                        updated[key] = s[key];
+                    }
+                });
+            } else if (randomChance < 0.66) {
+                // 2회 행동 (33% 확률)
+                if (s.currentAction && s.currentAction !== 'free') {
+                    const actionLevel = s.currentAction === 'active' ? 2 : 1;
+                    processSubGameAction(updated, actionLevel);
+                    addLog(`${s.name}의 [비트 조절] 스킬로 행동을 한 번 더 수행했다.`, 'event');
+                }
+            }
+            // 나머지 33%는 정상적으로 1회 행동
+        }
+
+        // 회사원 [초과 근무] 스킬
+        if (s.job === '회사원' && s.currentAction && s.currentAction !== 'free' && 
+            s.currentAction !== 'rest' && s.currentAction !== 'heal') {
+            const overtimeChance = 0.3; // 30% 확률
+            if (Math.random() < overtimeChance && s.mental >= 5) {
+                updated.mental = Math.max(0, updated.mental - 5);
+                
+                // 행동 재수행
+                const actionType = s.currentAction;
+                if (actionType === 'explore' || actionType === 'active') {
+                    const actionLevel = actionType === 'active' ? 2 : 1;
+                    processSubGameAction(updated, actionLevel);
+                    addLog(`${s.name}의 [초과 근무] 스킬로 행동을 한 번 더 수행했다. - 정신력 -5`, 'event');
+                }
+            }
         }
 
         updated.trust = Math.max(0, Math.min(100, updated.trust));
@@ -3302,6 +3453,46 @@ function processSubGame() {
     });
 
     updateDisplay();
+    gameState.survivors.forEach(s => {
+        if (!s.isAlive) return;
+        const jobSkill = JOB_SKILLS[s.job];
+
+        // 거지 [적선 구걸] 스킬
+        gameState.survivors.forEach(beggar => {
+            if (!beggar.isAlive || beggar.job !== '거지' && gameState.subGameType === 'trust') return;
+            
+            const others = gameState.survivors.filter(s => 
+                s.isAlive && s.id !== beggar.id && (s.tokens || 0) > 0
+            ).sort((a, b) => (beggar.favorability[a.id] || 0) - (beggar.favorability[b.id] || 0));
+            
+            if (others.length > 0) {
+                const target = others[0];
+                gameState.survivors = gameState.survivors.map(s => {
+                    if (s.id === target.id) {
+                        return { ...s, tokens: Math.max(0, s.tokens - 1) };
+                    }
+                    if (s.id === beggar.id) {
+                        return { ...s, tokens: (s.tokens || 0) + 1 };
+                    }
+                    return s;
+                });
+                addLog(`${beggar.name}의 [적선 구걸] 스킬로 ${target.name}에게서 토큰 1개를 얻었다.`, 'reward');
+            }
+        });
+        
+        // 죄수 [탈옥 본능] 스킬 - 1턴째부터 탈출 가능
+        if (s.job === '죄수' && s.inCoffin && gameState.subGameTurn >= 2) {
+            if (Math.random() < 0.99) {
+                s.inCoffin = false;
+                s.skills = s.skills.filter(skill => skill !== '생존본능');
+                s.maxHp -= 100;
+                s.maxMental -= 100;
+                s.hp = Math.min(s.hp, s.maxHp);
+                s.mental = Math.min(s.mental, s.maxMental);
+                addLog(`${s.name}의 [탈옥 본능] 스킬로 관에서 탈출했다.`, 'escape');
+            }
+        }
+    });
 
     // 연회 5턴 이후 탈출 시도
     if (gameState.subGameType === 'banquet' && gameState.subGameTurn >= 5) {
@@ -3321,11 +3512,15 @@ function processSubGame() {
                 const avgTrust = totalTrust / humans.length;
                 
                 const escapeChance = avgTrust / 200;
+
+                // 약사 [각성제] 스킬: 호감도 150 이상인 관 속 더미즈의 탈출 확률 20% 증가
+                const pharmacist = humans.find(h => h.job === '약사');
+                if (pharmacist && (pharmacist.favorability[dummy.id] || 0) >= 150) {
+                    escapeChance += 0.2;
+                    addLog(`${pharmacist.name}의 [각성제] 스킬로 ${dummy.name}의 탈출 확률 증가`, 'event');
+                }
                 
-                const jobSkill = JOB_SKILLS[s.job];
-                const finalEscapeChance = jobSkill && jobSkill.name === '탈옥 본능' 
-                    ? escapeChance * 1.2 
-                    : escapeChance;
+                const finalEscapeChance = escapeChance;
                 
                 if (Math.random() < finalEscapeChance) {
                     s.inCoffin = false;
@@ -3335,14 +3530,30 @@ function processSubGame() {
                     s.hp = Math.min(s.hp, s.maxHp);
                     s.mental = Math.min(s.mental, s.maxMental);
                     
-                    addLog(`${s.name}이(가) 관에서 탈출했다!`, 'escape');
-                    
-                    if (jobSkill && jobSkill.name === '탈옥 본능') {
-                        addLog(`${s.name}의 '탈옥 본능' 발동!`, 'event');
-                    }
+                    addLog(`${s.name}이(가) 관에서 탈출했다.`, 'escape');
                 }
             }
             return s;
+        });
+    }
+
+    // 경비원 [구역 감시] 스킬
+    if (gameState.subGameType === 'body') {
+        const guards = gameState.survivors.filter(s => s.isAlive && s.job === '경비원');
+        guards.forEach(guard => {
+            const sameActionSurvivors = gameState.survivors.filter(s => 
+                s.isAlive && 
+                s.id !== guard.id && 
+                s.currentAction === guard.currentAction && 
+                s.currentAction !== null && 
+                s.currentAction !== 'free'
+            );
+            
+            if (sameActionSurvivors.length > 0) {
+                const tokensEarned = sameActionSurvivors.length;
+                guard.tokens = (guard.tokens || 0) + tokensEarned;
+                addLog(`${guard.name}의 [구역 감시] 스킬로 토큰 ${tokensEarned}개 획득`, 'reward');
+            }
         });
     }
  
@@ -3362,159 +3573,232 @@ function processSubGame() {
 // 서브게임 액션 처리
 function processSubGameAction(survivor, actionLevel) {
     const jobSkill = JOB_SKILLS[survivor.job];
+
+    // 마사지사 [피로 회복] 민첩 버프 적용
+    let effectiveAgility = survivor.agility;
+    if (survivor.agilityBoost && gameState.subGameType === 'body') {
+        effectiveAgility = Math.floor(survivor.agility * survivor.agilityBoost);
+        addLog(`${survivor.name}의 [피로 회복] 버프가 적용되었다. (민첩 ${survivor.agility} → ${effectiveAgility})`, 'event');
+        survivor.agilityBoost = null; // 버프 소모
+    }
     
     switch (gameState.subGameType) {
         case 'trust':
             let tokenChange = Math.floor(Math.random() * 10 * actionLevel) - 3;
-            
-            // 연구원 스킬: 논리 회로
-            if (jobSkill && jobSkill.name === '논리 회로') {
-                tokenChange += survivor.intelligence;
-                addLog(`${survivor.name}의 '논리 회로' 발동! (토큰 +${survivor.intelligence})`, 'event');
-            }
-            
-            // 대학원생 스킬: 오차 분석
-            if (jobSkill && jobSkill.name === '오차 분석' && tokenChange < 0) {
-                const reduction = Math.floor(Math.abs(tokenChange) * 0.5 * (survivor.intelligence / 10));
-                tokenChange += reduction;
-                addLog(`${survivor.name}의 '오차 분석' 발동! (토큰 하락폭 감소)`, 'event');
-            }
-            
-            // 도박꾼 스킬: 올 인
-            if (jobSkill && jobSkill.name === '올 인' && tokenChange !== 0) {
-                if (Math.random() < 0.5) {
-                    tokenChange *= 2;
-                    addLog(`${survivor.name}의 '올 인' 발동! (토큰 변동 2배)`, 'event');
-                } else {
-                    tokenChange = 0;
-                    addLog(`${survivor.name}의 '올 인' 실패! (토큰 변동 없음)`, 'event');
-                }
-            }
-            
-            // 암살자 스킬: 급소 타격 (토큰 1위 확률 상승)
-            if (jobSkill && jobSkill.name === '급소 타격') {
-                tokenChange += 5;
-            }
-            
-            // 아르바이트 스킬: 추가 수당
-            if (jobSkill && jobSkill.name === '추가 수당' && (survivor.currentAction === 'explore' || survivor.currentAction === 'active')) {
-                tokenChange += 3;
-                addLog(`${survivor.name}의 '추가 수당' 발동! (토큰 +3)`, 'event');
+
+            // 호텔리어 [최고의 서비스] 보너스 적용
+            if (survivor.hotelierBonus) {
+                tokenChange += survivor.hotelierBonus;
+                addLog(`${survivor.name}이(가) [최고의 서비스] 스킬의 보너스로 토큰을 추가 획득했다. +${survivor.hotelierBonus}`, 'reward');
+                survivor.hotelierBonus = 0; // 사용 후 초기화
             }
 
-            // 일용직 근로자 스킬: 고된 노동
-            if (jobSkill && jobSkill.name === '고된 노동') {
-                tokenChange += 2;
+            // 주부 [알뜰살뜰] 스킬 추가 (여기에 삽입)
+            if (survivor.job === '주부' && tokenChange < 0 && Math.random() < 0.3) {
+                addLog(`${survivor.name}의 [알뜰살뜰] 스킬로 토큰 손실 방어`, 'event');
+                tokenChange = 0;
+            }
+
+            // 대학원생 [오차 분석] 스킬: 지능에 비례해 토큰 하락폭 50% 감소
+            if (survivor.job === '대학원생' && tokenChange < 0) {
+                const reduction = Math.floor(Math.abs(tokenChange) * 0.5 * (survivor.intelligence / 10));
+                tokenChange = Math.max(tokenChange + reduction, Math.floor(tokenChange * 0.5));
+                addLog(`${survivor.name}의 [오차 분석] 스킬로 토큰 손실 감소`, 'event');
+            }
+
+            // 연구원 [논리 회로] 스킬: 지능만큼 토큰 추가 획득
+            if (survivor.job === '연구원') {
+                tokenChange += survivor.intelligence;
+                addLog(`${survivor.name}의 [논리 회로] 스킬로 토큰 추가 획득 +${survivor.intelligence}`, 'reward');
+            }
+
+            // 일용직 근로자 [고된 노동] 스킬
+            if (survivor.job === '일용직 근로자' && actionLevel >= 1) {
                 survivor.hp = Math.max(0, survivor.hp - 5);
-                addLog(`${survivor.name}의 '고된 노동' 발동! (체력 -5, 토큰 +2)`, 'event');
+                survivor.tokens = (survivor.tokens || 0) + 3;
+                addLog(`${survivor.name}의 [고된 노동] 스킬 발동. 체력 -5, 토큰 +3`, 'event');
             }
             
             survivor.tokens += tokenChange;
-            
-            // 초등학생 스킬: 순수한 양보
-            if (jobSkill && jobSkill.name === '순수한 양보' && tokenChange < 0) {
-                gameState.survivors = gameState.survivors.map(s => {
-                    if (s.id !== survivor.id && s.isAlive) {
-                        Object.keys(s.favorability).forEach(key => {
-                            if (key == survivor.id) {
-                                s.favorability[key] = Math.min(1500, s.favorability[key] + 2);
-                            }
-                        });
-                    }
-                    return s;
-                });
-                addLog(`${survivor.name}의 '순수한 양보' 발동! (전원의 호감도 +2)`, 'event');
+
+            // 운동선수 [한계 돌파] 스킬 추가 (여기에 삽입)
+            if (survivor.job === '운동선수' && survivor.hp <= survivor.maxHp * 0.3) {
+                survivor.tokens = (survivor.tokens || 0) * 2;
+                addLog(`${survivor.name}의 [한계 돌파] 스킬로 토큰 2배 획득`, 'reward');
             }
+
+            // 도박꾼 [올 인] 스킬
+            if (survivor.job === '도박꾼' && actionLevel === 2) { // 적극행동일 때만
+                const gambleRoll = Math.floor(Math.random() * 100) + 1;
+                if (gambleRoll >= 50) {
+                    survivor.tokens = (survivor.tokens || 0) * 2;
+                    addLog(`${survivor.name}의 [올 인] 스킬 성공. 보유 토큰 수 2배로 증가`, 'reward');
+                } else {
+                    survivor.tokens = 0;
+                    addLog(`${survivor.name}의 [올 인] 스킬 실패. 보유 토큰 수 0개로 감소`, 'penalty');
+                }
+            }
+
             break;
             
         case 'body':
             const parts = ['leftArm', 'rightArm', 'leftLeg', 'rightLeg', 'head', 'torso'];
             let randomPart = parts[Math.floor(Math.random() * parts.length)];
-            
-            // 힘 스탯이 높으면 추가 발견 확률
-            if (survivor.strength >= 7) {
-                const bonusChance = (survivor.strength - 6) * 0.08; // 힘 7: 8%, 8: 16%, 9: 24%, 10: 32%
+
+            // 화가 [정밀 묘사] 스킬: 보유하지 않은 부위 획득 확률 지능 비례 상승
+            if (survivor.job === '화가') {
+                const missingParts = parts.filter(part => !survivor.bodyParts[part]);
+                if (missingParts.length > 0) {
+                    const bonus = survivor.intelligence * 0.1; // 지능당 10%
+                    if (Math.random() < bonus) {
+                        randomPart = missingParts[Math.floor(Math.random() * missingParts.length)];
+                        addLog(`${survivor.name}의 [정밀 묘사] 스킬로 필요한 부위를 정확히 발견했다.`, 'reward');
+                    }
+                }
+            }
+
+            // 대학생 [벼락치기] 스킬: 서브게임 종료 2턴 전부터 발견 확률 2배
+            if (survivor.job === '대학생' && gameState.subGameTurn >= 8) {
+                const bonusPart = parts[Math.floor(Math.random() * parts.length)];
+                survivor.bodyParts[bonusPart] = true;
+                addLog(`${survivor.name}의 [벼락치기] 스킬로 인형의 신체 부위 추가 발견`, 'reward');
+            }
+
+            // 정비공 [장치 분석] 스킬: 민첩에 비례해 발견 확률 상승
+            if (survivor.job === '정비공') {
+                const bonusChance = survivor.agility * 0.08; // 민첩당 8%
                 if (Math.random() < bonusChance) {
                     const bonusPart = parts[Math.floor(Math.random() * parts.length)];
                     survivor.bodyParts[bonusPart] = true;
-                    addLog(`${survivor.name}의 높은 힘으로 신체 추가 발견!`, 'event');
+                    addLog(`${survivor.name}의 [장치 분석] 스킬로 인형의 신체 부위 추가 발견`, 'reward');
                 }
             }
-
-            // 도굴꾼: [부품 끼워맞추기]
-            if (jobSkill && jobSkill.name === '부품 끼워맞추기') {
-                const parts = Object.values(survivor.bodyParts).filter(v => v).length;
-                if (parts === 5) { // 5개면 6개로 간주
-                    addLog(`${survivor.name}의 '부품 끼워맞추기' 발동! (5개로 완성 인정)`, 'event');
-                }
-            }
-
-            // 환경미화원: [자원 재활용] - UI에서 별도 버튼 필요 (여기서는 자동 처리)
-            if (jobSkill && jobSkill.name === '자원 재활용') {
-                const duplicates = [];
-                parts.forEach(part => {
-                    if (survivor.bodyParts[part]) {
-                        duplicates.push(part);
+            
+            // 환경미화원 [자원 재활용] 스킬: 중복 부위로 체력 회복
+            if (survivor.job === '환경미화원') {
+                const duplicateParts = parts.filter(part => survivor.bodyParts[part]);
+                if (duplicateParts.length >= 8) { // 최소 2개 중복 필요 (6개 + 2개 중복)
+                    const recyclePairs = Math.floor((duplicateParts.length - 6) / 2);
+                    if (recyclePairs > 0) {
+                        const hpRecover = recyclePairs * 5;
+                        survivor.hp = Math.min(survivor.maxHp, survivor.hp + hpRecover);
+                        addLog(`${survivor.name}의 [자원 재활용] 스킬로 체력 회복 +${hpRecover}`, 'heal');
                     }
-                });
-                if (duplicates.length >= 2 && Math.random() < 0.1) {
-                    duplicates.slice(0, 2).forEach(part => {
-                        survivor.bodyParts[part] = false;
-                    });
-                    survivor.tokens = (survivor.tokens || 0) + 3;
-                    addLog(`${survivor.name}의 '자원 재활용' 발동! (중복 부위 → 토큰 3개)`, 'event');
                 }
             }
-                        
-            // 정비공 스킬: 장치 분석 (발견 확률 상승)
-            if (jobSkill && jobSkill.name === '장치 분석') {
-                const bonusChance = survivor.agility * 0.05;
+            
+            // 힘 스탯이 높으면 추가 발견 확률
+            if (survivor.strength >= 7) {
+                const bonusChance = (survivor.strength - 6) * 0.08;
                 if (Math.random() < bonusChance) {
-                    randomPart = parts[Math.floor(Math.random() * parts.length)];
+                    const bonusPart = parts[Math.floor(Math.random() * parts.length)];
+                    survivor.bodyParts[bonusPart] = true;
+                    addLog(`${survivor.name}의 높은 힘으로 인형의 신체 부위 추가 발견`, 'event');
                 }
             }
-            
-            // 화가 스킬: 정밀 묘사 (미보유 부위 확률 상승)
-            if (jobSkill && jobSkill.name === '정밀 묘사') {
-                const unownedParts = parts.filter(p => !survivor.bodyParts[p]);
-                if (unownedParts.length > 0 && Math.random() < (survivor.intelligence * 0.08)) {
-                    randomPart = unownedParts[Math.floor(Math.random() * unownedParts.length)];
+
+            // 민첩 스탯이 높으면 추가 발견 확률
+            if (effectiveAgility >= 7) {
+                const bonusChance = (effectiveAgility - 6) * 0.08;
+                if (Math.random() < bonusChance) {
+                    const bonusPart = parts[Math.floor(Math.random() * parts.length)];
+                    survivor.bodyParts[bonusPart] = true;
+                    addLog(`${survivor.name}의 높은 민첩으로 인형의 신체 부위 추가 발견`, 'event');
                 }
             }
-            
-            // 대학생 스킬: 벼락치기 (종료 2턴 전부터 발견 확률 2배)
-            if (jobSkill && jobSkill.name === '벼락치기' && gameState.turn >= 10) {
-                if (Math.random() < 0.5) {
-                    const secondPart = parts[Math.floor(Math.random() * parts.length)];
-                    survivor.bodyParts[secondPart] = true;
-                    addLog(`${survivor.name}의 '벼락치기' 발동! (신체 추가 발견)`, 'event');
+
+            // 중학생 직업 스킬: 예민한 감각
+            if (survivor.job === '중학생') {
+                const bonusChance = effectiveAgility * 0.1; // 민첩당 10% 확률
+                if (Math.random() < bonusChance) {
+                    const bonusPart = parts[Math.floor(Math.random() * parts.length)];
+                    survivor.bodyParts[bonusPart] = true;
+                    addLog(`${survivor.name}의 [예민한 감각] 스킬로 인형의 신체 부위 추가 발견`, 'reward');
+                }
+            }
+
+            // 용병 [생존 약탈] 스킬 추가
+            if (survivor.job === '용병' && Math.random() < 0.15) {  // 15% 확률
+                const others = gameState.survivors.filter(s => 
+                    s.isAlive && 
+                    s.id !== survivor.id &&
+                    Object.values(s.bodyParts || {}).some(p => p)
+                );
+                
+                if (others.length > 0) {
+                    const target = others[Math.floor(Math.random() * others.length)];
+                    const targetParts = Object.keys(target.bodyParts).filter(p => target.bodyParts[p]);
+                    
+                    if (targetParts.length > 0) {
+                        const stolenPart = targetParts[Math.floor(Math.random() * targetParts.length)];
+                        
+                        gameState.survivors = gameState.survivors.map(s => {
+                            if (s.id === target.id) {
+                                return {
+                                    ...s,
+                                    bodyParts: { ...s.bodyParts, [stolenPart]: false }
+                                };
+                            }
+                            return s;
+                        });
+                        
+                        survivor.bodyParts[stolenPart] = true;
+                        survivor.trust = Math.max(0, survivor.trust - 10);
+                        
+                        addLog(`${survivor.name}의 [생존 약탈] 스킬로 ${target.name}의 신체 부위를 강탈했다. -신뢰도 -10`, 'penalty');
+                    }
                 }
             }
             
             survivor.bodyParts[randomPart] = true;
-            
-            // 중학생 스킬: 예민한 감각
-            if (jobSkill && jobSkill.name === '예민한 감각') {
-                const bonusChance = survivor.agility * 0.06;
-                if (Math.random() < bonusChance) {
-                    const bonusPart = parts[Math.floor(Math.random() * parts.length)];
-                    survivor.bodyParts[bonusPart] = true;
-                    addLog(`${survivor.name}의 '예민한 감각' 발동! (신체 추가 발견)`, 'event');
-                }
+
+            // 무당 [영적 강림] 스킬
+            if (survivor.job === '무당' && Math.random() < 0.5) {
+                survivor.mental = Math.min(survivor.maxMental, survivor.mental + 5);
+                addLog(`${survivor.name}의 [영적 강림] 스킬로 정신력이 회복되었다. +5`, 'heal');
+            }
+
+            // 운동선수 [한계 돌파] 스킬 추가 (여기에 삽입)
+            if (survivor.job === '운동선수' && survivor.hp <= survivor.maxHp * 0.3) {
+                const bonusPart = parts[Math.floor(Math.random() * parts.length)];
+                survivor.bodyParts[bonusPart] = true;
+                addLog(`${survivor.name}의 [한계 돌파] 스킬로 신체부위 추가 획득`, 'reward');
             }
             
-            // 무당 스킬: 영적 강림
-            if (jobSkill && jobSkill.name === '영적 강림' && Math.random() < 0.15) {
-                if (!survivor.skills.includes('생존본능(1턴)')) {
-                    survivor.skills.push('생존본능(1턴)');
-                    addLog(`${survivor.name}의 '영적 강림' 발동! (생존본능 1턴 획득)`, 'event');
-                }
-            }
             break;
     }
 }
 
 function endSubGame() {
+
+    // 비서 [일정 관리] 스킬 처리
+    if (gameState.subGameType === 'trust') {
+        gameState.survivors.forEach(secretary => {
+            if (!secretary.isAlive || secretary.job !== '비서') return;
+            
+            // 호감도 1위 찾기
+            let maxFav = -Infinity;
+            let favoriteId = null;
+            
+            Object.entries(secretary.favorability).forEach(([id, fav]) => {
+                if (fav > maxFav) {
+                    maxFav = fav;
+                    favoriteId = parseFloat(id);
+                }
+            });
+            
+            if (favoriteId) {
+                const favorite = gameState.survivors.find(s => s.id === favoriteId);
+                if (favorite && favorite.isAlive && favorite.currentAction && 
+                    favorite.currentAction !== 'free') {
+                    // 행동 횟수만큼 토큰 획득 (초과근무 등 고려)
+                    secretary.tokens = (secretary.tokens || 0) + 1;
+                    addLog(`${secretary.name}의 [일정 관리] 스킬로 ${favorite.name}의 행동에 따라 토큰을 획득했다. +1`, 'reward');
+                }
+            }
+        });
+    }
+    
     if (gameState.subGameType === 'trust') {
         const aliveSurvivors = gameState.survivors.filter(s => s.isAlive);
         if (aliveSurvivors.length === 0) return;
@@ -3522,30 +3806,81 @@ function endSubGame() {
         const lowest = aliveSurvivors.reduce((min, s) => s.tokens < min.tokens ? s : min);
         const highest = aliveSurvivors.reduce((max, s) => s.tokens > max.tokens ? s : max);
 
-        // 변호사: [공정 거래]
-        const lowestJobSkill = JOB_SKILLS[lowest.job];
-        let damageReduction = 0;
-        if (lowestJobSkill && lowestJobSkill.name === '공정 거래') {
-            damageReduction = 0.3;
-            addLog(`${lowest.name}의 '공정 거래' 발동! (데미지 30% 감소)`, 'event');
-        }
-
         const damagePercent = 0.1 + Math.random() * 0.6;
-        let hpDamage = Math.floor(lowest.maxHp * damagePercent * (1 - damageReduction));
-        let mentalDamage = Math.floor(lowest.maxMental * damagePercent * (1 - damageReduction));
+        let hpDamage = Math.floor(lowest.maxHp * damagePercent);
+        let mentalDamage = Math.floor(lowest.maxMental * damagePercent);
+
+        // 변호사 [공정 거래] 스킬: 토큰 최하위 페널티 데미지 30% 감소
+        if (lowest.job === '변호사') {
+            hpDamage = Math.floor(hpDamage * 0.7);
+            mentalDamage = Math.floor(mentalDamage * 0.7);
+            addLog(`${lowest.name}의 [공정 거래] 스킬로 페널티 데미지 30% 감소`, 'event');
+        }
         
         // 스탯 특성 적용
         if (lowest.agility >= 8) {
             hpDamage = Math.max(0, hpDamage - 5);
-            addLog(`${lowest.name}의 높은 민첩으로 체력 피해 5 감소!`, 'event');
+            addLog(`${lowest.name}의 높은 민첩으로 체력 피해 5 감소`, 'event');
         }
         if (lowest.strength >= 8) {
             mentalDamage = Math.max(0, mentalDamage - 5);
-            addLog(`${lowest.name}의 높은 힘으로 정신력 피해 5 감소!`, 'event');
+            addLog(`${lowest.name}의 높은 힘으로 정신력 피해 5 감소`, 'event');
+        }
+
+        if ((lowest.job === '댄서' || lowest.job === '무용수')) {
+            const dodgeChance = lowest.agility * 0.1;
+            if (Math.random() < dodgeChance) {
+                hpDamage = 0;
+                mentalDamage = 0;
+                addLog(`${lowest.name}의 [유연한 회피] 스킬로 모든 페널티 회피`, 'event');
+            }
+        }
+
+        // 경호원 [전담 방어] 스킬 추가
+        const protector = aliveSurvivors.find(s => 
+            s.job === '경호원' && 
+            s.protectee === lowest.id &&
+            s.isAlive
+        );
+
+        if (protector) {
+            protector.hp = Math.max(0, s.hp - hpDamage);
+            protector.mental = Math.max(0, s.mental - mentalDamage);
+            addLog(`${protector.name}의 [전담 방어] 스킬로 ${lowest.name}의 페널티를 대신 받았다. (HP -${hpDamage}, 정신력 -${mentalDamage})`, 'event');
+            hpDamage = 0;
+            mentalDamage = 0;
         }
         
         lowest.hp = Math.max(0, lowest.hp - hpDamage);
         lowest.mental = Math.max(0, lowest.mental - mentalDamage);
+        
+        // 광대 [시선 분산] 스킬: 페널티를 타인에게 전가
+        if (lowest.job === '광대') {
+            const others = aliveSurvivors.filter(s => s.id !== lowest.id);
+            if (others.length > 0) {
+                const scapegoat = others[Math.floor(Math.random() * others.length)];
+                scapegoat.hp = Math.max(0, scapegoat.hp - hpDamage);
+                scapegoat.mental = Math.max(0, scapegoat.mental - mentalDamage);
+                scapegoat.trust = Math.max(0, scapegoat.trust - 20);
+                
+                // 광대 본인은 피해 안 받음
+                lowest.hp = Math.max(0, lowest.hp + hpDamage);
+                lowest.mental = Math.max(0, lowest.mental + mentalDamage);
+                
+                addLog(`${lowest.name}의 [시선 분산] 스킬로 ${scapegoat.name}이(가) 대신 페널티를 받았다. (신뢰도 -20)`, 'event');
+            }
+        }
+
+        // 초등학생 직업 스킬: 순수한 양보
+        if (lowest.job === '초등학생') {
+            gameState.survivors.forEach(other => {
+                if (other.isAlive && other.id !== lowest.id) {
+                    const oldFav = other.favorability[lowest.id] || 0;
+                    other.favorability[lowest.id] = Math.min(1500, oldFav + 20);
+                }
+            });
+            addLog(`${lowest.name}의 [순수한 양보] 스킬 발동. 전원의 ${lowest.name}에 대한 호감도 +20`, 'reward');
+        }
         addLog(`${lowest.name}이(가) 토큰 보유 수 최하위 패널티로 체력 ${hpDamage}, 정신력 ${mentalDamage}의 피해를 입었다.`, 'death');
 
         // 최상위 보상
@@ -3560,7 +3895,13 @@ function endSubGame() {
             if (highest[stat] < 10) {
                 highest[stat]++;
                 statGained = true;
-                addLog(`${highest.name}이(가) 토큰 보유 수 최상위 보상으로 ${stat} 스탯을 획득했다.`, 'reward');
+                // 고등학생 직업 스킬: 학습 효과
+                if (highest.job === '고등학생' && highest[stat] < 10) {
+                    highest[stat]++;
+                    addLog(`${highest.name}이(가) 토큰 보유 수 최상위 보상으로 ${stat} 스탯을 획득했다. [학습 효과]로 스탯 1 추가`, 'reward');
+                } else {
+                    addLog(`${highest.name}이(가) 토큰 보유 수 최상위 보상으로 ${stat} 스탯을 획득했다.`, 'reward');
+                }
             }
         } else if (rewardType < 0.8) {
             // 스킬만
@@ -3588,33 +3929,19 @@ function endSubGame() {
             }
             
             if (statGained || skillGained) {
-                addLog(`${highest.name}이(가) 토큰 보유 수 최상위 보상으로 스탯과 스킬을 모두 획득했다.`, 'reward');
-            }
-        }
-        
-        // 암살자: [급소 타격]
-        const highestJobSkill = JOB_SKILLS[highest.job];
-        if (highestJobSkill && highestJobSkill.name === '급소 타격' && !skillGained) {
-            const newSkill = '급소타격(임시)';
-            if (!highest.skills.includes(newSkill)) {
-                highest.skills.push(newSkill);
-                addLog(`${highest.name}의 '급소 타격' 발동! 스킬 획득`, 'reward');
-            }
-        }
-        
-        // 고등학생: [학습 효과]
-        if (highestJobSkill && highestJobSkill.name === '학습 효과' && statGained) {
-            const stats = ['strength', 'agility', 'intelligence', 'charisma', 'charm'];
-            const stat = stats[Math.floor(Math.random() * stats.length)];
-            if (highest[stat] < 10) {
-                highest[stat]++;
-                addLog(`${highest.name}의 '학습 효과' 발동! (추가 스탯 +1)`, 'reward');
+                // 고등학생 직업 스킬: 학습 효과
+                if (highest.job === '고등학생' && highest[stat] < 10) {
+                    highest[stat]++;
+                    addLog(`${highest.name}이(가) 토큰 보유 수 최상위 보상으로 스탯과 스킬을 모두 획득했다. [학습 효과]로 스탯 1 추가`, 'reward');
+                } else {
+                    addLog(`${highest.name}이(가) 토큰 보유 수 최상위 보상으로 스탯과 스킬을 모두 획득했다.`, 'reward');
+                }
             }
         }
         
         // 지능 8 이상: 아이템(스킬) 추가 획득
         if (highest.intelligence >= 8 && skillGained) {
-            const bonusSkill = '지능축복(임시)';
+            const bonusSkill = '지략가';
             if (!highest.skills.includes(bonusSkill)) {
                 highest.skills.push(bonusSkill);
                 highest.mental = Math.min(highest.maxMental, highest.mental + 2);
@@ -3628,6 +3955,15 @@ function endSubGame() {
         
         for (const s of aliveSurvivors) {
             const parts = Object.values(s.bodyParts);
+            const completedCount = parts.filter(p => p).length;
+            
+            // 도굴꾼 스킬: 5개 이상이면 완성으로 인정
+            if (s.job === '도굴꾼' && completedCount >= 5) {
+                completedSurvivor = s;
+                completedSurvivor.isThiefCompletion = true; // 도굴꾼 완성 플래그
+                break;
+            }
+            
             if (parts.every(p => p)) {
                 completedSurvivor = s;
                 break;
@@ -3638,6 +3974,9 @@ function endSubGame() {
             const isReward = Math.random() < 0.5;
             
             if (isReward) {
+                // 도굴꾼 스킬: 보상 50% 감소
+                const rewardMultiplier = completedSurvivor.isThiefCompletion ? 0.5 : 1.0;
+                
                 const rewardType = Math.random();
                 let statGained = false;
                 let skillGained = false;
@@ -3646,85 +3985,83 @@ function endSubGame() {
                     const stats = ['strength', 'agility', 'intelligence', 'charisma', 'charm'];
                     const stat = stats[Math.floor(Math.random() * stats.length)];
                     if (completedSurvivor[stat] < 10) {
-                        completedSurvivor[stat]++;
-                        statGained = true;
-                        addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 ${stat} 스탯을 획득했다.`, 'reward');
-                    }
-                } else if (rewardType < 0.8) {
-                    const availableSkills = getAvailableSpecialSkills(completedSurvivor);
-                    if (availableSkills.length > 0) {
-                        const newSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
-                        completedSurvivor.skills.push(newSkill.name);
-                        skillGained = true;
-                        addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 [${newSkill.name}] 스킬을 획득했다.`, 'reward');
-                    }
-                } else {
-                    const stats = ['strength', 'agility', 'intelligence', 'charisma', 'charm'];
-                    const stat = stats[Math.floor(Math.random() * stats.length)];
-                    if (completedSurvivor[stat] < 10) {
-                        completedSurvivor[stat]++;
-                        statGained = true;
-                    }
-                    
-                    const availableSkills = getAvailableSpecialSkills(completedSurvivor);
-                    if (availableSkills.length > 0) {
-                        const newSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
-                        completedSurvivor.skills.push(newSkill.name);
-                        skillGained = true;
-                    }
-                    
-                    if (statGained || skillGained) {
-                        addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 스탯과 스킬을 모두 획득했다.`, 'reward');
-                    }
-                }
-                
-                // 의사: [정밀 집도]
-                const jobSkill = JOB_SKILLS[completedSurvivor.job];
-                if (jobSkill && jobSkill.name === '정밀 집도' && (!statGained || !skillGained)) {
-                    if (!statGained) {
+                        const statIncrease = Math.random() < rewardMultiplier ? 1 : 0;
+                        if (statIncrease > 0) {
+                            completedSurvivor[stat]++;
+                            statGained = true;
+
+                            // 의사 [정밀 집도] 스킬: 보너스 스탯 2개 획득
+                            if (completedSurvivor.job === '의사') {
+                                const availableStats = stats.filter(s => completedSurvivor[s] < 10);
+                                if (availableStats.length > 0) {
+                                    const bonusStat = availableStats[Math.floor(Math.random() * availableStats.length)];
+                                    completedSurvivor[bonusStat]++;
+                                    addLog(`${completedSurvivor.name}의 [정밀 집도] 스킬로 보너스 스탯 추가 획득`, 'reward');
+                                }
+                            }
+
+                            // 고등학생 직업 스킬: 학습 효과
+                            if (completedSurvivor.job === '고등학생' && completedSurvivor[stat] < 10) {
+                                completedSurvivor[stat]++;
+                                addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 ${stat} 스탯을 획득했다. [학습 효과]로 스탯 1 추가`, 'reward');
+                            } else {
+                                addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 ${stat} 스탯을 획득했다.`, 'reward');
+                            }
+                        }
+                    } else if (rewardType < 0.8) {
+                        const availableSkills = getAvailableSpecialSkills(completedSurvivor);
+                        if (availableSkills.length > 0 && Math.random() < rewardMultiplier) {
+                            const newSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
+                            completedSurvivor.skills.push(newSkill.name);
+                            skillGained = true;
+                            addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 [${newSkill.name}] 스킬을 획득했다.`, 'reward');
+                        }
+                    } else {
                         const stats = ['strength', 'agility', 'intelligence', 'charisma', 'charm'];
                         const stat = stats[Math.floor(Math.random() * stats.length)];
-                        if (completedSurvivor[stat] < 10) completedSurvivor[stat]++;
-                        statGained = true;
-                    }
-                    if (!skillGained) {
-                        const tempSkill = '정밀집도(임시)';
-                        if (!completedSurvivor.skills.includes(tempSkill)) {
-                            completedSurvivor.skills.push(tempSkill);
+                        if (completedSurvivor[stat] < 10) {
+                            completedSurvivor[stat]++;
+                            statGained = true;
+                        }
+                        
+                        const availableSkills = getAvailableSpecialSkills(completedSurvivor);
+                        if (availableSkills.length > 0) {
+                            // 예술가 [영감의 원천] 스킬 확률 적용
+                            const skillChance = completedSurvivor.job === '예술가' ? 
+                                (Math.random() < rewardMultiplier * 2) : 
+                                (Math.random() < rewardMultiplier);
+                            
+                            if (skillChance) {
+                                const newSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
+                                completedSurvivor.skills.push(newSkill.name);
+                                skillGained = true;
+                                
+                                const bonusText = completedSurvivor.job === '예술가' ? ' [영감의 원천]' : '';
+                                addLog(`${completedSurvivor.name}이(가) 인형을 완성하여${bonusText} [${newSkill.name}] 스킬을 획득했다.`, 'reward');
+                            }
+                            const newSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
+                            completedSurvivor.skills.push(newSkill.name);
                             skillGained = true;
                         }
-                    }
-                    addLog(`${completedSurvivor.name}의 '정밀 집도' 발동! 보너스 2개 고정`, 'event');
-                }
-                
-                // 예술가: [영감의 원천]
-                if (jobSkill && jobSkill.name === '영감의 원천') {
-                    if (Math.random() < 0.5) {
-                        const bonusSkill = '영감(임시)';
-                        if (!completedSurvivor.skills.includes(bonusSkill)) {
-                            completedSurvivor.skills.push(bonusSkill);
-                            addLog(`${completedSurvivor.name}의 '영감의 원천' 발동! 추가 스킬 획득`, 'reward');
+                        
+                        if (statGained || skillGained) {
+
+                            if (completedSurvivor.job === '고등학생' && completedSurvivor[stat] < 10) {
+                                completedSurvivor[stat]++;
+                                addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 스킬을 모두 획득했다. [학습 효과]로 스탯 1 추가`, 'reward');
+                            } else {
+                                addLog(`${completedSurvivor.name}이(가) 인형을 완성하여 스탯과 스킬을 모두 획득했다.`, 'reward');
+                            }
                         }
                     }
                 }
-                
-                // 고등학생: [학습 효과]
-                if (jobSkill && jobSkill.name === '학습 효과' && statGained) {
-                    const stats = ['strength', 'agility', 'intelligence', 'charisma', 'charm'];
-                    const stat = stats[Math.floor(Math.random() * stats.length)];
-                    if (completedSurvivor[stat] < 10) {
-                        completedSurvivor[stat]++;
-                        addLog(`${completedSurvivor.name}의 '학습 효과' 발동! (추가 스탯 +1)`, 'reward');
-                    }
-                }
-                
                 // 지능 8 이상
                 if (completedSurvivor.intelligence >= 8 && skillGained) {
-                    const bonusSkill = '지능축복(임시)';
+                    const bonusSkill = '지략가';
                     if (!completedSurvivor.skills.includes(bonusSkill)) {
                         completedSurvivor.skills.push(bonusSkill);
                         completedSurvivor.mental = Math.min(completedSurvivor.maxMental, completedSurvivor.mental + 2);
-                        addLog(`${completedSurvivor.name}의 높은 지능으로 추가 스킬 획득! - 정신력 +2`, 'reward');
+                        addLog(`${completedSurvivor.name}의 높은 지능으로 추가 스킬 발견 - 정신력 +2`, 'reward');
                     }
                 }
             } else {
@@ -3734,7 +4071,7 @@ function endSubGame() {
                 
                 if (completedSurvivor.agility >= 8) {
                     hpDamage = Math.max(0, hpDamage - 5);
-                    addLog(`${completedSurvivor.name}의 높은 민첩으로 체력 피해 5 감소!`, 'event');
+                    addLog(`${completedSurvivor.name}의 높은 민첩으로 체력 피해 5 감소`, 'event');
                 }
                 
                 completedSurvivor.hp = Math.max(0, completedSurvivor.hp - hpDamage);
@@ -3744,49 +4081,149 @@ function endSubGame() {
         
     } else if (gameState.subGameType === 'banquet') {
         // 연회 종료: 더미즈 중 신뢰도 최하위 사망
-        const dummies = gameState.survivors.filter(s => s.isAlive && s.status === '더미즈');
-        if (dummies.length > 0) {
-            const lowestTrust = dummies.reduce((min, s) => s.trust < min.trust ? s : min);
-            lowestTrust.isAlive = false;
-            lowestTrust.inCoffin = false;
+
+        // 바리스타 [카페인 충전] 스킬 - 관에 갇힌 아군 중 랜덤 한 명의 정신력 감소 페널티 무효화
+        const baristas = gameState.survivors.filter(s => 
+            s.isAlive && s.job === '바리스타'
+        );
+        
+        baristas.forEach(barista => {
+            const coffinDummies = gameState.survivors.filter(d => 
+                d.isAlive && 
+                d.status === '더미즈' && 
+                d.inCoffin
+            );
             
-            // 탈출한 더미즈 확인 및 사망 처리
-            const escapedDummies = dummies.filter(d => !d.inCoffin && d.id !== lowestTrust.id);
-            const shouldDischarge = escapedDummies.length < 2;
-            lowestTrust.isAlive = false;
-            lowestTrust.inCoffin = false;
-            
-            // 생존본능 스킬 제거 및 스탯 복구
+            if (coffinDummies.length > 0) {
+                const target = coffinDummies[Math.floor(Math.random() * coffinDummies.length)];
+                
+                if (!target.caffeineProtection) {
+                    target.caffeineProtection = true;
+                    addLog(`${barista.name}의 [카페인 충전] 스킬로 ${target.name}의 정신력 감소가 무효화되었다.`, 'event');
+                }
+            }
+        });
+
+        // 야쿠자 [조직의 의리] 스킬 체크 - 더미즈 사망 전에 처리
+        const lowestTrust = dummies.reduce((min, s) => s.trust < min.trust ? s : min);
+        
+        // 야쿠자 스킬로 보호 가능한지 체크
+        const yakuza = gameState.survivors.find(y => 
+            y.isAlive && 
+            y.job === '야쿠자' &&
+            !y.usedYakuzaSkill && // 1회만 사용
+            (y.favorability[lowestTrust.id] || 0) >= 300 &&
+            y.hp >= 30
+        );
+        
+        if (yakuza) {
+            // 야쿠자 스킬 발동
             gameState.survivors = gameState.survivors.map(s => {
-                if (s.status === '더미즈') {
-                    const wasEscaped = !s.inCoffin && s.id !== lowestTrust.id;
-                    
-                    s.skills = s.skills.filter(skill => skill !== '생존본능');
-                    s.maxHp -= 100;
-                    s.maxMental -= 100;
-                    s.hp = Math.min(s.hp, s.maxHp);
-                    s.mental = Math.min(s.mental, s.maxMental);
-                    
-                    // 탈출한 더미즈는 사망 처리
-                    if (shouldDischarge && !s.inCoffin && s.id !== lowestTrust.id && s.isAlive) {
-                        return { ...s, isAlive: false, inCoffin: false };
-                    }
+                if (s.id === yakuza.id) {
+                    return { ...s, hp: s.hp - 30, usedYakuzaSkill: true };
                 }
                 return s;
             });
             
-            addLog(`신뢰도 최하위 더미즈 ${lowestTrust.name}이(가) 절명했다.`, 'death');
-            processDeathRelationships(lowestTrust);
+            addLog(`${yakuza.name}의 [조직의 의리] 스킬로 ${lowestTrust.name}의 사망을 막았다. (체력 -30)`, 'event');
             
-            // 탈출한 더미즈 로그 출력
-            if (shouldDischarge && escapedDummies.length > 0) {
-                escapedDummies.forEach(dummy => {
-                    addLog(`${dummy.name}이(가) 방전되었다.`, 'death');
-                    processDeathRelationships(dummy);
+            // 야쿠자가 사망하지 않았다면 다른 더미즈 중 최하위 선택
+            if (yakuza.hp > 0) {
+                const otherDummies = dummies.filter(d => d.id !== lowestTrust.id);
+                if (otherDummies.length > 0) {
+                    const newLowest = otherDummies.reduce((min, s) => s.trust < min.trust ? s : min);
+                    newLowest.isAlive = false;
+                    newLowest.inCoffin = false;
+                    addLog(`신뢰도 최하위 더미즈 ${newLowest.name}이(가) 절명했다.`, 'death');
+                    processDeathRelationships(newLowest);
+                }
+            } else {
+                // 야쿠자가 사망한 경우
+                yakuza.isAlive = false;
+                addLog(`${yakuza.name}이(가) [조직의 의리]로 절명했다.`, 'death');
+                processDeathRelationships(yakuza);
+            }
+        } else {
+            const dummies = gameState.survivors.filter(s => s.isAlive && s.status === '더미즈');
+            if (dummies.length > 1) {
+                const lowestTrust = dummies.reduce((min, s) => s.trust < min.trust ? s : min);
+                lowestTrust.isAlive = false;
+                lowestTrust.inCoffin = false;
+                
+                // 탈출한 더미즈 확인 및 사망 처리
+                const escapedDummies = dummies.filter(d => !d.inCoffin && d.id !== lowestTrust.id);
+                const shouldDischarge = escapedDummies.length < 2;
+                lowestTrust.isAlive = false;
+                lowestTrust.inCoffin = false;
+                
+                // 생존본능 스킬 제거 및 스탯 복구
+                gameState.survivors = gameState.survivors.map(s => {
+                    if (s.status === '더미즈') {
+                        const wasEscaped = !s.inCoffin && s.id !== lowestTrust.id;
+                        
+                        s.skills = s.skills.filter(skill => skill !== '생존본능');
+                        s.maxHp -= 100;
+                        s.maxMental -= 100;
+                        s.hp = Math.min(s.hp, s.maxHp);
+                        s.mental = Math.min(s.mental, s.maxMental);
+                        
+                        // 탈출한 더미즈는 사망 처리
+                        if (shouldDischarge && !s.inCoffin && s.id !== lowestTrust.id && s.isAlive) {
+                            return { ...s, isAlive: false, inCoffin: false };
+                        }
+                    }
+                    return s;
                 });
+                
+                addLog(`신뢰도 최하위 더미즈 ${lowestTrust.name}이(가) 절명했다.`, 'death');
+                processDeathRelationships(lowestTrust);
+                
+                // 탈출한 더미즈 로그 출력
+                if (shouldDischarge && escapedDummies.length < 2) {
+                    escapedDummies.forEach(dummy => {
+                        addLog(`${dummy.name}이(가) 방전되었다.`, 'death');
+                        processDeathRelationships(dummy);
+                    });
+                }
             }
         }
     }
+
+    // 농부 [결실의 계절] 스킬
+    gameState.survivors.forEach(s => {
+        if (s.isAlive && s.job === '농부') {
+            const recovery = Math.floor(s.strength * 3);
+            s.hp = Math.min(s.maxHp, s.hp + recovery);
+            s.mental = Math.min(s.maxMental, s.mental + recovery);
+            addLog(`${s.name}의 [결실의 계절] 스킬로 체력/정신력이 회복되었다. +${recovery}`, 'heal');
+        }
+    });
+
+    // 무직 [기적의 요행] 스킬
+    gameState.survivors.forEach(s => {
+        if (s.isAlive && s.job === '무직') {
+            let gotReward = false;
+            
+            if (gameState.subGameType === 'trust') {
+                const lowest = aliveSurvivors.reduce((min, sv) => sv.tokens < min.tokens ? sv : min);
+                const highest = aliveSurvivors.reduce((max, sv) => sv.tokens > max.tokens ? sv : max);
+                gotReward = (s.id === highest.id);
+            } else if (gameState.subGameType === 'body') {
+                const parts = Object.values(s.bodyParts || {});
+                gotReward = parts.every(p => p);
+            }
+            
+            if (!gotReward) {
+                const availableSkills = getAvailableSpecialSkills(s);
+                if (availableSkills.length > 0) {
+                    const newSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
+                    s.skills.push(newSkill.name);
+                    addLog(`${s.name}의 [기적의 요행] 스킬로 [${newSkill.name}] 스킬을 획득했다.`, 'reward');
+                }
+            }
+        }
+    });
+
     updateDisplay()
 }
 
@@ -3819,11 +4256,18 @@ function processMainGame() {
     const cyclePosition = ((gameState.turn - 1) % 13) + 1;
     if (cyclePosition === 11) {
         gameState.gamePhase = 'main';
-        gameState.mainGameTurn = 1;  // 메인게임 시작
+        gameState.mainGameTurn = 1;
         assignRoles();
+
+        // 기타리스트 스킬 적용
+        gameState.survivors.forEach(s => {
+            if (s.isAlive && s.job === '기타리스트') {
+                s.originalCharisma = s.charisma;
+            }
+        });
     } else {
         gameState.gamePhase = 'main';
-        gameState.mainGameTurn++;  // 턴 증가
+        gameState.mainGameTurn++;
     }
 
 
@@ -3841,10 +4285,53 @@ function processMainGame() {
             const changeText = diff !== 0 ? ` (신뢰도 ${diff > 0 ? '+' : ''}${diff})` : '';
             addLog(`${s.name}이(가) 행동했다.${changeText}`, 'action');
         } else if (s.currentAction === 'talk') {
-            processTalkAction(updated);
+        processTalkAction(updated);
+        } else if (s.currentAction === 'slander') {
+            processSlanderAction(updated);
+        } else if (s.currentAction === 'falseTestimony') {
+            processFalseTestimonyAction(updated);
         }
         
         return updated;
+    });
+    // 조폭 [공포 분위기] 스킬
+    const gangsters = gameState.survivors.filter(s => 
+        s.isAlive && 
+        s.job === '조폭' && 
+        s.status === '인간' &&
+        s.currentAction === 'active'
+    );
+    
+    gangsters.forEach(gangster => {
+        const dummies = gameState.survivors.filter(d => 
+            d.isAlive && d.status === '더미즈'
+        );
+        
+        if (dummies.length === 0) return;
+        
+        const target = dummies[Math.floor(Math.random() * dummies.length)];
+        const bonus = gangster.charisma * 2;
+        const threshold = 50;
+        const roll = Math.floor(Math.random() * 100) + 1;
+        const total = roll + bonus;
+        
+        if (total >= threshold) {
+            const stealAmount = Math.min(20, Math.floor(Math.random() * 15) + 5);
+            
+            gameState.survivors = gameState.survivors.map(s => {
+                if (s.id === target.id) {
+                    return { ...s, trust: Math.max(0, s.trust - stealAmount) };
+                }
+                if (s.id === gangster.id) {
+                    return { ...s, trust: Math.min(100, s.trust + stealAmount) };
+                }
+                return s;
+            });
+            
+            addLog(`${gangster.name}의 [공포 분위기] 스킬로 ${target.name}을(를) 위협해서 자신의 변호를 강요했다. - 신뢰도 ${stealAmount} 강탈`, 'event');
+        } else {
+            addLog(`${gangster.name}의 [공포 분위기] 스킬이 실패했다. (${total}/${threshold})`, 'fail');
+        }
     });
 
     updateDisplay();
@@ -3856,6 +4343,76 @@ function processMainGame() {
     addLog(`=== 턴 ${gameState.turn}: 메인게임 진행 중 ===`, 'phase');
 }
 
+// 이간질하기 처리
+function processSlanderAction(survivor) {
+    const target = gameState.survivors.find(s => s.isAlive && s.id !== survivor.id && s.role === '열쇠지기');
+    
+    if (!target) {
+        addLog(`${survivor.name}은(는) 열쇠지기를 찾지 못해 이간질을 포기했다.`, 'fail');
+        return;
+    }
+
+    let successChance = (survivor.charisma + survivor.intelligence) / 20;
+    
+    // 암살자 [급소 타격] 스킬: 대역일 때 성공률 20% 증가
+    if (survivor.job === '암살자' && survivor.role === '대역') {
+        successChance += 0.2;
+        addLog(`${survivor.name}의 [급소 타격] 스킬로 이간질 성공률 증가`, 'event');
+    }
+
+    const isSuccess = Math.random() < successChance;
+    
+    if (isSuccess) {
+        const trustDecrease = Math.floor(100 * 0.2);
+        const mentalDecrease = Math.floor(target.mental * 0.15);
+        
+        target.trust = Math.max(0, target.trust - trustDecrease);
+        target.mental = Math.max(0, target.mental - mentalDecrease);
+        
+        addLog(`${survivor.name}의 이간질이 성공했다. ${target.name}의 신뢰도 -${trustDecrease}, 정신력 -${mentalDecrease}`, 'action');
+    } else {
+        const trustDecrease = Math.floor(Math.random() * 10) + 1;
+        survivor.trust = Math.max(0, survivor.trust - trustDecrease);
+        
+        addLog(`${survivor.name}의 이간질이 들통났다. 신뢰도 -${trustDecrease}`, 'penalty');
+    }
+}
+
+// 거짓 증언 처리
+function processFalseTestimonyAction(survivor) {
+    const target = gameState.survivors.find(s => s.isAlive && s.id !== survivor.id && s.role === '열쇠지기');
+    
+    if (!target) {
+        addLog(`${survivor.name}은(는) 열쇠지기를 찾지 못해 거짓 증언을 포기했다.`, 'fail');
+        return;
+    }
+    
+    let successChance = (survivor.charisma + survivor.intelligence) / 20;
+    
+    // 암살자 [급소 타격] 스킬: 대역일 때 성공률 20% 증가
+    if (survivor.job === '암살자' && survivor.role === '대역') {
+        successChance += 0.2;
+        addLog(`${survivor.name}의 [급소 타격] 스킬로 거짓 증언 성공률 증가`, 'event');
+    }
+
+    const isSuccess = Math.random() < successChance;
+    
+    if (isSuccess) {
+        const trustDecrease = Math.floor(100 * 0.2);
+        const mentalDecrease = Math.floor(target.mental * 0.15);
+        
+        target.trust = Math.max(0, target.trust - trustDecrease);
+        target.mental = Math.max(0, target.mental - mentalDecrease);
+        
+        addLog(`${survivor.name}의 거짓 증언이 먹혔다. ${target.name}의 신뢰도 -${trustDecrease}, 정신력 -${mentalDecrease}`, 'action');
+    } else {
+        const trustDecrease = Math.floor(Math.random() * 15) + 1;
+        survivor.trust = Math.max(0, survivor.trust - trustDecrease);
+        
+        addLog(`${survivor.name}의 거짓 증언이 발각됐다. 신뢰도 -${trustDecrease}`, 'penalty');
+    }
+}
+
 // 투표 실행
 function executeVoting() {
     const alive = gameState.survivors.filter(s => s.isAlive);
@@ -3865,12 +4422,27 @@ function executeVoting() {
         votes[s.id] = 0;
     });
 
+    // 스파이 [정보 조작] 스킬
+    const spies = alive.filter(s => s.job === '스파이');
+    const originalTrusts = {};
+    spies.forEach(spy => {
+        originalTrusts[spy.id] = spy.trust;
+        const fakeIncrease = Math.min(70, Math.floor(spy.charisma * 7));
+        spy.trust = Math.min(100, spy.trust + fakeIncrease);
+        addLog(`${spy.name}의 [정보 조작] 스킬로 신뢰도가 위장되었다. (+${fakeIncrease})`, 'event');
+    });
+
     alive.forEach(voter => {
         let minScore = Infinity;
         let target = null;
         
         alive.forEach(candidate => {
-            if (candidate.id === voter.id) return;
+            if (candidate.id === voter.id) return
+
+            // 아이돌 [팬덤 형성] 스킬: 호감도 150 이상이면 투표 안 함
+            if (candidate.job === '아이돌' && (voter.favorability[candidate.id] || 0) >= 150) {
+                return;
+            }
             
             // 신뢰도 가중치: 3.0
             // 매력 가중치: 2.0
@@ -3887,39 +4459,98 @@ function executeVoting() {
                 target = candidate;
             }
         });
-        
-        if (target) {
-            // 판사 스킬 체크는 그대로 유지
-            const voterJobSkill = JOB_SKILLS[voter.job];
-            if (voterJobSkill && voterJobSkill.name === '최후 판결') {
-                const cancelChance = voter.charisma * 0.08;
-                if (Math.random() < cancelChance) {
-                    addLog(`${voter.name}의 '최후 판결' 발동! ${target.name}의 득표 1표 무효화`, 'event');
-                    return;
-                }
-            }
-            
-            // 아이돌 스킬 체크는 그대로 유지
-            const targetJobSkill = JOB_SKILLS[target.job];
-            if (targetJobSkill && targetJobSkill.name === '팬덤 형성') {
-                const voterFav = voter.favorability[target.id] || 50;
-                if (voterFav >= 50) {
-                    addLog(`${voter.name}은(는) ${target.name}의 '팬덤 형성'으로 투표할 수 없다.`, 'event');
-                    return;
-                }
-            }
-            
-            votes[target.id]++;
-        }
+        votes[target.id]++;
     });
+
+    // 판사 [최후 판결] 스킬: 카리스마 비례로 랜덤 인물의 표 1표 무효화
+    const judge = alive.find(s => s.job === '판사');
+    if (judge) {
+        const voteTargets = Object.keys(votes).filter(id => votes[id] > 0);
+        if (voteTargets.length > 0) {
+            const randomTargetId = voteTargets[Math.floor(Math.random() * voteTargets.length)];
+            const target = alive.find(s => s.id === parseFloat(randomTargetId));
+            
+            if (target && Math.random() < (judge.charisma / 10)) {
+                votes[randomTargetId] = Math.max(0, votes[randomTargetId] - 1);
+                addLog(`${judge.name}의 [최후 판결] 스킬로 ${target.name}의 표 1표 무효화`, 'event');
+            }
+        }
+    }
 
     const maxVotes = Math.max(...Object.values(votes));
     const sacrificed = alive.find(s => votes[s.id] === maxVotes);
 
+    // 스파이 신뢰도 복구
+    Object.keys(originalTrusts).forEach(id => {
+        const spy = gameState.survivors.find(s => s.id === parseFloat(id));
+        if (spy) spy.trust = originalTrusts[id];
+    });
+
+    // 기자 [약점 노출] 스킬
+    if (sacrificed && sacrificed.job === '기자') {
+        alive.forEach(voter => {
+            if (votes[sacrificed.id] > 0 && voter.id !== sacrificed.id) {
+                // 실제로 투표했는지 확인 (간단화를 위해 확률적으로)
+                const trustDecrease = Math.floor(sacrificed.intelligence * 2);
+                if (trustDecrease > 0) {
+                    gameState.survivors = gameState.survivors.map(s => {
+                        if (s.id === voter.id) {
+                            return { ...s, trust: Math.max(0, s.trust - trustDecrease) };
+                        }
+                        return s;
+                    });
+                }
+            }
+        });
+        addLog(`${sacrificed.name}의 [약점 노출] 스킬로 투표자들의 신뢰도가 감소했다.`, 'event');
+    }
+
     if (sacrificed) {
         addLog(`=== 투표 결과: ${sacrificed.name}이(가) 선택되었다 ===`, 'vote');
+
+        // 스님 [살생 유택] 스킬
+        const monk = alive.find(s => s.job === '스님');
+        if (monk && votes[monk.id] === 0) {
+            gameState.survivors.forEach(s => {
+                if (s.isAlive) {
+                    s.mental = Math.min(s.maxMental, s.mental + 5);
+                }
+            });
+            addLog(`${monk.name}을(를) 아무도 투표하지 않아, [살생 유택] 스킬로 전원의 정신력이 회복되었다. +5`, 'heal');
+        }
+        
+        // 환자 [동정 유발] 스킬
+        if (sacrificed.job === '환자') {
+            alive.forEach(voter => {
+                if (votes[sacrificed.id] > 0 && voter.id !== sacrificed.id) {
+                    const mentalDecrease = sacrificed.charm;
+                    if (mentalDecrease > 0) {
+                        gameState.survivors = gameState.survivors.map(s => {
+                            if (s.id === voter.id) {
+                                return { ...s, mental: Math.max(0, s.mental - mentalDecrease) };
+                            }
+                            return s;
+                        });
+                    }
+                }
+            });
+            addLog(`${sacrificed.name}의 [동정 유발] 스킬로 투표자들의 정신력이 감소했다.`, 'event');
+        }
         processRoleEffect(sacrificed);
     }
+
+    // 기타리스트 스킬 원상복구
+    gameState.survivors = gameState.survivors.map(s => {
+        if (s.guitaristSkillActive) {
+            return {
+                ...s,
+                charisma: s.originalCharisma,
+                guitaristSkillActive: false
+            };
+        }
+        return s;
+    });
+
     gameState.gamePhase = 'sub';
     gameState.mainGameTurn = 0;
 }
@@ -4273,6 +4904,17 @@ function initializeSurvivor(survivor) {
     // 직업 스킬 자동 추가
     const jobSkill = JOB_SKILLS[survivor.job];
     const initialSkills = jobSkill ? [jobSkill.name] : [];
+
+    // 경호원 보호대상 설정 추가
+    let protectee = null;
+    if (survivor.job === '경호원' && survivor.relationshipTypes) {
+        const protecteeId = Object.keys(survivor.relationshipTypes).find(
+            id => survivor.relationshipTypes[id] === '보호대상'
+        );
+        if (protecteeId) {
+            protectee = parseFloat(protecteeId);
+        }
+    }
     
     return {
         ...survivor,
@@ -4291,6 +4933,7 @@ function initializeSurvivor(survivor) {
         role: null,
         status: survivor.status || '인간',
         skills: initialSkills,
+        protectee: protectee,
         favorability: {},
         relationshipTypes: {},
         awkwardWith: {},
@@ -5552,13 +6195,19 @@ function getActionsPopup() {
                                 { id: 'heal', label: '부상치료', disabled: s.isPanic || gameState.gamePhase === 'main' || s.inCoffin },
                                 { id: 'talk', label: '대화하기', disabled: s.isPanic || !hasOthers },
                                 { id: 'alliance', label: '동맹제의', disabled: s.isPanic || gameState.gamePhase === 'main' || isAllianceFull }
-                            ].map(action => `
+                                ].concat(
+                                    // 대역일 때만 추가 버튼 표시
+                                    s.role === '대역' && gameState.gamePhase === 'main' ? [
+                                        { id: 'slander', label: '이간질하기', disabled: s.isPanic },
+                                        { id: 'falseTestimony', label: '거짓 증언', disabled: s.isPanic }
+                                    ] : []
+                                ).map(action => `
                                 <button class="action-btn ${s.currentAction === action.id ? 'selected' : ''}"
-                                        ${action.disabled ? 'disabled' : ''}
-                                        onclick="setAction(${s.id}, '${action.id}')"
-                                        ${action.id === 'alliance' && isAllianceFull ? 'title="동맹을 맺은 생존자가 너무 많아 의심을 받을 것 같다"' : ''}
-                                        ${action.id === 'talk' && !hasOthers ? 'title="대화할 상대가 없다"' : ''}>
-                                    ${action.label}
+                                ${action.disabled ? 'disabled' : ''} 
+                                ${action.id === 'alliance' && isAllianceFull ? 'title="동맹을 맺은 생존자가 너무 많아 의심을 받을 것 같다"' : ''}
+                                ${action.id === 'talk' && !hasOthers ? 'title="대화할 상대가 없다"' : ''}
+                                onclick="setAction(${s.id}, '${action.id}')">
+                                ${action.label}
                                 </button>
                             `).join('')}
                         </div>
@@ -6403,3 +7052,4 @@ async function rollDiceWithAnimation(targetValue, statName, bonusValue = 0) {
         }, 100);
     });
 }
+
