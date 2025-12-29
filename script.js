@@ -2007,7 +2007,7 @@ function processSingleFreeAction(s) {
     if (gameState.gamePhase === 'sub') {
         if (gameState.subGameType === 'trust') {
             // 신뢰매매: 토큰 획득/손실 (-2 ~ +3)
-            const tokenChange = Math.floor(Math.random() * 6) - 2;
+            let tokenChange = Math.floor(Math.random() * 6) - 2;
             s.tokens = Math.max(0, (s.tokens || 0) + tokenChange);
 
             // 경찰 [질서 유지] 스킬: 토큰 손실 무효화
@@ -3166,7 +3166,7 @@ function processTalkAction(survivor) {
         if (!target.hotelierBonus) target.hotelierBonus = 0;
         const randomBonus = Math.floor(Math.random() * 5) + 1;
         target.hotelierBonus += randomBonus;
-        addLog(`${survivor.name}의 [최고의 서비스] 스킬로 ${target.name}의 다음 턴 토큰 획득량이 증가한다. +${hotelierBonus}`, 'event');
+        addLog(`${survivor.name}의 [최고의 서비스] 스킬로 ${target.name}의 다음 턴 토큰 획득량이 증가한다. +${target.hotelierBonus}`, 'event');
     }
 
         // 신부/수녀 [고해 성사] 스킬
@@ -3194,13 +3194,13 @@ function processSubGame() {
         
         switch (s.currentAction) {
             case 'explore':
-                updated.trust += Math.floor(Math.random() * 10) - 2;
-                updated.mental = Math.max(0, updated.mental - Math.floor(Math.random() * 10));
+                updated.trust += Math.floor(Math.random() * 15);
+                updated.mental = Math.max(0, updated.mental - Math.floor(Math.random() * 10)) - 3;
                 processSubGameAction(updated, 1);
                 break;
             case 'active':
-                updated.trust += Math.floor(Math.random() * 15) - 5;
-                updated.hp += Math.floor(Math.random() * 5) - 5;
+                updated.trust += Math.floor(Math.random() * 10) - 5;
+                updated.hp += Math.floor(Math.random() * 5) - 7;
                 processSubGameAction(updated, 2);
                 // 기타리스트 [불협화음] 스킬
                 if (s.job === '기타리스트') {
@@ -3402,7 +3402,7 @@ function processSubGame() {
         // 회사원 [초과 근무] 스킬
         if (s.job === '회사원' && s.currentAction && s.currentAction !== 'free' && 
             s.currentAction !== 'rest' && s.currentAction !== 'heal') {
-            const overtimeChance = 0.3; // 30% 확률
+            const overtimeChance = 0.5; // 30% 확률
             if (Math.random() < overtimeChance && s.mental >= 5) {
                 updated.mental = Math.max(0, updated.mental - 5);
                 
@@ -3693,7 +3693,7 @@ function processSubGameAction(survivor, actionLevel) {
                 if (Math.random() < bonusChance) {
                     const bonusPart = parts[Math.floor(Math.random() * parts.length)];
                     survivor.bodyParts[bonusPart] = true;
-                    addLog(`${survivor.name}의 높은 힘으로 인형의 신체 부위 추가 발견`, 'event');
+                    addLog(`${survivor.name}은(는) 무거운 벽장을 옮겨서 신체 부위를 추가로 발견했다.`, 'event');
                 }
             }
 
@@ -3703,7 +3703,7 @@ function processSubGameAction(survivor, actionLevel) {
                 if (Math.random() < bonusChance) {
                     const bonusPart = parts[Math.floor(Math.random() * parts.length)];
                     survivor.bodyParts[bonusPart] = true;
-                    addLog(`${survivor.name}의 높은 민첩으로 인형의 신체 부위 추가 발견`, 'event');
+                    addLog(`${survivor.name}은(는) 빠르게 돌아가는 프로펠러 사이에서 신체 부위를 추가로 발견했다.`, 'event');
                 }
             }
 
@@ -3713,7 +3713,7 @@ function processSubGameAction(survivor, actionLevel) {
                 if (Math.random() < bonusChance) {
                     const bonusPart = parts[Math.floor(Math.random() * parts.length)];
                     survivor.bodyParts[bonusPart] = true;
-                    addLog(`${survivor.name}의 [예민한 감각] 스킬로 인형의 신체 부위 추가 발견`, 'reward');
+                    addLog(`${survivor.name}은(는) [예민한 감각]을 통해 숨겨져 있던 신체 부위를 발견했다.`, 'reward');
                 }
             }
 
@@ -3755,14 +3755,14 @@ function processSubGameAction(survivor, actionLevel) {
             // 무당 [영적 강림] 스킬
             if (survivor.job === '무당' && Math.random() < 0.5) {
                 survivor.mental = Math.min(survivor.maxMental, survivor.mental + 5);
-                addLog(`${survivor.name}의 [영적 강림] 스킬로 정신력이 회복되었다. +5`, 'heal');
+                addLog(`${survivor.name}은(는) 신체부위를 발견하고 [영적 강림]을 하여 정신력이 회복되었다. +5`, 'heal');
             }
 
             // 운동선수 [한계 돌파] 스킬 추가 (여기에 삽입)
             if (survivor.job === '운동선수' && survivor.hp <= survivor.maxHp * 0.3) {
                 const bonusPart = parts[Math.floor(Math.random() * parts.length)];
                 survivor.bodyParts[bonusPart] = true;
-                addLog(`${survivor.name}의 [한계 돌파] 스킬로 신체부위 추가 획득`, 'reward');
+                addLog(`${survivor.name}이(가) [한계 돌파]하여 신체부위 추가로 획득했다.`, 'reward');
             }
             
             break;
@@ -3793,7 +3793,7 @@ function endSubGame() {
                     favorite.currentAction !== 'free') {
                     // 행동 횟수만큼 토큰 획득 (초과근무 등 고려)
                     secretary.tokens = (secretary.tokens || 0) + 1;
-                    addLog(`${secretary.name}의 [일정 관리] 스킬로 ${favorite.name}의 행동에 따라 토큰을 획득했다. +1`, 'reward');
+                    addLog(`${secretary.name}은(는) ${favorite.name}의 [일정 관리]를 하여 여분의 토큰을 획득했다. +1`, 'reward');
                 }
             }
         });
@@ -3836,23 +3836,57 @@ function endSubGame() {
             }
         }
 
-        // 경호원 [전담 방어] 스킬 추가
-        const protector = aliveSurvivors.find(s => 
-            s.job === '경호원' && 
-            s.protectee === lowest.id &&
-            s.isAlive
-        );
+        //경호원 [전담 방어] 스킬
+        let protector = null;
+            for (const survivor of aliveSurvivors) {
+                if (survivor.job === '경호원') {
+                    let targetProtectee = survivor.protectee;
+                    
+                    // 미리 설정된 보호대상이 없으면 호감도 가장 높은 사람을 즉석으로 설정
+                    if (!targetProtectee) {
+                        let maxFav = -Infinity;
+                        let favoriteId = null;
+                        
+                        Object.entries(survivor.favorability || {}).forEach(([id, fav]) => {
+                            const target = aliveSurvivors.find(s => s.id === parseFloat(id));
+                            if (target && fav > maxFav) {
+                                maxFav = fav;
+                                favoriteId = parseFloat(id);
+                            }
+                        });
+                        
+                        if (favoriteId) {
+                            targetProtectee = favoriteId;
+                            survivor.protectee = favoriteId;
+                        }
+                    }
+                    
+                    // 보호대상이 최하위 피해자인 경우
+                    if (targetProtectee === lowest.id) {
+                        protector = survivor;
+                        break;
+                    }
+                }
+            }
 
         if (protector) {
-            protector.hp = Math.max(0, s.hp - hpDamage);
-            protector.mental = Math.max(0, s.mental - mentalDamage);
-            addLog(`${protector.name}의 [전담 방어] 스킬로 ${lowest.name}의 페널티를 대신 받았다. (HP -${hpDamage}, 정신력 -${mentalDamage})`, 'event');
-            hpDamage = 0;
-            mentalDamage = 0;
+            // 경호원이 대신 피해를 받음
+            protector.hp = Math.max(0, protector.hp - hpDamage);
+            protector.mental = Math.max(0, protector.mental - mentalDamage);
+            
+            addLog(`경호원 ${protector.name}은(는) ${lowest.name}을(를) [전담 방어]하여 페널티를 대신 받았다. (HP -${hpDamage}, 정신력 -${mentalDamage})`, 'event');
+            
+            // 경호원이 사망했는지 확인
+            if (protector.hp === 0) {
+                addLog(`${protector.name}은(는) 절명했다.`, 'death');
+                protector.isAlive = false;
+                processDeathRelationships(protector);
+            }
+        } else {
+            // 경호원이 없으면 일반 페널티 적용
+            lowest.hp = Math.max(0, lowest.hp - hpDamage);
+            lowest.mental = Math.max(0, lowest.mental - mentalDamage);
         }
-        
-        lowest.hp = Math.max(0, lowest.hp - hpDamage);
-        lowest.mental = Math.max(0, lowest.mental - mentalDamage);
         
         // 광대 [시선 분산] 스킬: 페널티를 타인에게 전가
         if (lowest.job === '광대') {
@@ -3881,7 +3915,10 @@ function endSubGame() {
             });
             addLog(`${lowest.name}의 [순수한 양보] 스킬 발동. 전원의 ${lowest.name}에 대한 호감도 +20`, 'reward');
         }
+        let targetProtectee = gameState.survivors.protectee
+        if (!lowest.id === targetProtectee && !lowest.job === '광대') {
         addLog(`${lowest.name}이(가) 토큰 보유 수 최하위 패널티로 체력 ${hpDamage}, 정신력 ${mentalDamage}의 피해를 입었다.`, 'death');
+        }
 
         // 최상위 보상
         const rewardType = Math.random();
@@ -4080,6 +4117,7 @@ function endSubGame() {
         }
         
     } else if (gameState.subGameType === 'banquet') {
+        const dummies = gameState.survivors.filter(s => s.isAlive && s.status === '더미즈');
         // 연회 종료: 더미즈 중 신뢰도 최하위 사망
 
         // 바리스타 [카페인 충전] 스킬 - 관에 갇힌 아군 중 랜덤 한 명의 정신력 감소 페널티 무효화
@@ -4907,14 +4945,6 @@ function initializeSurvivor(survivor) {
 
     // 경호원 보호대상 설정 추가
     let protectee = null;
-    if (survivor.job === '경호원' && survivor.relationshipTypes) {
-        const protecteeId = Object.keys(survivor.relationshipTypes).find(
-            id => survivor.relationshipTypes[id] === '보호대상'
-        );
-        if (protecteeId) {
-            protectee = parseFloat(protecteeId);
-        }
-    }
     
     return {
         ...survivor,
@@ -5416,8 +5446,10 @@ function updateButtons() {
 // 생존자 편집
 function editSurvivor(id) {
     const survivor = gameState.survivors.find(s => s.id === id);
-    if (!survivor) return;
-    
+    if (!survivor) {
+        alert('생존자를 찾을 수 없습니다.');
+        return;
+    }
     showPopup('editSurvivor', survivor);
 }
 
@@ -5665,6 +5697,12 @@ function addRelationship() {
         alert('대상과 관계를 모두 선택해주세요');
         return;
     }
+
+    // 자신과의 관계 설정 방지
+    if (window.currentSurvivorEditingId && targetId === window.currentSurvivorEditingId) {
+        alert('자신과의 관계는 설정할 수 없습니다');
+        return;
+    }
     
     if (window.tempRelationships.some(r => r.targetId === targetId)) {
         alert('이미 설정된 대상입니다');
@@ -5752,6 +5790,7 @@ function getSurvivorForm(survivor = null) {
         relationships: []
     };
     
+    window.currentSurvivorEditingId = survivor ? survivor.id : null;
     const otherSurvivors = gameState.survivors.filter(sv => !survivor || sv.id !== survivor.id);
     
     // tempRelationships 초기화
@@ -5769,7 +5808,7 @@ function getSurvivorForm(survivor = null) {
             <div class="form-grid">
                 <input type="text" id="survivorName" placeholder="이름" value="${s.name}" class="form-input">
                 
-                <select id="survivorJob" class="form-select">
+                <select id="survivorJob" class="form-select" onchange="updateJobAndRelationshipType()">
                     ${Object.entries(JOB_CATEGORIES).map(([category, jobs]) => `
                         <optgroup label="${category}">
                             ${jobs.map(job => `<option ${s.job === job ? 'selected' : ''}>${job}</option>`).join('')}
@@ -5834,6 +5873,7 @@ function getSurvivorForm(survivor = null) {
                                 <option value="짝사랑">짝사랑</option>
                                 <option value="유사가족">유사가족</option>
                                 <option value="친척">친척</option>
+                                ${s.job === '경호원' ? '<option value="보호대상">보호대상</option>' : ''}
                             </select>
                             <button onclick="addRelationship()" class="btn btn-green" style="padding: 0.5rem 1rem;">추가</button>
                         </div>
@@ -5853,11 +5893,55 @@ function getSurvivorForm(survivor = null) {
     
     // DOM에 추가된 후 초기화 함수 실행
     setTimeout(() => {
-        updateStatPreview();
-        updateRelationshipsList();
+        const jobSelect = document.getElementById('survivorJob');
+        if (jobSelect) {
+            updateStatPreview();
+            updateRelationshipsList();
+            // job 변경 시 관계 타입 업데이트
+            jobSelect.addEventListener('change', updateJobAndRelationshipType);
+        }
     }, 0);
     
     return formHTML;
+}
+
+function updateJobAndRelationshipType() {
+    const jobSelect = document.getElementById('survivorJob');
+    const relationshipTypeSelect = document.getElementById('relationshipType');
+    
+    if (!jobSelect || !relationshipTypeSelect) return;
+    
+    const selectedJob = jobSelect.value;
+    const currentValue = relationshipTypeSelect.value;
+    
+    // 기본 옵션들
+    let html = `
+        <option value="낯선 사람">낯선 사람</option>
+        <option value="서먹함">서먹함</option>
+        <option value="친구">친구</option>
+        <option value="동료">동료</option>
+        <option value="연인">연인</option>
+        <option value="부부">부부</option>
+        <option value="형제/자매">형제/자매</option>
+        <option value="부모/자식">부모/자식</option>
+        <option value="짝사랑">짝사랑</option>
+        <option value="유사가족">유사가족</option>
+        <option value="친척">친척</option>
+    `;
+    
+    // 경호원일 때만 보호대상 추가
+    if (selectedJob === '경호원') {
+        html += '<option value="보호대상">보호대상</option>';
+    }
+    
+    relationshipTypeSelect.innerHTML = html;
+    
+    // 이전에 선택한 값이 여전히 유효하면 유지
+    if (relationshipTypeSelect.querySelector(`option[value="${currentValue}"]`)) {
+        relationshipTypeSelect.value = currentValue;
+    } else {
+        relationshipTypeSelect.value = '낯선 사람';
+    }
 }
 
 // 이미지 미리보기
@@ -6020,8 +6104,10 @@ function updateSurvivor(id) {
     const charisma = parseInt(document.getElementById('survivorCharisma').value);
     const charm = parseInt(document.getElementById('survivorCharm').value);
     const personality = document.getElementById('survivorPersonality').value;
+    const newJob = document.getElementById('survivorJob').value;
     const personalityType = getPersonalityType(personality);
     
+    // 새로운 능력치 계산
     let calculatedHp = 100 + ((strength - 5) * 15);
     let newMaxHp = Math.min(150, Math.max(75, calculatedHp));
     
@@ -6041,20 +6127,26 @@ function updateSurvivor(id) {
     } else {
         newBaseTrust = 50;
     }
-    const newInitialRelationships = {};
-
-    // 관계 업데이트 - 기존 관계 초기화하고 새로 설정
+    
+    // ========== 경호원 보호대상 처리 ==========
+    let newProtectee = survivor.protectee;
+    
+    // 직업이 경호원에서 다른 직업으로 변경되면 보호대상 초기화
+    if (survivor.job === '경호원' && newJob !== '경호원') {
+        newProtectee = null;
+    }
+    
+    // ========== 관계 설정 업데이트 ==========
     if (window.tempRelationships && window.tempRelationships.length > 0) {
         // 기존 관계 타입 초기화
         survivor.relationshipTypes = {};
         
-        // 설정되지 않은 관계는 0(낯선 사람)으로 초기화
+        // 설정되지 않은 관계는 0으로 초기화
         gameState.survivors.forEach(s => {
             if (s.id !== id) {
                 const hasRelation = window.tempRelationships.some(rel => rel.targetId === s.id);
                 if (!hasRelation) {
                     survivor.favorability[s.id] = 0;
-                    // 상대방도 관계가 없으면 0으로
                     if (!s.relationshipTypes || !s.relationshipTypes[id]) {
                         s.favorability[id] = 0;
                     }
@@ -6066,11 +6158,15 @@ function updateSurvivor(id) {
         window.tempRelationships.forEach(rel => {
             const favorabilityValue = INITIAL_RELATIONSHIP_VALUES[rel.type];
             
-            // 현재 호감도가 설정 값보다 낮으면 업데이트
             if ((survivor.favorability[rel.targetId] || 0) < favorabilityValue) {
                 survivor.favorability[rel.targetId] = favorabilityValue;
             }
             survivor.relationshipTypes[rel.targetId] = rel.type;
+            
+            // 보호대상 설정 (경호원일 때만)
+            if (rel.type === '보호대상' && newJob === '경호원') {
+                newProtectee = rel.targetId;
+            }
             
             // 짝사랑이 아니면 양방향 설정
             if (rel.type !== '짝사랑') {
@@ -6088,12 +6184,11 @@ function updateSurvivor(id) {
             }
         });
     } else {
-        // 관계 설정이 없으면 모두 0(낯선 사람)으로
+        // 관계 설정이 없으면 모두 0으로
         survivor.relationshipTypes = {};
         gameState.survivors.forEach(s => {
             if (s.id !== id) {
                 survivor.favorability[s.id] = 0;
-                // 상대방도 관계가 없으면 0으로
                 if (!s.relationshipTypes || !s.relationshipTypes[id]) {
                     s.favorability[id] = 0;
                 }
@@ -6101,16 +6196,18 @@ function updateSurvivor(id) {
         });
     }
     
+    // 현재 능력치를 새 최대치 이상으로 올리지 않게 조정
+    const newHp = Math.min(survivor.hp, newMaxHp);
+    const newMental = Math.min(survivor.mental, newMaxMental);
+    
+    // 생존자 업데이트
     gameState.survivors = gameState.survivors.map(s => {
         if (s.id !== id) return s;
-        
-        const newHp = Math.min(s.hp, newMaxHp);
-        const newMental = Math.min(s.mental, newMaxMental);
         
         return {
             ...s,
             name,
-            job: document.getElementById('survivorJob').value,
+            job: newJob,
             strength,
             agility,
             intelligence,
@@ -6126,7 +6223,8 @@ function updateSurvivor(id) {
             hp: newHp,
             maxMental: newMaxMental,
             mental: newMental,
-            trust: newBaseTrust
+            trust: newBaseTrust,
+            protectee: newProtectee
         };
     });
 
@@ -6748,7 +6846,7 @@ function hideEndingLogs() {
 // 시뮬레이션 리셋 (생존자 목록은 유지)
 function resetSimulation() {
     // 기존 생존자 정보 백업 (관계 정보 제외)
-    const savedSurvivors = gameState.survivors.map(s => ({
+    const savedSurvivors = gameState.survivors.map((s, index) => ({
         name: s.name,
         job: s.job,
         strength: s.strength,
@@ -6760,6 +6858,8 @@ function resetSimulation() {
         personality: s.personality,
         status: '인간',
         image: s.image,
+        oldId: s.id,
+        index: index,
         relationshipTypes: { ...s.relationshipTypes },
         savedFavorability: { ...s.favorability }
     }));
@@ -6802,46 +6902,40 @@ function resetSimulation() {
     const idMapping = {};
     savedSurvivors.forEach((saved, index) => {
         const newSurvivor = gameState.survivors[index];
-        // 이전 ID들과 새 ID 매핑
-        const oldIds = savedSurvivors.map(s => 
-            Object.keys(saved.relationshipTypes).find(id => 
-                savedSurvivors.find(ss => ss === s && saved.relationshipTypes[id])
-            )
-        );
-        idMapping[saved.name] = newSurvivor.id;
+        idMapping[saved.oldId] = newSurvivor.id;
     });
 
-    // 관계 재설정
+    // 관계 재설정 (수정된 버전)
     savedSurvivors.forEach((savedData, index) => {
         const survivor = gameState.survivors[index];
         
         // relationshipTypes 복원
         Object.entries(savedData.relationshipTypes).forEach(([oldTargetId, relationType]) => {
-            // 이전 ID로 저장된 생존자의 이름 찾기
-            const targetName = savedSurvivors.find((s, i) => {
-                const targetSurvivor = gameState.survivors[i];
-                return Object.keys(savedData.relationshipTypes).includes(String(targetSurvivor.id)) ||
-                       savedSurvivors[i] === savedSurvivors.find(ss => 
-                           Object.keys(ss.savedFavorability || {}).includes(oldTargetId)
-                       );
-            });
+            // 새로운 ID로 변환
+            const newTargetId = idMapping[parseFloat(oldTargetId)];
             
-            // 새로운 ID 찾기
-            const newTarget = gameState.survivors.find(s => 
-                savedSurvivors.find((saved, i) => 
-                    gameState.survivors[i].id === s.id && 
-                    Object.keys(saved.relationshipTypes).includes(oldTargetId)
-                )
-            );
+            if (!newTargetId) {
+                console.warn(`매칭 실패: oldTargetId=${oldTargetId}, relationType=${relationType}`);
+                return;
+            }
             
+            const newTarget = gameState.survivors.find(s => s.id === newTargetId);
             if (!newTarget) return;
             
             const favorabilityValue = INITIAL_RELATIONSHIP_VALUES[relationType];
-            if (favorabilityValue === undefined) return;
+            if (favorabilityValue === undefined) {
+                console.warn(`호감도 값 없음: relationType=${relationType}`);
+                return;
+            }
             
             // 현재 생존자 → 대상에 대한 호감도 설정
             survivor.favorability[newTarget.id] = favorabilityValue;
             survivor.relationshipTypes[newTarget.id] = relationType;
+            
+            // 경호원의 보호대상 설정
+            if (relationType === '보호대상' && survivor.job === '경호원') {
+                survivor.protectee = newTarget.id;
+            }
             
             // 짝사랑이 아니면 양방향 설정
             if (relationType !== '짝사랑') {
