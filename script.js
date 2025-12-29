@@ -1391,7 +1391,7 @@ const POPUP_EVENTS = {
             
             // 각 후보자별로 확률 계산하여 필터링
             const validCandidates = candidates.filter(survivor => {
-                const baseProbability = 0.95; // 5%
+                const baseProbability = 0.05; // 5%
                 const panicBonus = survivor.isPanic ? 0.05 : 0; // 패닉 시 5% 추가
                 const totalProbability = baseProbability + panicBonus;
                 
