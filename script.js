@@ -15,7 +15,8 @@ let gameState = {
     mainGameTurn: 0,
     usedTrialEvents: [],
     pendingDiceRolls: 0,
-    laptopEventOccurred: false
+    laptopEventOccurred: false,
+    laptopSpecialEventOccurred: false 
 };
 // 상수
 const GENDERS = ['남성', '여성', '기타'];
@@ -1124,7 +1125,7 @@ const POPUP_EVENTS = {
             );
             return candidates.length > 0 ? candidates : null;
         },
-        probability: 0.01,
+        probability: 0.05,
         getMessage: (character) => `
             <div style="text-align: center; margin-bottom: 10px;">
                 <strong>${character.name}은(는) 자신의 생명이 얼마 남지 않았음을 직감했다.</strong>
@@ -1542,6 +1543,7 @@ function autoSaveToLocalStorage() {
             mainGameTurn: gameState.mainGameTurn,
             usedTrialEvents: gameState.usedTrialEvents,
             laptopEventOccurred: gameState.laptopEventOccurred,
+            laptopSpecialEventOccurred: gameState.laptopSpecialEventOccurred,
             savedAt: new Date().toISOString()
         };
         
@@ -1575,6 +1577,7 @@ function loadAutoSaveFromLocalStorage() {
         gameState.mainGameTurn = data.mainGameTurn || 0;
         gameState.usedTrialEvents = data.usedTrialEvents || [];
         gameState.laptopEventOccurred = data.laptopEventOccurred || false;
+        gameState.laptopSpecialEventOccurred = data.laptopSpecialEventOccurred || false;
         
         addLog('자동 저장된 데이터를 불러왔습니다.', 'system');
         console.log('자동 로드 완료:', data.turn, '턴');
@@ -4699,6 +4702,7 @@ function processRoleEffect(sacrificed) {
 
 // 노트북 이벤트 체크 함수
 function checkLaptopEvent(sacrificed) {
+    if (gameState.laptopSpecialEventOccurred) return;
     // 노트북을 가진 생존자 찾기
     const laptopOwner = gameState.survivors.find(s => s.hasLaptop);
     
@@ -4824,6 +4828,8 @@ function executeLaptopRevenge(laptopOwnerId) {
     });
     
     addLog(`${laptopOwner.name}의 행동으로 생존자들의 정신력이 감소했다. - 전원 정신력 -15`, 'damage');
+
+    gameState.laptopSpecialEventOccurred = true;
     
     document.getElementById('popupContainer').innerHTML = '';
     updateDisplay();
@@ -4846,6 +4852,8 @@ function executeLaptopHope(laptopOwnerId) {
     });
     
     addLog(`${laptopOwner.name}의 행동으로 생존자들의 정신력이 회복되었다. - 전원 정신력 +15`, 'heal');
+
+    gameState.laptopSpecialEventOccurred = true;
     
     document.getElementById('popupContainer').innerHTML = '';
     updateDisplay();
@@ -5461,7 +5469,8 @@ function saveData() {
         initialTrialPopupsShown: gameState.initialTrialPopupsShown,
         mainGameTurn: gameState.mainGameTurn,
         usedTrialEvents: gameState.usedTrialEvents,
-        laptopEventOccurred: gameState.laptopEventOccurred
+        laptopEventOccurred: gameState.laptopEventOccurred,
+        laptopSpecialEventOccurred: gameState.laptopSpecialEventOccurred
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -5495,7 +5504,9 @@ function loadData(event) {
             gameState.hasStarted = data.hasStarted || false;
             gameState.initialTrialPopupsShown = data.initialTrialPopupsShown || {};
             gameState.mainGameTurn = data.mainGameTurn || 0;
-            gameState.usedTrialEvents = data.usedTrialEvents || []; 
+            gameState.usedTrialEvents = data.usedTrialEvents || [];
+            gameState.laptopEventOccurred = data.laptopEventOccurred || false;
+            gameState.laptopSpecialEventOccurred = data.laptopSpecialEventOccurred || false;
             addLog('데이터를 불러왔다.', 'system');
             updateDisplay();
             
@@ -6867,7 +6878,8 @@ function resetSimulation() {
         mainGameTurn: 0,
         usedTrialEvents: [],
         pendingDiceRolls: 0,
-        laptopEventOccurred: false
+        laptopEventOccurred: false,
+        laptopSpecialEventOccurred: false
     };
     
     // 생존자 재등록
