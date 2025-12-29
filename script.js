@@ -5468,7 +5468,7 @@ function saveData() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `YTTD_Simulator_${data.actualTurn}turn.json`;
+    a.download = `YTTD_Simulator_${data.turn}turn.json`;
     a.click();
     URL.revokeObjectURL(url);
 }
