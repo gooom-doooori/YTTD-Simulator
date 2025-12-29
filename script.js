@@ -47,8 +47,6 @@ const PERSONALITY_CATEGORIES = {
     '자기중심형': PERSONALITY_TYPES.egocentric
 };
 
-
-
 // 기존 PERSONALITIES 배열
 const PERSONALITIES = Object.values(PERSONALITY_TYPES).flat();
 
@@ -96,248 +94,187 @@ const JOB_SKILLS = {
         description: '체력/정신력 최대치 100 증가'},
     '초등학생': {
         name: '순수한 양보',
-        description: '[신뢰매매게임] 토큰 개수 최하위 패널티를 받을 경우 전원의 호감도 +20'
-    },
+        description: '[신뢰매매게임] 토큰 개수 최하위 패널티를 받을 경우 전원의 호감도 +20'},
     '중학생': {
         name: '예민한 감각',
-        description: '[신체보물찾기] 행동 시 민첩 비례 확률로 인형의 신체 1개 추가 발견'
-    },
+        description: '[신체보물찾기] 행동 시 민첩 비례 확률로 인형의 신체 1개 추가 발견'},
     '고등학생': {
         name: '학습 효과',
-        description: '서브게임에서 보상으로 스탯 획득 시 해당 스탯이 추가로 +1 상승'
-    },
+        description: '서브게임에서 보상으로 스탯 획득 시 해당 스탯이 추가로 +1 상승'},
     '대학생': {
         name: '벼락치기',
-        description: '[신체보물찾기] 서브게임 종료 2턴 전부터 신체 발견 확률 2배 상승'
-    },
+        description: '[신체보물찾기] 서브게임 종료 2턴 전부터 신체 발견 확률 2배 상승'},
     '대학원생': {
         name: '오차 분석',
-        description: '[신뢰매매게임] 행동 시 지능 수치에 비례해 토큰 하락폭 50% 감소'
-    },
+        description: '[신뢰매매게임] 행동 시 지능 수치에 비례해 토큰 하락폭 50% 감소'},
     '교수': {
         name: '권위적 교환',
-        description: '[신체보물찾기] 신체보물찾기에서 대화하기 행동 시 카리스마 판정으로 상대가 가진 신체부위 한 개 강탈'
-    },
+        description: '[신체보물찾기] 신체보물찾기에서 대화하기 행동 시 카리스마 판정으로 상대가 가진 신체부위 한 개 강탈'},
     '의사': {
         name: '정밀 집도',
-        description: '[신체보물찾기] 인형 완성으로 보상 받을 때, 보너스 스탯을 받게 되면 무조건 보너스 스탯 2개 획득'
-    },
+        description: '[신체보물찾기] 인형 완성으로 보상 받을 때, 보너스 스탯을 받게 되면 무조건 보너스 스탯 2개 획득'},
     '간호사': {
         name: '헌신적 간호',
-        description: '치료 행동 시 자신과 호감도 150이상인 랜덤 캐릭터 한 명의 정신력 50 함께 회복'
-    },
+        description: '치료 행동 시 자신과 호감도 150이상인 랜덤 캐릭터 한 명의 정신력 50 함께 회복'},
     '약사': {
         name: '각성제',
-        description: '[연회] 관에 갇힌 캐릭터 중 호감도 150이상인 캐릭터가 있을 경우, 1턴간  그 중 한 명의 탈출 확률 20% 증가'
-    },
+        description: '[연회] 관에 갇힌 캐릭터 중 호감도 150이상인 캐릭터가 있을 경우, 1턴간  그 중 한 명의 탈출 확률 20% 증가'},
     '수의사': {
         name: '교감 능력',
-        description: '[연회] 자신이 인간 상태일 때 더미즈인 캐릭터들과의 호감도 상승치 1.5배'
-    },
+        description: '[연회] 자신이 인간 상태일 때 더미즈인 캐릭터들과의 호감도 상승치 1.5배'},
     '변호사': {
         name: '공정 거래',
-        description: '[신뢰매매게임] 토큰 최하위일 때 받는 체력/정신력 데미지 30% 감소'
-    },
+        description: '[신뢰매매게임] 토큰 최하위일 때 받는 체력/정신력 데미지 30% 감소'},
     '판사': {
         name: '최후 판결',
-        description: '메인게임 투표 시 대상의 카리스마 비례 확률로 랜덤 인물의 표 1표 무효화'
-    },
+        description: '메인게임 투표 시 대상의 카리스마 비례 확률로 랜덤 인물의 표 1표 무효화'},
     '연구원': {
         name: '논리 회로',
-        description: '[신뢰매매게임] 행동 시 지능 수치만큼 토큰 추가 획득'
-    },
+        description: '[신뢰매매게임] 행동 시 지능 수치만큼 토큰 추가 획득'},
     '환경미화원': {
         name: '자원 재활용',
-        description: '[신체보물찾기] 중복 부위 2개를 소모해 1개당 체력혹은 정신력 중 더 낮은 능력치 5 회복'
-    },
+        description: '[신체보물찾기] 중복 부위 2개를 소모해 1개당 체력혹은 정신력 중 더 낮은 능력치 5 회복'},
     '정비공': {
         name: '장치 분석',
-        description: '[신체보물찾기] 행동 시 민첩 수치에 비례해 신체 발견 확률 상승'
-    },
+        description: '[신체보물찾기] 행동 시 민첩 수치에 비례해 신체 발견 확률 상승'},
     '경찰': {
         name: '질서 유지',
-        description: '[신뢰매매게임] 자신의 토큰이 타인에게 강탈당하는 것을 무효화'
-    },
+        description: '[신뢰매매게임] 자신의 토큰이 타인에게 강탈당하는 것을 무효화'},
     '군인': {
         name: '강철 정신',
-        description: '자신이 패닉 상태 돌입 시 3턴간 체력 감소 면제'
-    },
+        description: '자신이 패닉 상태 돌입 시 3턴간 체력 감소 면제'},
     '경호원': {
         name: '전담 방어',
-        description: '시뮬레이션 시작 시, 랜덤 캐릭터를 자신의 보호대상으로 설정.(호감도 높은 캐릭터 우선) 보호대상이 서브게임에서 페널티를 입는 경우 데미지를 대신 받음'
-    },
+        description: '시뮬레이션 시작 시, 랜덤 캐릭터를 자신의 보호대상으로 설정.(호감도 높은 캐릭터 우선) 보호대상이 서브게임에서 페널티를 입는 경우 데미지를 대신 받음'},
     '소방관': {
         name: '인명 구조',
-        description: '[연회] 패닉 상태의 캐릭터가 있는 경우 자신의 체력 30을 소모하여 해당 캐릭터의 정신력 10 회복. 자신의 체력이 최대체력의 30%이하로 떨어지면 발동하지 않음.'
-    },
+        description: '[연회] 패닉 상태의 캐릭터가 있는 경우 자신의 체력 30을 소모하여 해당 캐릭터의 정신력 10 회복. 자신의 체력이 최대체력의 30%이하로 떨어지면 발동하지 않음.'},
     '용병': {
         name: '생존 약탈',
-        description: '[신체보물찾기] 행동 시 낮은 확률로 타인 소유의 인형의 신체부위를 강탈 (신뢰도 -10)'
-    },
+        description: '[신체보물찾기] 행동 시 낮은 확률로 타인 소유의 인형의 신체부위를 강탈 (신뢰도 -10)'},
     '경비원': {
         name: '구역 감시',
-        description: '[신체보물찾기] 타인이 자신과 같은 행동을 진행할 경우 토큰 1개 징수'
-    },
+        description: '[신체보물찾기] 타인이 자신과 같은 행동을 진행할 경우 토큰 1개 징수'},
     '암살자': {
         name: '급소 타격',
-        description: '메인게임에서 대역이 되는 경우, 이간질하기 행동 성공률 20% 증가.'
-    },
+        description: '메인게임에서 대역이 되는 경우, 이간질하기 행동 성공률 20% 증가.'},
     '스파이': {
         name: '정보 조작',
-        description: '메인게임에서 자신의 신뢰도를 카리스마 비례 수치만큼 높게 위장(최대 70)'
-    },
+        description: '메인게임에서 자신의 신뢰도를 카리스마 비례 수치만큼 높게 위장(최대 70)'},
     '도박꾼': {
         name: '올 인',
-        description: '[신뢰매매게임] 적극행동 시 랜덤으로 자신의 보유 토큰수가 두 배가 되거나 0이 됨.'
-    },
+        description: '[신뢰매매게임] 적극행동 시 랜덤으로 자신의 보유 토큰수가 두 배가 되거나 0이 됨.'},
     '조폭': {
         name: '공포 분위기',
-        description: '메인게임에서 자신이 인간 상태일 때 더미즈를 위협해 신뢰도 강탈(최대 20)'
-    },
+        description: '메인게임에서 자신이 인간 상태일 때 더미즈를 위협해 신뢰도 강탈(최대 20)'},
     '야쿠자': {
         name: '조직의 의리',
-        description: '자신과 호감도가 300 이상인 더미즈의 사망을 1회 방지 (자신 체력 -30)'
-    },
+        description: '자신과 호감도가 300 이상인 더미즈의 사망을 1회 방지 (자신 체력 -30)'},
     '도굴꾼': {
         name: '부품 끼워맞추기',
-        description: '[신체찾기] 부위 1개가 부족해도 완성한 것으로 인정 (성공 보상은 50% 감소)'
-    },
+        description: '[신체찾기] 부위 1개가 부족해도 완성한 것으로 인정 (성공 보상은 50% 감소)'},
     '회사원': {
         name: '초과 근무',
-        description: '서브게임 중 랜덤 확률로 정신력 수치 5를 써서 해당 턴 행동을 한 번 더 수행'
-    },
+        description: '서브게임 중 랜덤 확률로 정신력 수치 5를 써서 해당 턴 행동을 한 번 더 수행'},
     '비서': {
         name: '일정 관리',
-        description: '호감도 1위 대상이 행동할 때마다 자신의 토큰도 1개씩 획득'
-    },
+        description: '호감도 1위 대상이 행동할 때마다 자신의 토큰도 1개씩 획득'},
     '기자': {
         name: '약점 노출',
-        description: '메인게임 득표 시 자신에게 투표한 사람의 신뢰도를 자신의 지능에 비례하여 깎음'
-    },
+        description: '메인게임 득표 시 자신에게 투표한 사람의 신뢰도를 자신의 지능에 비례하여 깎음'},
     '농부': {
         name: '결실의 계절',
-        description: '서브게임 종료 시 체력/정신력을 힘 수치에 비례해 회복'
-    },
+        description: '서브게임 종료 시 체력/정신력을 힘 수치에 비례해 회복'},
     '요리사': {
         name: '영양 식단',
-        description: '휴식 행동 시 아군 전체의 체력을 5씩 추가 회복'
-    },
+        description: '휴식 행동 시 아군 전체의 체력을 5씩 추가 회복'},
     '바리스타': {
         name: '카페인 충전',
-        description: '[연회] 관에 갇힌 아군 중 랜덤 한 명의 정신력 감소 페널티 무효화'
-    },
+        description: '[연회] 관에 갇힌 아군 중 랜덤 한 명의 정신력 감소 페널티 무효화'},
     '바텐더': {
         name: '취중 진담',
-        description: '대화 행동 시 상대방의 호감도 상승/감소폭 2배'
-    },
+        description: '대화 행동 시 상대방의 호감도 상승/감소폭 2배'},
     '미용사': {
         name: '이미지 메이킹',
-        description: '매 턴 종료 시 매력 수치에 비례해 신뢰도 소폭 자동 상승'
-    },
+        description: '매 턴 종료 시 매력 수치에 비례해 신뢰도 소폭 자동 상승'},
     '조향사': {
         name: '심신 안정',
-        description: '패닉 상태인 아군의 정신력 회복 수치를 매 턴 +5 추가'
-    },
+        description: '패닉 상태인 아군의 정신력 회복 수치를 매 턴 +5 추가'},
     '호텔리어': {
         name: '최고의 서비스',
-        description: '[신뢰매매게임] 자신과 대화한 캐릭터는 다음 턴 토큰 획득량 +1'
-    },
+        description: '[신뢰매매게임] 자신과 대화한 캐릭터는 다음 턴 토큰 획득량 +1'},
     '마사지사': {
         name: '피로 회복',
-        description: '[신체보물찾기] 중 휴식 시 민첩 수치가 다음 턴에 1.5배 상승'
-    },
+        description: '[신체보물찾기] 중 휴식 시 민첩 수치가 다음 턴에 1.5배 상승'},
     '메이드': {
         name: '완벽한 시중',
-        description: '휴식 행동 시 랜덤한 동맹의 정신력 +5 회복 (동맹 없으면 자신 정신력 +5)'
-    },
+        description: '휴식 행동 시 랜덤한 동맹의 정신력 +5 회복 (동맹 없으면 자신 정신력 +5)'},
     '예술가': {
         name: '영감의 원천',
-        description: '[신체보물찾기] 인형 완성 시 새로운 스킬을 획득할 확률 2배 상승'
-    },
+        description: '[신체보물찾기] 인형 완성 시 새로운 스킬을 획득할 확률 2배 상승'},
     '아이돌': {
         name: '팬덤 형성',
-        description: '메인게임 투표 시 자신에 대한 호감도 150 이상인 캐릭터들은 자신에게 투표하지 않음'
-    },
+        description: '메인게임 투표 시 자신에 대한 호감도 150 이상인 캐릭터들은 자신에게 투표하지 않음'},
     '화가': {
         name: '정밀 묘사',
-        description: '[신체보물찾기] 보유하지 않은 부위 획득할 확률 지능 비례 상승'
-    },
+        description: '[신체보물찾기] 보유하지 않은 부위 획득할 확률 지능 비례 상승'},
     '배우': {
         name: '페르소나',
-        description: '패닉 상태일 때, 신뢰도 하락 하지 않음'
-    },
+        description: '패닉 상태일 때, 신뢰도 하락 하지 않음'},
     '광대': {
         name: '시선 분산',
-        description: '[신뢰매매게임] 토큰 꼴찌일 때 페널티를 무작위 타인에게 전가 (신뢰도 -20)'
-    },
+        description: '[신뢰매매게임] 토큰 꼴찌일 때 페널티를 무작위 타인에게 전가 (신뢰도 -20)'},
     '가수': {
         name: '위로의 노래',
-        description: '휴식 행동 시 모든 아군 정신력 +5'
-    },
+        description: '휴식 행동 시 모든 아군 정신력 +5'},
     '기타리스트': {
         name: '불협화음',
-        description: '메인게임 중 적극행동 할 경우 자신의 카리스마 2배 상승'
-    },
+        description: '메인게임 중 적극행동 할 경우 자신의 카리스마 2배 상승'},
     '드러머': {
         name: '비트 조절',
-        description: '서브게임 중 랜덤하게 1턴에 2회 행동을 하거나 0회 행동을 함. 행동 하지 않을 경우 체력/정신력 +10'
-    },
+        description: '서브게임 중 랜덤하게 1턴에 2회 행동을 하거나 0회 행동을 함. 행동 하지 않을 경우 체력/정신력 +10'},
     '댄서': {
         name: '유연한 회피',
-        description: '데미지를 입을 경우 민첩 비례 확률로 데미지 무효화'
-    },
+        description: '데미지를 입을 경우 민첩 비례 확률로 데미지 무효화'},
     '무용수': {
         name: '유연한 회피',
-        description: '데미지를 입을 경우 민첩 비례 확률로 데미지 무효화'
-    },
+        description: '데미지를 입을 경우 민첩 비례 확률로 데미지 무효화'},
     '운동선수': {
         name: '한계 돌파',
-        description: '체력이 20% 이하일 때 모든 행동에서 [신뢰매매게임]중이라면 토큰을 [신체보물찾기]중이라면 신체부위를 2배로 획득 가능.'
-    },
+        description: '체력이 20% 이하일 때 모든 행동에서 [신뢰매매게임]중이라면 토큰을 [신체보물찾기]중이라면 신체부위를 2배로 획득 가능.'},
     '주부': {
         name: '알뜰살뜰',
-        description: '[신뢰매매] 토큰 상실 시 30% 확률로 토큰을 상실하지 않음'
-    },
+        description: '[신뢰매매] 토큰 상실 시 30% 확률로 토큰을 상실하지 않음'},
     '환자': {
         name: '동정 유발',
-        description: '자신을 공격하거나 투표한 대상은 정신력이 자신(환자)의 매력 수치만큼 감소'
-    },
+        description: '자신을 공격하거나 투표한 대상은 정신력이 자신(환자)의 매력 수치만큼 감소'},
     '죄수': {
         name: '탈옥 본능',
-        description: '[연회] 연회 1턴째부터 관에서 99% 확률로 탈출 가능'
-    },
+        description: '[연회] 연회 1턴째부터 관에서 99% 확률로 탈출 가능'},
     '거지': {
         name: '적선 구걸',
-        description: '[신뢰매매게임] 매 턴 종료 시 무작위 생존자로부터 토큰 1개 획득 (호감도 낮은 순)'
-    },
+        description: '[신뢰매매게임] 매 턴 종료 시 무작위 생존자로부터 토큰 1개 획득 (호감도 낮은 순)'},
     '무직': {
         name: '기적의 요행',
-        description: '서브게임 종료 시 아무 보상을 못 얻을 시 놀라운 요행으로 랜덤한 스킬 한 개 획득'
-    },
+        description: '서브게임 종료 시 아무 보상을 못 얻을 시 놀라운 요행으로 랜덤한 스킬 한 개 획득'},
     '아르바이트': {
         name: '추가 수당',
-        description: '[신뢰매매게임] 게임 중 체력/정신력이 최대치의 30%이하일 때, 휴식/치료를 포기하고 행동 시 토큰 +5'
-    },
+        description: '[신뢰매매게임] 게임 중 체력/정신력이 최대치의 30%이하일 때, 휴식/치료를 포기하고 행동 시 토큰 +5'},
     '일용직 근로자': {
         name: '고된 노동',
-        description: '[신뢰매매] 지정 행동 시 체력 -5, 토큰 +3 추가 획득'
-    },
+        description: '[신뢰매매] 지정 행동 시 체력 -5, 토큰 +3 추가 획득'},
     '스님': {
         name: '살생 유택',
-        description: '메인게임에서 자신을 투표하는 사람이 없다면 전원 정신력 +5'
-    },
+        description: '메인게임에서 자신을 투표하는 사람이 없다면 전원 정신력 +5'},
     '신부': {
         name: '고해 성사',
-        description: '신뢰도가 낮은 캐릭터와 대화 시 서로의 정신력 +15'
-    },
+        description: '신뢰도가 낮은 캐릭터와 대화 시 서로의 정신력 +15'},
     '수녀': {
         name: '고해 성사',
-        description: '신뢰도가 낮은 캐릭터와 대화 시 서로의 정신력 +15'
-    },
+        description: '신뢰도가 낮은 캐릭터와 대화 시 서로의 정신력 +15'},
     '무당': {
         name: '영적 강림',
-        description: '[신체찾기] 신체 획득 시 랜덤하게 정신력 +5'
-    }
+        description: '[신체찾기] 신체 획득 시 랜덤하게 정신력 +5'}
 };
 
 const SPECIAL_SKILLS = {
@@ -348,16 +285,16 @@ const SPECIAL_SKILLS = {
             { name: '카리스마', description: '호감도 상승량 1.3배', condition: s => s.charisma >= 7 }
         ],
         anxious: [
-            { name: '위기 감지', description: '패닉 상태 진입 시점을 5턴 미리 경고', condition: s => s.intelligence >= 7 },
-            { name: '생존 본능', description: '체력/정신력 30% 이하일 때 자동 회복량 2배', condition: s => s.agility >= 7 }
+            { name: '위기 감지', description: '서브게임에서 패널티 받을 시 체력 감소량 50% 감소', condition: s => s.intelligence >= 7 },
+            { name: '생존 본능', description: '체력/정신력 30% 이하일 때 자유 행동에서 회복량 2배', condition: s => s.agility >= 7 }
         ],
         stable: [
             { name: '중재자', description: '호감도 하락 이벤트 발생 시 50% 확률로 무효화', condition: s => s.charisma >= 7 },
             { name: '철벽 방어', description: '서브게임 페널티 데미지 30% 감소', condition: s => s.strength >= 7 }
         ],
         egocentric: [
-            { name: '냉혹한 판단', description: '신뢰도가 낮아도 메인게임 득표율 페널티 무시', condition: s => s.intelligence >= 7 },
-            { name: '독단적 행동', description: '혼자 행동 시 모든 능력치 +10%', condition: s => s.charm >= 7 }
+            { name: '냉혹한 판단', description: '메인게임에서 투표 할 경우, 신뢰도만 기준으로 하여 투표', condition: s => s.intelligence >= 7 },
+            { name: '독단적 행동', description: '행동 준비로 혼자 행동 시 모든 보상 2배', condition: s => s.charm >= 7 }
         ]
     },
     // 스탯 기반 스킬 (복합)
@@ -4918,19 +4855,36 @@ function executeLaptopHope(laptopOwnerId) {
 function initializeSurvivor(survivor) {
     const personalityType = getPersonalityType(survivor.personality);
     
-    let calculatedHp = 100 + ((survivor.strength - 5) * 15);
-    let maxHp = Math.min(150, Math.max(75, calculatedHp));
+    // 체력 계산 (미리보기와 동일)
+    let maxHp;
+    if (survivor.strength > 5) {
+        maxHp = 100 + ((survivor.strength - 5) * 10);
+    } else if (survivor.strength < 5) {
+        maxHp = 100 - ((5 - survivor.strength) * 10);
+    } else {
+        maxHp = 100;
+    }
     
+    // 정신력 계산 (미리보기와 동일)
     const mentalAvg = (survivor.intelligence + survivor.agility) / 2;
     let maxMental;
-    maxMental = 100 + ((mentalAvg - 5) * 10);
+    if (mentalAvg > 5) {
+        maxMental = 100 + ((mentalAvg - 5) * 10);
+    } else if (mentalAvg < 5) {
+        maxMental = 100 - ((5 - mentalAvg) * 10);
+    } else {
+        maxMental = 100;
+    }
 
-    if (personalityType === 'egocentric') {
+    // 자기중심형 성격 보너스
+    const egoPersonalities = ['냉정한', '지능적인', '사이코패스', '소시오패스', '생명경시', '염세적인'];
+    if (egoPersonalities.includes(survivor.personality)) {
         maxMental += 20;
     }
-    maxMental = Math.max(50, Math.min(200, maxMental));
     
+    // 신뢰도 계산 (미리보기와 동일)
     const trustAvg = (survivor.charisma + survivor.charm) / 2;
+    let baseTrust;
     if (trustAvg > 5) {
         baseTrust = 50 + ((trustAvg - 5) * 10);
     } else if (trustAvg < 5) {
@@ -4939,6 +4893,10 @@ function initializeSurvivor(survivor) {
         baseTrust = 50;
     }
     
+    maxHp = Math.max(70, Math.min(150, maxHp));
+    maxMental = Math.max(70, Math.min(150, maxMental));
+    baseTrust = Math.max(20, Math.min(100, baseTrust));
+
     // 직업 스킬 자동 추가
     const jobSkill = JOB_SKILLS[survivor.job];
     const initialSkills = jobSkill ? [jobSkill.name] : [];
@@ -5770,10 +5728,15 @@ function updateStatPreview() {
     } else {
         trust = 50;
     }
+
+    hp = Math.max(70, Math.min(150, hp));
+    mental = Math.max(70, Math.min(150, mental));
+    trust = Math.max(20, Math.min(100, trust));
     
     const previewHp = document.getElementById('previewHp');
     const previewMental = document.getElementById('previewMental');
     const previewTrust = document.getElementById('previewTrust');
+    
     
     if (previewHp) previewHp.textContent = Math.round(hp);
     if (previewMental) previewMental.textContent = Math.round(mental);
@@ -6107,17 +6070,34 @@ function updateSurvivor(id) {
     const newJob = document.getElementById('survivorJob').value;
     const personalityType = getPersonalityType(personality);
     
-    // 새로운 능력치 계산
-    let calculatedHp = 100 + ((strength - 5) * 15);
-    let newMaxHp = Math.min(150, Math.max(75, calculatedHp));
+    // 체력 계산
+    let newMaxHp;
+    if (strength > 5) {
+        newMaxHp = 100 + ((strength - 5) * 10);
+    } else if (strength < 5) {
+        newMaxHp = 100 - ((5 - strength) * 10);
+    } else {
+        newMaxHp = 100;
+    }
     
+    // 정신력 계산
     const mentalAvg = (intelligence + agility) / 2;
-    let newMaxMental = 100 + ((mentalAvg - 5) * 10);
-    if (personalityType === 'egocentric') {
+    let newMaxMental;
+    if (mentalAvg > 5) {
+        newMaxMental = 100 + ((mentalAvg - 5) * 10);
+    } else if (mentalAvg < 5) {
+        newMaxMental = 100 - ((5 - mentalAvg) * 10);
+    } else {
+        newMaxMental = 100;
+    }
+    
+    // 자기중심형 성격 보너스
+    const egoPersonalities = ['냉정한', '지능적인', '사이코패스', '소시오패스', '생명경시', '염세적인'];
+    if (egoPersonalities.includes(personality)) {
         newMaxMental += 20;
     }
-    newMaxMental = Math.max(50, Math.min(200, newMaxMental));
     
+    // 신뢰도 계산
     const trustAvg = (charisma + charm) / 2;
     let newBaseTrust;
     if (trustAvg > 5) {
@@ -6127,6 +6107,11 @@ function updateSurvivor(id) {
     } else {
         newBaseTrust = 50;
     }
+    
+    // 최소/최대값 제한
+    newMaxHp = Math.max(70, Math.min(150, newMaxHp));
+    newMaxMental = Math.max(70, Math.min(150, newMaxMental));
+    newBaseTrust = Math.max(20, Math.min(100, newBaseTrust));
     
     // ========== 경호원 보호대상 처리 ==========
     let newProtectee = survivor.protectee;
